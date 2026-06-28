@@ -97,10 +97,10 @@
         }
 
         function editGroup(g) {
-            document.getElementById('Id').value = g.id;
-            document.getElementById('GroupName').value = g.groupName;
-            document.getElementById('GroupType').value = g.groupType;
-            document.getElementById('Description').value = g.description || "";
+            document.getElementById('Id').value = window.getVal(g, 'id');
+            document.getElementById('GroupName').value = window.getVal(g, 'groupName');
+            document.getElementById('GroupType').value = window.getVal(g, 'groupType');
+            document.getElementById('Description').value = window.getVal(g, 'description') || "";
             document.getElementById('modalTitle').innerText = "Edit Account Group";
             bootstrapModal.show();
         }

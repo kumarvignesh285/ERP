@@ -134,17 +134,17 @@
 
         function editCustomer(customer) {
             document.getElementById('customerForm').reset();
-            document.getElementById('Id').value = customer.id;
-            document.getElementById('CustomerCode').value = customer.customerCode;
-            document.getElementById('CustomerName').value = customer.customerName;
-            document.getElementById('ContactPerson').value = customer.contactPerson || "";
-            document.getElementById('MobileNumber').value = customer.mobileNumber || "";
-            document.getElementById('Email').value = customer.email || "";
-            document.getElementById('GSTNumber').value = customer.gstNumber || "";
-            document.getElementById('Address').value = customer.address || "";
-            document.getElementById('City').value = customer.city || "";
-            document.getElementById('State').value = customer.state || "";
-            document.getElementById('CreditLimit').value = customer.creditLimit || 0;
+            document.getElementById('Id').value = window.getVal(customer, 'id');
+            document.getElementById('CustomerCode').value = window.getVal(customer, 'customerCode');
+            document.getElementById('CustomerName').value = window.getVal(customer, 'customerName');
+            document.getElementById('ContactPerson').value = window.getVal(customer, 'contactPerson') || "";
+            document.getElementById('MobileNumber').value = window.getVal(customer, 'mobileNumber') || "";
+            document.getElementById('Email').value = window.getVal(customer, 'email') || "";
+            document.getElementById('GSTNumber').value = window.getVal(customer, 'gstNumber') || "";
+            document.getElementById('Address').value = window.getVal(customer, 'address') || "";
+            document.getElementById('City').value = window.getVal(customer, 'city') || "";
+            document.getElementById('State').value = window.getVal(customer, 'state') || "";
+            document.getElementById('CreditLimit').value = window.getVal(customer, 'creditLimit') || 0;
             document.getElementById('modalTitle').innerText = "Edit Customer";
             bootstrapModal.show();
         }

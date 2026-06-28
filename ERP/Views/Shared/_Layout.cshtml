@@ -1,13 +1,24 @@
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - SmartERP - MVC Billing & Accounting</title>
     
+    <!-- Theme loading script to prevent FOUT (Flash of Unstyled Theme) -->
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+
     <!-- CSS libraries -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
@@ -37,6 +48,21 @@
                     <h5 class="m-0 font-weight-bold text-primary">@ViewData["Title"]</h5>
                 </div>
                 <div class="header-right d-flex align-items-center gap-3">
+                    <!-- Theme Dropdown Switcher -->
+                    <div class="dropdown">
+                        <button class="btn btn-link text-secondary p-1" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Switch Theme">
+                            <i class="fa-solid fa-palette fs-5"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" aria-labelledby="themeDropdown" style="min-width: 180px;">
+                            <li><h6 class="dropdown-header">Select Theme</h6></li>
+                            <li><hr class="dropdown-divider m-1"></li>
+                            <li><button class="dropdown-item py-2 d-flex align-items-center gap-2" data-theme-value="light"><span style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #2563eb;"></span> Light</button></li>
+                            <li><button class="dropdown-item py-2 d-flex align-items-center gap-2" data-theme-value="dark"><span style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #60a5fa;"></span> Dark</button></li>
+                            <li><button class="dropdown-item py-2 d-flex align-items-center gap-2" data-theme-value="emerald"><span style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #059669;"></span> Emerald Glass</button></li>
+                            <li><button class="dropdown-item py-2 d-flex align-items-center gap-2" data-theme-value="indigo"><span style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #6366f1;"></span> Indigo Premium</button></li>
+                        </ul>
+                    </div>
+
                     <!-- Notifications -->
                     <div class="dropdown">
                         <button class="btn btn-link text-secondary position-relative p-1" type="button" data-bs-toggle="dropdown">

@@ -128,12 +128,12 @@
         }
 
         function editLedger(l) {
-            document.getElementById('Id').value = l.id;
-            document.getElementById('LedgerCode').value = l.ledgerCode;
-            document.getElementById('LedgerName').value = l.ledgerName;
-            $('#AccountGroupId').val(l.accountGroupId).trigger('change');
-            document.getElementById('OpeningBalance').value = l.openingBalance;
-            document.getElementById('BalanceType').value = l.balanceType;
+            document.getElementById('Id').value = window.getVal(l, 'id');
+            document.getElementById('LedgerCode').value = window.getVal(l, 'ledgerCode');
+            document.getElementById('LedgerName').value = window.getVal(l, 'ledgerName');
+            $('#AccountGroupId').val(window.getVal(l, 'accountGroupId')).trigger('change');
+            document.getElementById('OpeningBalance').value = window.getVal(l, 'openingBalance');
+            document.getElementById('BalanceType').value = window.getVal(l, 'balanceType');
             document.getElementById('modalTitle').innerText = "Edit Ledger";
             bootstrapModal.show();
         }

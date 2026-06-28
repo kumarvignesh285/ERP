@@ -79,8 +79,8 @@
         }
 
         function editBrand(b) {
-            document.getElementById('Id').value = b.id;
-            document.getElementById('BrandName').value = b.brandName;
+            document.getElementById('Id').value = window.getVal(b, 'id');
+            document.getElementById('BrandName').value = window.getVal(b, 'brandName');
             document.getElementById('modalTitle').innerText = "Edit Brand";
             bootstrapModal.show();
         }

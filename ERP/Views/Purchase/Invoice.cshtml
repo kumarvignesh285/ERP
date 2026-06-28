@@ -145,6 +145,19 @@
 @section Scripts {
     <script>
         var productsList = @Json.Serialize(Model.ProductLookups);
+        if (productsList) {
+            productsList = productsList.map(function(p) {
+                return {
+                    id: window.getVal(p, 'id'),
+                    productCode: window.getVal(p, 'productCode'),
+                    productName: window.getVal(p, 'productName'),
+                    salesPrice: window.getVal(p, 'salesPrice'),
+                    purchasePrice: window.getVal(p, 'purchasePrice'),
+                    gstPercentage: window.getVal(p, 'gstPercentage'),
+                    categoryId: window.getVal(p, 'categoryId')
+                };
+            });
+        }
 
         function showForm() {
             $('#listView').hide();
@@ -165,16 +178,33 @@
             $.getJSON('/Purchase/GetInvoice/' + id, function(inv) {
                 $('#listView').hide();
                 $('#formView').show();
-                $('#Id').val(inv.id);
-                $('#InvoiceNumber').val(inv.invoiceNumber).prop('readonly', true);
-                $('#InvoiceDate').val(inv.invoiceDate.split('T')[0]);
-                $('#SupplierId').val(inv.supplierId).trigger('change');
-                $('#Remarks').val(inv.notes || '');
-                if (inv.paymentTerms) {
-                    $('#CreditDays').val(parseInt(inv.paymentTerms) || 0);
+                $('#Id').val(window.getVal(inv, 'id'));
+                $('#InvoiceNumber').val(window.getVal(inv, 'invoiceNumber')).prop('readonly', true);
+                
+                var invDate = window.getVal(inv, 'invoiceDate');
+                if (invDate) {
+                    $('#InvoiceDate').val(invDate.split('T')[0]);
+                }
+                
+                $('#SupplierId').val(window.getVal(inv, 'supplierId')).trigger('change');
+                $('#Remarks').val(window.getVal(inv, 'notes') || '');
+                
+                var payTerms = window.getVal(inv, 'paymentTerms') || '';
+                if (payTerms) {
+                    $('#CreditDays').val(parseInt(payTerms) || 0);
                 }
                 $('#itemsTable tbody').empty();
-                (inv.items || []).forEach(function(item) { addRow(item); });
+                
+                var items = window.getVal(inv, 'items') || [];
+                items.forEach(function(item) {
+                    var normalizedItem = {
+                        productId: window.getVal(item, 'productId'),
+                        quantity: window.getVal(item, 'quantity'),
+                        rate: window.getVal(item, 'rate'),
+                        taxPercentage: window.getVal(item, 'taxPercentage')
+                    };
+                    addRow(normalizedItem);
+                });
                 calculateTotals();
             });
         }
@@ -187,6 +217,14 @@
         function addRow(existingItem) {
             var catOptionsHtml = '<option value="">All Categories</option>';
             var categoriesList = @Json.Serialize(Model.Categories);
+            if (categoriesList) {
+                categoriesList = categoriesList.map(function(c) {
+                    return {
+                        id: window.getVal(c, 'id'),
+                        categoryName: window.getVal(c, 'categoryName')
+                    };
+                });
+            }
             categoriesList.forEach(function(c) {
                 catOptionsHtml += `<option value="${c.id}">${c.categoryName}</option>`;
             });

@@ -130,6 +130,19 @@
 @section Scripts {
     <script>
         var productsList = @Json.Serialize(Model.ProductLookups);
+        if (productsList) {
+            productsList = productsList.map(function(p) {
+                return {
+                    id: window.getVal(p, 'id'),
+                    productCode: window.getVal(p, 'productCode'),
+                    productName: window.getVal(p, 'productName'),
+                    salesPrice: window.getVal(p, 'salesPrice'),
+                    purchasePrice: window.getVal(p, 'purchasePrice'),
+                    gstPercentage: window.getVal(p, 'gstPercentage'),
+                    categoryId: window.getVal(p, 'categoryId')
+                };
+            });
+        }
 
         function showForm() {
             $('#listView').hide();
@@ -147,14 +160,26 @@
             $.getJSON('/Sales/GetOrder/' + id, function(order) {
                 $('#listView').hide();
                 $('#formView').show();
-                $('#Id').val(order.id);
-                $('#OrderNumber').val(order.orderNumber);
-                $('#OrderDate').val(order.orderDate.split('T')[0]);
-                $('#CustomerId').val(order.customerId).trigger('change');
-                $('#Status').val(order.status);
+                $('#Id').val(window.getVal(order, 'id'));
+                $('#OrderNumber').val(window.getVal(order, 'orderNumber'));
+                
+                var oDate = window.getVal(order, 'orderDate');
+                if (oDate) {
+                    $('#OrderDate').val(oDate.split('T')[0]);
+                }
+                
+                $('#CustomerId').val(window.getVal(order, 'customerId')).trigger('change');
+                $('#Status').val(window.getVal(order, 'status'));
                 $('#itemsTable tbody').empty();
-                (order.items || []).forEach(function(item) {
-                    addRow(item);
+                
+                var items = window.getVal(order, 'items') || [];
+                items.forEach(function(item) {
+                    var normalizedItem = {
+                        productId: window.getVal(item, 'productId'),
+                        quantity: window.getVal(item, 'quantity'),
+                        rate: window.getVal(item, 'rate')
+                    };
+                    addRow(normalizedItem);
                 });
                 calculateTotals();
             });
@@ -168,6 +193,14 @@
         function addRow(existingItem) {
             var catOptionsHtml = '<option value="">All Categories</option>';
             var categoriesList = @Json.Serialize(Model.Categories);
+            if (categoriesList) {
+                categoriesList = categoriesList.map(function(c) {
+                    return {
+                        id: window.getVal(c, 'id'),
+                        categoryName: window.getVal(c, 'categoryName')
+                    };
+                });
+            }
             categoriesList.forEach(function(c) {
                 catOptionsHtml += `<option value="${c.id}">${c.categoryName}</option>`;
             });

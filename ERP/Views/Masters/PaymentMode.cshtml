@@ -91,9 +91,9 @@
         }
 
         function editPaymentMode(pm) {
-            document.getElementById('Id').value = pm.id;
-            document.getElementById('ModeName').value = pm.modeName;
-            document.getElementById('ModeType').value = pm.modeType;
+            document.getElementById('Id').value = window.getVal(pm, 'id');
+            document.getElementById('ModeName').value = window.getVal(pm, 'modeName');
+            document.getElementById('ModeType').value = window.getVal(pm, 'modeType');
             document.getElementById('modalTitle').innerText = "Edit Payment Mode";
             bootstrapModal.show();
         }

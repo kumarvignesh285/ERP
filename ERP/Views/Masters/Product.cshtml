@@ -262,7 +262,7 @@
         }
 
         function editProductById(id) {
-            var p = window.productEditList.find(function(item) { return item.id === id; });
+            var p = window.productEditList.find(function(item) { return window.getVal(item, 'id') === id; });
             if (!p) {
                 Swal.fire('Error!', 'Product details could not be loaded.', 'error');
                 return;

@@ -79,8 +79,8 @@
         }
 
         function editCategory(c) {
-            document.getElementById('Id').value = c.id;
-            document.getElementById('CategoryName').value = c.categoryName;
+            document.getElementById('Id').value = window.getVal(c, 'id');
+            document.getElementById('CategoryName').value = window.getVal(c, 'categoryName');
             document.getElementById('modalTitle').innerText = "Edit Category";
             bootstrapModal.show();
         }

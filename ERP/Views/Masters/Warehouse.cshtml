@@ -103,12 +103,12 @@
         }
 
         function editWarehouse(w) {
-            document.getElementById('Id').value = w.id;
-            document.getElementById('WarehouseCode').value = w.warehouseCode;
-            document.getElementById('WarehouseName').value = w.warehouseName;
-            document.getElementById('Address').value = w.address || "";
-            document.getElementById('City').value = w.city || "";
-            document.getElementById('State').value = w.state || "";
+            document.getElementById('Id').value = window.getVal(w, 'id');
+            document.getElementById('WarehouseCode').value = window.getVal(w, 'warehouseCode');
+            document.getElementById('WarehouseName').value = window.getVal(w, 'warehouseName');
+            document.getElementById('Address').value = window.getVal(w, 'address') || "";
+            document.getElementById('City').value = window.getVal(w, 'city') || "";
+            document.getElementById('State').value = window.getVal(w, 'state') || "";
             document.getElementById('modalTitle').innerText = "Edit Warehouse";
             bootstrapModal.show();
         }

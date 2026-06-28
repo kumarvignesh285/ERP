@@ -133,6 +133,19 @@
 @section Scripts {
     <script>
         var productsList = @Json.Serialize(Model.ProductLookups);
+        if (productsList) {
+            productsList = productsList.map(function(p) {
+                return {
+                    id: window.getVal(p, 'id'),
+                    productCode: window.getVal(p, 'productCode'),
+                    productName: window.getVal(p, 'productName'),
+                    salesPrice: window.getVal(p, 'salesPrice'),
+                    purchasePrice: window.getVal(p, 'purchasePrice'),
+                    gstPercentage: window.getVal(p, 'gstPercentage'),
+                    categoryId: window.getVal(p, 'categoryId')
+                };
+            });
+        }
 
         function showForm() {
             $('#listView').hide();
@@ -153,6 +166,14 @@
         function addRow() {
             var catOptionsHtml = '<option value="">All Categories</option>';
             var categoriesList = @Json.Serialize(Model.Categories);
+            if (categoriesList) {
+                categoriesList = categoriesList.map(function(c) {
+                    return {
+                        id: window.getVal(c, 'id'),
+                        categoryName: window.getVal(c, 'categoryName')
+                    };
+                });
+            }
             categoriesList.forEach(function(c) {
                 catOptionsHtml += `<option value="${c.id}">${c.categoryName}</option>`;
             });

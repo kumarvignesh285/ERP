@@ -113,12 +113,12 @@
         }
 
         function editTax(t) {
-            document.getElementById('Id').value = t.id;
-            document.getElementById('TaxName').value = t.taxName;
-            document.getElementById('TaxPercentage').value = t.taxPercentage;
-            document.getElementById('IGSTPercentage').value = t.igstPercentage;
-            document.getElementById('CGSTPercentage').value = t.cgstPercentage;
-            document.getElementById('SGSTPercentage').value = t.sgstPercentage;
+            document.getElementById('Id').value = window.getVal(t, 'id');
+            document.getElementById('TaxName').value = window.getVal(t, 'taxName');
+            document.getElementById('TaxPercentage').value = window.getVal(t, 'taxPercentage');
+            document.getElementById('IGSTPercentage').value = window.getVal(t, 'igstPercentage');
+            document.getElementById('CGSTPercentage').value = window.getVal(t, 'cgstPercentage');
+            document.getElementById('SGSTPercentage').value = window.getVal(t, 'sgstPercentage');
             document.getElementById('modalTitle').innerText = "Edit Tax Slab";
             bootstrapModal.show();
         }

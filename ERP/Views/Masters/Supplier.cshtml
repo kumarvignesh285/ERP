@@ -132,17 +132,17 @@
 
         function editSupplier(supplier) {
             document.getElementById('supplierForm').reset();
-            document.getElementById('Id').value = supplier.id;
-            document.getElementById('SupplierCode').value = supplier.supplierCode;
-            document.getElementById('SupplierName').value = supplier.supplierName;
-            document.getElementById('ContactPerson').value = supplier.contactPerson || "";
-            document.getElementById('Mobile').value = supplier.mobile || "";
-            document.getElementById('Email').value = supplier.email || "";
-            document.getElementById('GSTNumber').value = supplier.gstNumber || "";
-            document.getElementById('Address').value = supplier.address || "";
-            document.getElementById('City').value = supplier.city || "";
-            document.getElementById('State').value = supplier.state || "";
-            document.getElementById('Country').value = supplier.country || "India";
+            document.getElementById('Id').value = window.getVal(supplier, 'id');
+            document.getElementById('SupplierCode').value = window.getVal(supplier, 'supplierCode');
+            document.getElementById('SupplierName').value = window.getVal(supplier, 'supplierName');
+            document.getElementById('ContactPerson').value = window.getVal(supplier, 'contactPerson') || "";
+            document.getElementById('Mobile').value = window.getVal(supplier, 'mobile') || "";
+            document.getElementById('Email').value = window.getVal(supplier, 'email') || "";
+            document.getElementById('GSTNumber').value = window.getVal(supplier, 'gstNumber') || "";
+            document.getElementById('Address').value = window.getVal(supplier, 'address') || "";
+            document.getElementById('City').value = window.getVal(supplier, 'city') || "";
+            document.getElementById('State').value = window.getVal(supplier, 'state') || "";
+            document.getElementById('Country').value = window.getVal(supplier, 'country') || "India";
             document.getElementById('modalTitle').innerText = "Edit Supplier";
             bootstrapModal.show();
         }

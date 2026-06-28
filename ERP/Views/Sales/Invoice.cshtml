@@ -160,6 +160,19 @@
     <script>
         // List of all products preloaded for easy lookup in lines
         var productsList = @Json.Serialize(Model.ProductLookups);
+        if (productsList) {
+            productsList = productsList.map(function(p) {
+                return {
+                    id: window.getVal(p, 'id'),
+                    productCode: window.getVal(p, 'productCode'),
+                    productName: window.getVal(p, 'productName'),
+                    salesPrice: window.getVal(p, 'salesPrice'),
+                    purchasePrice: window.getVal(p, 'purchasePrice'),
+                    gstPercentage: window.getVal(p, 'gstPercentage'),
+                    categoryId: window.getVal(p, 'categoryId')
+                };
+            });
+        }
 
         function showForm() {
             $('#formTitle').html('<i class="fa-solid fa-plus me-2"></i> Create Sales Invoice');
@@ -183,19 +196,34 @@
                 $('#formTitle').html('<i class="fa-solid fa-pen me-2"></i> Edit Sales Invoice');
                 $('#listView').hide();
                 $('#formView').show();
-                $('#Id').val(inv.id);
-                $('#InvoiceNumber').val(inv.invoiceNumber).prop('readonly', true);
-                $('#InvoiceDate').val(inv.invoiceDate.split('T')[0]);
-                $('#CustomerId').val(inv.customerId).trigger('change');
-                $('#Status').val(inv.status);
-                $('#Remarks').val(inv.notes || '');
-                if (inv.paymentTerms) {
-                    var days = parseInt(inv.paymentTerms) || 0;
+                $('#Id').val(window.getVal(inv, 'id'));
+                $('#InvoiceNumber').val(window.getVal(inv, 'invoiceNumber')).prop('readonly', true);
+                
+                var invDate = window.getVal(inv, 'invoiceDate');
+                if (invDate) {
+                    $('#InvoiceDate').val(invDate.split('T')[0]);
+                }
+                
+                $('#CustomerId').val(window.getVal(inv, 'customerId')).trigger('change');
+                $('#Status').val(window.getVal(inv, 'status'));
+                $('#Remarks').val(window.getVal(inv, 'notes') || '');
+                
+                var payTerms = window.getVal(inv, 'paymentTerms') || '';
+                if (payTerms) {
+                    var days = parseInt(payTerms) || 0;
                     $('#CreditDays').val(days);
                 }
                 $('#itemsTable tbody').empty();
-                (inv.items || []).forEach(function(item) {
-                    addRow(item);
+                
+                var items = window.getVal(inv, 'items') || [];
+                items.forEach(function(item) {
+                    var normalizedItem = {
+                        productId: window.getVal(item, 'productId'),
+                        quantity: window.getVal(item, 'quantity'),
+                        rate: window.getVal(item, 'rate'),
+                        taxPercentage: window.getVal(item, 'taxPercentage')
+                    };
+                    addRow(normalizedItem);
                 });
                 calculateTotals();
             });
@@ -211,6 +239,14 @@
             
             var catOptionsHtml = '<option value="">All Categories</option>';
             var categoriesList = @Json.Serialize(Model.Categories);
+            if (categoriesList) {
+                categoriesList = categoriesList.map(function(c) {
+                    return {
+                        id: window.getVal(c, 'id'),
+                        categoryName: window.getVal(c, 'categoryName')
+                    };
+                });
+            }
             categoriesList.forEach(function(c) {
                 catOptionsHtml += `<option value="${c.id}">${c.categoryName}</option>`;
             });

@@ -14,9 +14,58 @@ $(function () {
             body.removeClass('sidebar-open');
         }
     });
+
+    // Premium Theme Switcher & Dropdown Sync
+    function updateActiveThemeIndicator() {
+        var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        $('[data-theme-value]').removeClass('active');
+        $('[data-theme-value="' + currentTheme + '"]').addClass('active');
+    }
+
+    $('[data-theme-value]').on('click', function (e) {
+        e.preventDefault();
+        var theme = $(this).data('theme-value');
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        updateActiveThemeIndicator();
+    });
+
+    // Run on startup
+    updateActiveThemeIndicator();
 });
 
 (function () {
+    window.getVal = function(obj, propName, fallback) {
+        if (!obj) return fallback !== undefined ? fallback : "";
+        
+        // 1. Exact match
+        if (obj[propName] !== undefined && obj[propName] !== null) {
+            return obj[propName];
+        }
+        
+        // 2. Capitalized (PascalCase)
+        var pascal = propName.charAt(0).toUpperCase() + propName.slice(1);
+        if (obj[pascal] !== undefined && obj[pascal] !== null) {
+            return obj[pascal];
+        }
+        
+        // 3. Fully uppercase (e.g. mrp -> MRP)
+        var upper = propName.toUpperCase();
+        if (obj[upper] !== undefined && obj[upper] !== null) {
+            return obj[upper];
+        }
+
+        // 4. Special cases (GST, etc.)
+        if (propName.toLowerCase().startsWith("gst")) {
+            var gstProp = "GST" + propName.slice(3);
+            if (obj[gstProp] !== undefined && obj[gstProp] !== null) {
+                return obj[gstProp];
+            }
+        }
+        
+        return fallback !== undefined ? fallback : "";
+    };
+
     if (!window.Swal) {
         window.Swal = {
             fire: function (title, text, icon) {

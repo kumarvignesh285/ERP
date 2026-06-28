@@ -113,13 +113,13 @@
         }
 
         function editEmployee(e) {
-            document.getElementById('Id').value = e.id;
-            document.getElementById('EmployeeCode').value = e.employeeCode;
-            document.getElementById('EmployeeName').value = e.employeeName;
-            document.getElementById('Designation').value = e.designation || "";
-            document.getElementById('Department').value = e.department || "";
-            document.getElementById('MobileNumber').value = e.mobileNumber || "";
-            document.getElementById('Email').value = e.email || "";
+            document.getElementById('Id').value = window.getVal(e, 'id');
+            document.getElementById('EmployeeCode').value = window.getVal(e, 'employeeCode');
+            document.getElementById('EmployeeName').value = window.getVal(e, 'employeeName');
+            document.getElementById('Designation').value = window.getVal(e, 'designation') || "";
+            document.getElementById('Department').value = window.getVal(e, 'department') || "";
+            document.getElementById('MobileNumber').value = window.getVal(e, 'mobileNumber') || "";
+            document.getElementById('Email').value = window.getVal(e, 'email') || "";
             document.getElementById('modalTitle').innerText = "Edit Employee";
             bootstrapModal.show();
         }

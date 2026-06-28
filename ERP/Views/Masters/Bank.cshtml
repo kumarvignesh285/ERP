@@ -112,12 +112,12 @@
         }
 
         function editBank(b) {
-            document.getElementById('Id').value = b.id;
-            document.getElementById('BankName').value = b.bankName;
-            document.getElementById('BranchName').value = b.branchName;
-            document.getElementById('AccountNumber').value = b.accountNumber;
-            document.getElementById('IFSCCode').value = b.ifscCode;
-            $('#LedgerId').val(b.ledgerId).trigger('change');
+            document.getElementById('Id').value = window.getVal(b, 'id');
+            document.getElementById('BankName').value = window.getVal(b, 'bankName');
+            document.getElementById('BranchName').value = window.getVal(b, 'branchName');
+            document.getElementById('AccountNumber').value = window.getVal(b, 'accountNumber');
+            document.getElementById('IFSCCode').value = window.getVal(b, 'ifscCode');
+            $('#LedgerId').val(window.getVal(b, 'ledgerId')).trigger('change');
             document.getElementById('modalTitle').innerText = "Edit Bank Account";
             bootstrapModal.show();
         }
