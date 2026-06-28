@@ -713,7 +713,9 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     animation: fadeInUp 0.45s ease forwards;
 }
 
-/* Modern clean dashboard */
+/* ==========================================
+   DASHBOARD MODULE STYLE
+   ========================================== */
 .dashboard-page-title {
     font-family: var(--font-heading);
     font-weight: 800;
@@ -738,10 +740,46 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     color: var(--text-primary) !important;
 }
 
+
+/* ==========================================
+   MASTERS COMPONENT MODULE STYLE
+   ========================================== */
+/* Grouped styles for Masters views (Product, Brand, Category, Tax, Warehouse, Ledger, Customer, etc.) */
+.datatable th {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+
+/* ==========================================
+   SALES COMPONENT MODULE STYLE
+   ========================================== */
+/* Grouped styles for Sales views (Order, Quotation, Challan, Invoice, Return) */
+#itemsTable thead th {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+}
+
+
+/* ==========================================
+   PURCHASE COMPONENT MODULE STYLE
+   ========================================== */
+/* Grouped styles for Purchase views (Order, GRN, Invoice, Return) */
+
+
+/* ==========================================
+   INVENTORY COMPONENT MODULE STYLE
+   ========================================== */
+/* Grouped styles for Inventory views (Physical Verification, Stock Adjustment, Stock Transfer) */
+
+
 /* ==========================================
    RESPONSIVE MEDIA QUERIES
    ========================================== */
-
 @media (max-width: 991.98px) {
     .erp-sidebar {
         transform: translateX(-100%);
@@ -764,7 +802,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 /* ==========================================
    BOOTSTRAP UTILITY OVERRIDES FOR DYNAMIC THEMES
    ========================================== */
-
 .text-primary {
     color: var(--primary) !important;
 }
