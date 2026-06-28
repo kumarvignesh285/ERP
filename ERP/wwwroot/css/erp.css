@@ -804,3 +804,41 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     --theme-close-filter: invert(1) grayscale(1) brightness(2);
 }
 
+/* ==========================================
+   COMPACT TABLE GRID INPUT STYLING
+   ========================================== */
+#itemsTable .form-control,
+#itemsTable .form-select,
+#itemsTable .select2-container--default .select2-selection--single,
+.grid-item-row .form-control,
+.grid-item-row .form-select,
+.grid-item-row .select2-container--default .select2-selection--single {
+    min-height: 38px !important;
+    border-radius: 6px !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    font-size: 0.85rem !important;
+}
+
+#itemsTable input.qty-input,
+#itemsTable input.rate-input,
+#itemsTable input.total-input,
+.grid-item-row input.qty-input,
+.grid-item-row input.rate-input,
+.grid-item-row input.total-input {
+    text-align: right !important;
+}
+
+#itemsTable .select2-container--default .select2-selection--single .select2-selection__rendered,
+.grid-item-row .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px !important;
+    padding-left: 0.5rem !important;
+    padding-right: 1.5rem !important;
+}
+
+#itemsTable .select2-container--default .select2-selection--single .select2-selection__arrow,
+.grid-item-row .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px !important;
+}
+
+

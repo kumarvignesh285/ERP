@@ -205,6 +205,7 @@
             var $row = $(rowHtml);
             $('#itemsTable tbody').append($row);
             window.initializeSelect2($row.find('.select2-row'));
+            window.initializeSelect2($row.find('.select2-category'));
         }
 
         function removeRow(btn) {

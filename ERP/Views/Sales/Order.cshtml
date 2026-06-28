@@ -239,6 +239,7 @@
             var $row = $(rowHtml);
             $('#itemsTable tbody').append($row);
             window.initializeSelect2($row.find('.select2-row'));
+            window.initializeSelect2($row.find('.select2-category'));
             if (existingItem) {
                 $row.find('.select2-row').val(existingItem.productId).trigger('change');
                 $row.find('.qty-input').val(existingItem.quantity);
