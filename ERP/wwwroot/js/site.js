@@ -32,6 +32,9 @@ $(function () {
 
     // Run on startup
     updateActiveThemeIndicator();
+
+    // Fix Bootstrap modal backdrop overlay issues by appending modals to body
+    $('.modal').appendTo('body');
 });
 
 (function () {

@@ -398,70 +398,73 @@
             // Line Chart: Sales & Purchase Trend
             var ctxArea = document.getElementById('salesTrendLineChart');
             if (ctxArea) {
-                var salesGradient = ctxArea.getContext('2d').createLinearGradient(0, 0, 0, 300);
-                salesGradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
-                salesGradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+                var ctx = ctxArea.getContext('2d');
+                if (ctx) {
+                    var salesGradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    salesGradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+                    salesGradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
 
-                new Chart(ctxArea.getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                        datasets: [{
-                            label: 'Sales',
-                            data: [12000, 19000, 3000, 5000, 20000, 30000, 45000, 35000, 40000, 38000, 42000, 50000],
-                            borderColor: '#3b82f6',
-                            borderWidth: 2.5,
-                            backgroundColor: salesGradient,
-                            tension: 0.35,
-                            fill: true,
-                            pointBackgroundColor: '#ffffff',
-                            pointBorderColor: '#3b82f6',
-                            pointBorderWidth: 2,
-                            pointHoverRadius: 6,
-                            pointRadius: 4
-                        }, {
-                            label: 'Purchases',
-                            data: [8000, 15000, 2000, 4000, 18000, 22000, 38000, 30000, 32000, 35000, 33000, 41000],
-                            borderColor: '#f97316',
-                            borderWidth: 2,
-                            backgroundColor: 'transparent',
-                            tension: 0.35,
-                            pointBackgroundColor: '#ffffff',
-                            pointBorderColor: '#f97316',
-                            pointBorderWidth: 1.5,
-                            pointHoverRadius: 5,
-                            pointRadius: 3
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                                labels: { boxWidth: 12, usePointStyle: true, font: { family: 'Inter', weight: 600 } }
-                            }
+                    new Chart(ctxArea, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                            datasets: [{
+                                label: 'Sales',
+                                data: [12000, 19000, 3000, 5000, 20000, 30000, 45000, 35000, 40000, 38000, 42000, 50000],
+                                borderColor: '#3b82f6',
+                                borderWidth: 2.5,
+                                backgroundColor: salesGradient,
+                                tension: 0.35,
+                                fill: true,
+                                pointBackgroundColor: '#ffffff',
+                                pointBorderColor: '#3b82f6',
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 6,
+                                pointRadius: 4
+                            }, {
+                                label: 'Purchases',
+                                data: [8000, 15000, 2000, 4000, 18000, 22000, 38000, 30000, 32000, 35000, 33000, 41000],
+                                borderColor: '#f97316',
+                                borderWidth: 2,
+                                backgroundColor: 'transparent',
+                                tension: 0.35,
+                                pointBackgroundColor: '#ffffff',
+                                pointBorderColor: '#f97316',
+                                pointBorderWidth: 1.5,
+                                pointHoverRadius: 5,
+                                pointRadius: 3
+                            }]
                         },
-                        scales: {
-                            y: {
-                                ticks: { color: '#94a3b8' },
-                                grid: { color: '#f1f5f9' },
-                                border: { dash: [4, 4] }
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    labels: { boxWidth: 12, usePointStyle: true, font: { family: 'Inter', weight: 600 } }
+                                }
                             },
-                            x: {
-                                ticks: { color: '#94a3b8' },
-                                grid: { display: false }
+                            scales: {
+                                y: {
+                                    ticks: { color: '#94a3b8' },
+                                    grid: { color: '#f1f5f9' },
+                                    border: { dash: [4, 4] }
+                                },
+                                x: {
+                                    ticks: { color: '#94a3b8' },
+                                    grid: { display: false }
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
 
             // Doughnut Chart: Revenue vs Expense
             var ctxPie = document.getElementById('revenuePieChart');
             if (ctxPie) {
-                new Chart(ctxPie.getContext('2d'), {
+                new Chart(ctxPie, {
                     type: 'doughnut',
                     data: {
                         labels: ['Revenue', 'Expenses', 'Net Profit'],
@@ -487,7 +490,7 @@
             // Bar Chart: Weekly Transaction Volumes
             var ctxBar = document.getElementById('weeklyTransactionsBarChart');
             if (ctxBar) {
-                new Chart(ctxBar.getContext('2d'), {
+                new Chart(ctxBar, {
                     type: 'bar',
                     data: {
                         labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
