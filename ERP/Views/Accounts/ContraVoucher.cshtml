@@ -1,0 +1,293 @@
+@model VoucherPageViewModel
+@{
+    ViewData["Title"] = "Contra Voucher";
+}
+
+<div id="listView">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Contra Vouchers</h4>
+        <button class="btn btn-primary" onclick="showForm()"><i class="fa-solid fa-plus me-1"></i> New Contra Voucher</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover datatable align-middle">
+                    <thead>
+                        <tr>
+                            <th>Voucher No</th>
+                            <th>Date</th>
+                            <th>Reference No</th>
+                            <th>Total Amount</th>
+                            <th>Narration</th>
+                            <th class="text-center no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in Model.Vouchers)
+                        {
+                            <tr id="row-@v.Id">
+                                <td class="font-weight-bold">@v.VoucherNumber</td>
+                                <td>@v.VoucherDate.ToString("dd-MM-yyyy")</td>
+                                <td>@v.ReferenceNumber</td>
+                                <td class="font-weight-semibold text-dark">₹@v.TotalAmount.ToString("N2")</td>
+                                <td>@v.Narration</td>
+                                <td class="text-center no-print">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteVoucher(@v.Id)"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="formView" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-plus me-2"></i> Record Contra Voucher</h4>
+        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form id="voucherForm">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label font-weight-semibold">Voucher Number *</label>
+                        <input type="text" id="VoucherNumber" class="form-control" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label font-weight-semibold">Date *</label>
+                        <input type="date" id="VoucherDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label font-weight-semibold">Reference Number</label>
+                        <input type="text" id="ReferenceNumber" class="form-control" />
+                    </div>
+                </div>
+
+                <hr />
+
+                <h5>Debit & Credit Ledger Allocations</h5>
+                <p class="text-muted fs-7">Add rows to debit/credit specific ledgers (Cash to Bank or Bank to Cash). Note: Total Debit must exactly equal Total Credit before saving.</p>
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered align-middle" id="itemsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40%">Ledger Account *</th>
+                                <th style="width: 20%">Debit Amount (Dr) *</th>
+                                <th style="width: 20%">Credit Amount (Cr) *</th>
+                                <th style="width: 15%">Particulars</th>
+                                <th style="width: 5%" class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between mb-4">
+                    <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
+                    
+                    <div class="text-end" style="width: 300px;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Debit (Dr):</span>
+                            <span id="lblTotalDebit" class="font-weight-semibold">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Credit (Cr):</span>
+                            <span id="lblTotalCredit" class="font-weight-semibold">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-2">
+                            <span class="font-weight-bold">Difference:</span>
+                            <span id="lblDifference" class="font-weight-bold text-danger">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label font-weight-semibold">Narration *</label>
+                    <textarea id="Narration" class="form-control" rows="2" required></textarea>
+                </div>
+
+                <div class="text-end">
+                    <button type="button" class="btn btn-secondary me-2" onclick="hideForm()">Cancel</button>
+                    <button type="button" class="btn btn-primary px-4" onclick="saveVoucher()">Save Voucher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var ledgersList = @Json.Serialize(Model.LedgerLookups);
+
+        function showForm() {
+            $('#listView').hide();
+            $('#formView').show();
+            $('#voucherForm')[0].reset();
+            $('#VoucherNumber').val("CN-" + Date.now().toString().slice(-6));
+            $('#itemsTable tbody').empty();
+            addRow();
+            addRow();
+        }
+
+        function hideForm() {
+            $('#formView').hide();
+            $('#listView').show();
+        }
+
+        function addRow() {
+            var optionsHtml = '<option value="">Select Ledger Account</option>';
+            ledgersList.forEach(function(l) {
+                optionsHtml += `<option value="${l.id}">${l.ledgerName}</option>`;
+            });
+
+            var rowHtml = `
+                <tr class="grid-item-row">
+                    <td>
+                        <select class="form-select select2-row" required>
+                            ${optionsHtml}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control debit-input" value="0.00" step="0.01" oninput="onDebitInput(this)" required />
+                    </td>
+                    <td>
+                        <input type="number" class="form-control credit-input" value="0.00" step="0.01" oninput="onCreditInput(this)" required />
+                    </td>
+                    <td>
+                        <input type="text" class="form-control particulars-input" />
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+            var $row = $(rowHtml);
+            $('#itemsTable tbody').append($row);
+            window.initializeSelect2($row.find('.select2-row'));
+        }
+
+        function removeRow(btn) {
+            $(btn).closest('tr').remove();
+            calculateTotals();
+        }
+
+        function onDebitInput(input) {
+            var val = parseFloat($(input).val()) || 0;
+            if (val > 0) {
+                $(input).closest('tr').find('.credit-input').val('0.00');
+            }
+            calculateTotals();
+        }
+
+        function onCreditInput(input) {
+            var val = parseFloat($(input).val()) || 0;
+            if (val > 0) {
+                $(input).closest('tr').find('.debit-input').val('0.00');
+            }
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            var totalDebit = 0;
+            var totalCredit = 0;
+            $('#itemsTable tbody tr').each(function() {
+                var db = parseFloat($(this).find('.debit-input').val()) || 0;
+                var cr = parseFloat($(this).find('.credit-input').val()) || 0;
+                totalDebit += db;
+                totalCredit += cr;
+            });
+            var diff = Math.abs(totalDebit - totalCredit);
+            $('#lblTotalDebit').text('₹' + totalDebit.toFixed(2));
+            $('#lblTotalCredit').text('₹' + totalCredit.toFixed(2));
+            $('#lblDifference').text('₹' + diff.toFixed(2));
+        }
+
+        function saveVoucher() {
+            var items = [];
+            var isValid = true;
+            var totalAmount = 0;
+
+            $('#itemsTable tbody tr').each(function(index) {
+                var ledgerId = $(this).find('.select2-row').val();
+                var db = parseFloat($(this).find('.debit-input').val()) || 0;
+                var cr = parseFloat($(this).find('.credit-input').val()) || 0;
+                var particulars = $(this).find('.particulars-input').val();
+
+                if (!ledgerId || (db === 0 && cr === 0)) {
+                    isValid = false;
+                    return false;
+                }
+
+                items.push({
+                    ledgerId: parseInt(ledgerId),
+                    debitAmount: db,
+                    creditAmount: cr,
+                    particulars: particulars || "",
+                    sortOrder: index + 1
+                });
+                if (db > 0) totalAmount += db;
+            });
+
+            var dbTotal = parseFloat($('#lblTotalDebit').text().replace('₹', '')) || 0;
+            var crTotal = parseFloat($('#lblTotalCredit').text().replace('₹', '')) || 0;
+
+            if (dbTotal !== crTotal || dbTotal === 0) {
+                Swal.fire('Error!', 'Voucher totals must balance.', 'error');
+                return;
+            }
+
+            var voucher = {
+                id: 0,
+                voucherNumber: $('#VoucherNumber').val(),
+                voucherDate: $('#VoucherDate').val(),
+                voucherType: "Contra",
+                referenceNumber: $('#ReferenceNumber').val(),
+                narration: $('#Narration').val(),
+                totalAmount: totalAmount,
+                items: items
+            };
+
+            $.ajax({
+                url: '/Accounts/SaveVoucher',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(voucher),
+                success: function(res) {
+                    if (res.success) {
+                        Swal.fire('Saved!', res.message, 'success').then(() => { location.reload(); });
+                    }
+                }
+            });
+        }
+
+        function deleteVoucher(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this contra voucher?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Accounts/DeleteVoucher', { id: id }, function(res) {
+                        if (res.success) {
+                            Swal.fire('Deleted!', 'Contra voucher deleted.', 'success');
+                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
+

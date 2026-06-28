@@ -1,0 +1,164 @@
+@functions {
+    private sealed record MenuLink(string Text, string Url);
+    private sealed record MenuSection(string Text, string Icon, string Url, string[] Roles, MenuLink[] Children);
+
+    private bool CanAccess(string[] roles)
+    {
+        return roles.Length == 0 || roles.Any(User.IsInRole);
+    }
+
+    private bool IsActive(string url)
+    {
+        var path = Context.Request.Path.Value ?? "/";
+        return url == "/" ? path == "/" : path.StartsWith(url, StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+@{
+    var moduleSections = new[]
+    {
+        new MenuSection("Masters", "fa-folder-open", "/Masters", new[] { "Super Admin", "Admin", "Manager" }, new[]
+        {
+            new MenuLink("Company Master", "/Masters/Company"),
+            new MenuLink("Customer Master", "/Masters/Customer"),
+            new MenuLink("Supplier Master", "/Masters/Supplier"),
+            new MenuLink("Product Master", "/Masters/Product"),
+            new MenuLink("Category Master", "/Masters/Category"),
+            new MenuLink("Brand Master", "/Masters/Brand"),
+            new MenuLink("Unit Master", "/Masters/Unit"),
+            new MenuLink("Warehouse Master", "/Masters/Warehouse"),
+            new MenuLink("Ledger Master", "/Masters/Ledger"),
+            new MenuLink("Employee Master", "/Masters/Employee"),
+            new MenuLink("Account Groups", "/Masters/AccountGroup"),
+            new MenuLink("Bank Master", "/Masters/Bank"),
+            new MenuLink("Tax Settings", "/Masters/Tax"),
+            new MenuLink("Payment Modes", "/Masters/PaymentMode")
+        }),
+        new MenuSection("Sales", "fa-cart-shopping", "/Sales", new[] { "Super Admin", "Admin", "Manager", "Sales User" }, new[]
+        {
+            new MenuLink("Quotation", "/Sales/Quotation"),
+            new MenuLink("Sales Order", "/Sales/Order"),
+            new MenuLink("Delivery Challan", "/Sales/Challan"),
+            new MenuLink("Sales Invoice", "/Sales/Invoice"),
+            new MenuLink("Sales Return", "/Sales/Return")
+        }),
+        new MenuSection("Purchase", "fa-bag-shopping", "/Purchase", new[] { "Super Admin", "Admin", "Manager", "Purchase User" }, new[]
+        {
+            new MenuLink("Purchase Order", "/Purchase/Order"),
+            new MenuLink("Goods Receipt Note", "/Purchase/GRN"),
+            new MenuLink("Purchase Invoice", "/Purchase/Invoice"),
+            new MenuLink("Purchase Return", "/Purchase/Return")
+        }),
+        new MenuSection("Inventory", "fa-warehouse", "/Inventory", new[] { "Super Admin", "Admin", "Manager", "Purchase User", "Sales User" }, new[]
+        {
+            new MenuLink("Stock Opening", "/Inventory/StockOpening"),
+            new MenuLink("Stock Transfer", "/Inventory/StockTransfer"),
+            new MenuLink("Stock Adjustment", "/Inventory/StockAdjustment"),
+            new MenuLink("Physical Stock", "/Inventory/PhysicalVerification")
+        }),
+        new MenuSection("Accounts", "fa-calculator", "/Accounts", new[] { "Super Admin", "Admin", "Manager", "Accountant" }, new[]
+        {
+            new MenuLink("Receipt Voucher", "/Accounts/ReceiptVoucher"),
+            new MenuLink("Payment Voucher", "/Accounts/PaymentVoucher"),
+            new MenuLink("Contra Voucher", "/Accounts/ContraVoucher"),
+            new MenuLink("Journal Voucher", "/Accounts/JournalVoucher"),
+            new MenuLink("Debit Note", "/Accounts/DebitNote"),
+            new MenuLink("Credit Note", "/Accounts/CreditNote"),
+            new MenuLink("Cash Book", "/Accounts/CashBook"),
+            new MenuLink("Bank Book", "/Accounts/BankBook")
+        }),
+        new MenuSection("CRM", "fa-users-rectangle", "/CRM", new[] { "Super Admin", "Admin", "Manager", "Sales User" }, new[]
+        {
+            new MenuLink("Leads", "/CRM/Leads"),
+            new MenuLink("Follow Ups", "/CRM/FollowUps"),
+            new MenuLink("Opportunities", "/CRM/Opportunities"),
+            new MenuLink("Pipeline View", "/CRM/Pipeline")
+        })
+    };
+
+    var adminSections = new[]
+    {
+        new MenuSection("Reports", "fa-chart-line", "/Reports", new[] { "Super Admin", "Admin", "Manager", "Accountant" }, new[]
+        {
+            new MenuLink("Sales Reports", "/Reports/SalesReports"),
+            new MenuLink("Purchase Reports", "/Reports/PurchaseReports"),
+            new MenuLink("Inventory Reports", "/Reports/InventoryReports"),
+            new MenuLink("Accounting Reports", "/Reports/AccountingReports")
+        }),
+        new MenuSection("Settings", "fa-gears", "/Settings", new[] { "Super Admin", "Admin" }, new[]
+        {
+            new MenuLink("User Management", "/Settings/Users"),
+            new MenuLink("Role Configuration", "/Settings/Roles"),
+            new MenuLink("Company Setup", "/Settings/CompanySettings"),
+            new MenuLink("System Settings", "/Settings/SystemConfig")
+        })
+    };
+}
+
+<aside class="erp-sidebar" id="erpSidebar">
+    <div class="erp-brand">
+        <div class="brand-sidebar-icon">
+            <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" />
+                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+        <span>SMART ERP</span>
+    </div>
+    <ul class="sidebar-menu">
+        <li class="menu-item @(IsActive("/") ? "active" : "")">
+            <a href="/"><i class="fa-solid fa-gauge"></i> <span>Dashboard</span></a>
+        </li>
+
+        <li class="menu-header">Modules</li>
+
+        @foreach (var menu in moduleSections.Where(s => CanAccess(s.Roles)))
+        {
+            var collapseId = $"{menu.Text.Replace(" ", "")}Submenu";
+            var active = IsActive(menu.Url);
+            <li class="menu-item @(active ? "active open" : "")">
+                <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())">
+                    <i class="fa-solid @menu.Icon"></i> <span>@menu.Text</span> <i class="fa-solid fa-chevron-down ms-auto fs-7"></i>
+                </a>
+                <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId">
+                    @foreach (var child in menu.Children)
+                    {
+                        <li class="@(IsActive(child.Url) ? "active" : "")"><a href="@child.Url">@child.Text</a></li>
+                    }
+                </ul>
+            </li>
+        }
+
+        <li class="menu-header">Reports & Settings</li>
+
+        @foreach (var menu in adminSections.Where(s => CanAccess(s.Roles)))
+        {
+            var collapseId = $"{menu.Text.Replace(" ", "")}Submenu";
+            var active = IsActive(menu.Url);
+            <li class="menu-item @(active ? "active open" : "")">
+                <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())">
+                    <i class="fa-solid @menu.Icon"></i> <span>@menu.Text</span> <i class="fa-solid fa-chevron-down ms-auto fs-7"></i>
+                </a>
+                <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId">
+                    @foreach (var child in menu.Children)
+                    {
+                        <li class="@(IsActive(child.Url) ? "active" : "")"><a href="@child.Url">@child.Text</a></li>
+                    }
+                </ul>
+            </li>
+        }
+
+        <li class="menu-item @(IsActive("/Help") ? "active" : "")">
+            <a href="/Help"><i class="fa-solid fa-circle-question text-info"></i> <span>Help & Guide</span></a>
+        </li>
+
+        <li class="menu-item mt-4">
+            <form method="post" action="/Account/Logout" id="logoutForm" class="d-none"></form>
+            <a href="javascript:document.getElementById('logoutForm').submit();" class="text-danger">
+                <i class="fa-solid fa-right-from-bracket text-danger"></i> <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</aside>
+<div class="sidebar-backdrop" data-sidebar-close></div>

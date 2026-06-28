@@ -1,0 +1,173 @@
+@model IEnumerable<ERP.Models.Supplier>
+@{
+    ViewData["Title"] = "Supplier Master";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-truck-field me-2"></i> Suppliers List</h4>
+    <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Supplier</button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover datatable align-middle">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Contact Person</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th>City</th>
+                        <th class="text-center no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr id="row-@s.Id">
+                            <td class="font-weight-semibold">@s.SupplierCode</td>
+                            <td>@s.SupplierName</td>
+                            <td>@s.ContactPerson</td>
+                            <td>@s.Mobile</td>
+                            <td>@s.Email</td>
+                            <td>@s.City</td>
+                            <td class="text-center no-print">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editSupplier(@Json.Serialize(s))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteSupplier(@s.Id)"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog -->
+<div class="modal fade" id="supplierModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">Add Supplier</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SaveSupplier" method="post" id="supplierForm">
+                <div class="modal-body">
+                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Supplier Code *</label>
+                            <input type="text" id="SupplierCode" name="SupplierCode" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Supplier Name *</label>
+                            <input type="text" id="SupplierName" name="SupplierName" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Contact Person</label>
+                            <input type="text" id="ContactPerson" name="ContactPerson" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Mobile Number</label>
+                            <input type="text" id="Mobile" name="Mobile" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Email</label>
+                            <input type="email" id="Email" name="Email" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">GSTIN</label>
+                            <input type="text" id="GSTNumber" name="GSTNumber" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-semibold">Address</label>
+                        <textarea id="Address" name="Address" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-semibold">City</label>
+                            <input type="text" id="City" name="City" class="form-control" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-semibold">State</label>
+                            <input type="text" id="State" name="State" class="form-control" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-semibold">Country</label>
+                            <input type="text" id="Country" name="Country" class="form-control" value="India" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var bootstrapModal;
+        document.addEventListener("DOMContentLoaded", function () {
+            bootstrapModal = new bootstrap.Modal(document.getElementById('supplierModal'));
+        });
+
+        function openModal() {
+            document.getElementById('supplierForm').reset();
+            document.getElementById('Id').value = "0";
+            document.getElementById('modalTitle').innerText = "Add Supplier";
+            bootstrapModal.show();
+        }
+
+        function editSupplier(supplier) {
+            document.getElementById('supplierForm').reset();
+            document.getElementById('Id').value = supplier.id;
+            document.getElementById('SupplierCode').value = supplier.supplierCode;
+            document.getElementById('SupplierName').value = supplier.supplierName;
+            document.getElementById('ContactPerson').value = supplier.contactPerson || "";
+            document.getElementById('Mobile').value = supplier.mobile || "";
+            document.getElementById('Email').value = supplier.email || "";
+            document.getElementById('GSTNumber').value = supplier.gstNumber || "";
+            document.getElementById('Address').value = supplier.address || "";
+            document.getElementById('City').value = supplier.city || "";
+            document.getElementById('State').value = supplier.state || "";
+            document.getElementById('Country').value = supplier.country || "India";
+            document.getElementById('modalTitle').innerText = "Edit Supplier";
+            bootstrapModal.show();
+        }
+
+        function deleteSupplier(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this supplier?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Masters/DeleteSupplier', { id: id }, function (res) {
+                        if (res.success) {
+                            Swal.fire('Deleted!', 'Supplier has been deleted.', 'success');
+                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

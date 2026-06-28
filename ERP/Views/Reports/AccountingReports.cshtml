@@ -1,0 +1,144 @@
+@model AccountingReportsViewModel
+@{
+    ViewData["Title"] = "Accounting Reports";
+    var tb = Model.TrialBalance;
+    var pnl = Model.ProfitAndLoss;
+    var bs = Model.BalanceSheet;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-calculator me-2"></i> Accounting Reports</h4>
+</div>
+
+<ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active font-weight-semibold" id="tb-tab" data-bs-toggle="tab" data-bs-target="#tb" type="button" role="tab">Trial Balance</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link font-weight-semibold" id="pnl-tab" data-bs-toggle="tab" data-bs-target="#pnl" type="button" role="tab">Profit & Loss</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link font-weight-semibold" id="bs-tab" data-bs-toggle="tab" data-bs-target="#bs" type="button" role="tab">Balance Sheet</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="reportTabsContent">
+    <!-- Trial Balance -->
+    <div class="tab-pane fade show active" id="tb" role="tabpanel">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Account Group</th>
+                                <th>Ledger Account</th>
+                                <th class="text-end">Debit (Dr)</th>
+                                <th class="text-end">Credit (Cr)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(tb != null)
+                            {
+                                foreach(var item in tb)
+                                {
+                                    <tr>
+                                        <td>@item.GroupName</td>
+                                        <td class="font-weight-semibold">@item.LedgerName</td>
+                                        <td class="text-end text-success">@(item.Debit > 0 ? "₹" + item.Debit.ToString("N2") : "-")</td>
+                                        <td class="text-end text-danger">@(item.Credit > 0 ? "₹" + item.Credit.ToString("N2") : "-")</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-secondary font-weight-bold">
+                                <td colspan="2" class="text-end">Total:</td>
+                                <td class="text-end">₹@(tb?.Sum(x => x.Debit).ToString("N2") ?? "0.00")</td>
+                                <td class="text-end">₹@(tb?.Sum(x => x.Credit).ToString("N2") ?? "0.00")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profit & Loss -->
+    <div class="tab-pane fade" id="pnl" role="tabpanel">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold">Statement of Profit & Loss</h6>
+                <form class="d-flex" method="get">
+                    <input type="date" name="startDate" class="form-control form-control-sm me-2" value="@Model.StartDate" />
+                    <input type="date" name="endDate" class="form-control form-control-sm me-2" value="@Model.EndDate" />
+                    <button class="btn btn-sm btn-primary">Filter</button>
+                </form>
+            </div>
+            <div class="card-body text-center p-5">
+                <h3 class="font-weight-bold text-success mb-3">Net Profit: ₹@(pnl?.NetProfit.ToString("N2") ?? "0.00")</h3>
+                <p class="text-muted">For period @Model.StartDate to @Model.EndDate</p>
+                <div class="row mt-4">
+                    <div class="col-md-6 border-end">
+                        <h5 class="text-danger">Total Expenses</h5>
+                        <h4 class="font-weight-semibold">₹@(pnl?.TotalIndirectExpenses.ToString("N2") ?? "0.00")</h4>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-success">Total Incomes</h5>
+                        <h4 class="font-weight-semibold">₹@(pnl?.TotalIndirectIncomes.ToString("N2") ?? "0.00")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balance Sheet -->
+    <div class="tab-pane fade" id="bs" role="tabpanel">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold">Balance Sheet</h6>
+                <form class="d-flex" method="get">
+                    <input type="date" name="balanceSheetDate" class="form-control form-control-sm me-2" value="@Model.BalanceSheetDate" />
+                    <button class="btn btn-sm btn-primary">Filter</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 border-end pe-4">
+                        <h5 class="font-weight-bold text-primary border-bottom pb-2">Liabilities</h5>
+                        <div class="d-flex justify-content-between mb-2 mt-3">
+                            <span>Capital Account</span>
+                            <span class="font-weight-semibold">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Current Liabilities</span>
+                            <span class="font-weight-semibold">₹0.00</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between font-weight-bold">
+                            <span>Total Liabilities</span>
+                            <span class="text-primary">₹@(bs?.TotalLiabilities.ToString("N2") ?? "0.00")</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 ps-4">
+                        <h5 class="font-weight-bold text-primary border-bottom pb-2">Assets</h5>
+                        <div class="d-flex justify-content-between mb-2 mt-3">
+                            <span>Fixed Assets</span>
+                            <span class="font-weight-semibold">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Current Assets</span>
+                            <span class="font-weight-semibold">₹0.00</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between font-weight-bold">
+                            <span>Total Assets</span>
+                            <span class="text-primary">₹@(bs?.TotalAssets.ToString("N2") ?? "0.00")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

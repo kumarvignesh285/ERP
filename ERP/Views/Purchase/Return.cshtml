@@ -1,0 +1,282 @@
+@model PurchasePageViewModel<PurchaseReturn>
+@{
+    ViewData["Title"] = "Purchase Return";
+}
+
+<div id="listView">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-arrow-rotate-left me-2"></i> Purchase Returns</h4>
+        <button class="btn btn-primary" onclick="showForm()"><i class="fa-solid fa-plus me-1"></i> Record Return</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover datatable align-middle">
+                    <thead>
+                        <tr>
+                            <th>Return No</th>
+                            <th>Date</th>
+                            <th>Supplier</th>
+                            <th>Grand Total</th>
+                            <th>Remarks</th>
+                            <th class="text-center no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.Items)
+                        {
+                            <tr id="row-@r.Id">
+                                <td class="font-weight-bold">@r.ReturnNumber</td>
+                                <td>@r.ReturnDate.ToString("dd-MM-yyyy")</td>
+                                <td>@r.Supplier?.SupplierName</td>
+                                <td class="font-weight-semibold text-dark">₹@r.GrandTotal.ToString("N2")</td>
+                                <td>@r.Notes</td>
+                                <td class="text-center no-print">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteReturn(@r.Id)"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="formView" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-plus me-2"></i> Record Purchase Return</h4>
+        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form id="returnForm">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label font-weight-semibold">Return Number *</label>
+                        <input type="text" id="ReturnNumber" class="form-control" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label font-weight-semibold">Date *</label>
+                        <input type="date" id="ReturnDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label font-weight-semibold">Supplier *</label>
+                        <select id="SupplierId" class="form-select select2" required>
+                            <option value="">Select Supplier</option>
+                            @foreach (var s in Model.Suppliers)
+                            {
+                                <option value="@s.Id">@s.SupplierName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <hr />
+
+                <h5>Line Items</h5>
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered align-middle" id="itemsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 45%">Product *</th>
+                                <th style="width: 15%">Quantity *</th>
+                                <th style="width: 20%">Rate *</th>
+                                <th style="width: 20%">Total</th>
+                                <th style="width: 10%" class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between mb-4">
+                    <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
+                    <div class="text-end" style="width: 300px;">
+                        <div class="d-flex justify-content-between border-top pt-2">
+                            <span class="font-weight-bold">Grand Total:</span>
+                            <span id="lblGrandTotal" class="font-weight-bold text-primary fs-5">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label font-weight-semibold">Remarks</label>
+                    <textarea id="Remarks" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div class="text-end">
+                    <button type="button" class="btn btn-secondary me-2" onclick="hideForm()">Cancel</button>
+                    <button type="button" class="btn btn-primary px-4" onclick="saveReturn()">Save Return</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var productsList = @Json.Serialize(Model.ProductLookups);
+
+        function showForm() {
+            $('#listView').hide();
+            $('#formView').show();
+            $('#returnForm')[0].reset();
+            $('#ReturnNumber').val("PR-" + Date.now().toString().slice(-6));
+            $('#itemsTable tbody').empty();
+            $('#SupplierId').val('').trigger('change');
+            addRow();
+        }
+
+        function hideForm() {
+            $('#formView').hide();
+            $('#listView').show();
+        }
+
+        function addRow() {
+            var catOptionsHtml = '<option value="">All Categories</option>';
+            var categoriesList = @Json.Serialize(Model.Categories);
+            categoriesList.forEach(function(c) {
+                catOptionsHtml += `<option value="${c.id}">${c.categoryName}</option>`;
+            });
+
+            var optionsHtml = '<option value="">Select Product</option>';
+            productsList.forEach(function(p) {
+                optionsHtml += `<option value="${p.id}">${p.productName}</option>`;
+            });
+
+            var rowHtml = `
+                <tr class="grid-item-row">
+                    <td>
+                        <select class="form-select select2-row" onchange="onProductSelect(this)" required>
+                            ${optionsHtml}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control qty-input" value="1" min="1" oninput="calculateRow(this)" required />
+                    </td>
+                    <td>
+                        <input type="number" class="form-control rate-input" value="0.00" step="0.01" oninput="calculateRow(this)" required />
+                    </td>
+                    <td>
+                        <input type="text" class="form-control total-input" value="0.00" readonly />
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+            var $row = $(rowHtml);
+            $('#itemsTable tbody').append($row);
+            window.initializeSelect2($row.find('.select2-row'));
+        }
+
+        function removeRow(btn) {
+            $(btn).closest('tr').remove();
+            calculateTotals();
+        }
+
+        function onProductSelect(select) {
+            var prodId = $(select).val();
+            var product = productsList.find(p => p.id == prodId);
+            var $row = $(select).closest('tr');
+            if (product) {
+                $row.find('.rate-input').val(product.purchasePrice);
+            }
+            calculateRow(select);
+        }
+
+        function calculateRow(elem) {
+            var $row = $(elem).closest('tr');
+            var qty = parseFloat($row.find('.qty-input').val()) || 0;
+            var rate = parseFloat($row.find('.rate-input').val()) || 0;
+            $row.find('.total-input').val((qty * rate).toFixed(2));
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            var total = 0;
+            $('#itemsTable tbody tr').each(function() {
+                var qty = parseFloat($(this).find('.qty-input').val()) || 0;
+                var rate = parseFloat($(this).find('.rate-input').val()) || 0;
+                total += (qty * rate);
+            });
+            $('#lblGrandTotal').text('₹' + total.toFixed(2));
+        }
+
+        function saveReturn() {
+            var items = [];
+            var isValid = true;
+            $('#itemsTable tbody tr').each(function() {
+                var prodId = $(this).find('.select2-row').val();
+                var qty = parseFloat($(this).find('.qty-input').val()) || 0;
+                var rate = parseFloat($(this).find('.rate-input').val()) || 0;
+                if (!prodId || qty <= 0 || rate <= 0) {
+                    isValid = false;
+                    return false;
+                }
+                items.push({
+                    productId: parseInt(prodId),
+                    quantity: qty,
+                    rate: rate,
+                    totalAmount: qty * rate
+                });
+            });
+
+            var supplierId = $('#SupplierId').val();
+            if (!supplierId || !$('#ReturnNumber').val() || items.length === 0 || !isValid) {
+                Swal.fire('Error!', 'Please fill all fields.', 'error');
+                return;
+            }
+
+            var purchaseReturn = {
+                id: 0,
+                returnNumber: $('#ReturnNumber').val(),
+                returnDate: $('#ReturnDate').val(),
+                supplierId: parseInt(supplierId),
+                grandTotal: parseFloat($('#lblGrandTotal').text().replace('₹', '')) || 0,
+                remarks: $('#Remarks').val(),
+                items: items
+            };
+
+            $.ajax({
+                url: '/Purchase/SaveReturn',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(purchaseReturn),
+                success: function(res) {
+                    if (res.success) {
+                        Swal.fire('Saved!', res.message, 'success').then(() => { location.reload(); });
+                    }
+                }
+            });
+        }
+
+        function deleteReturn(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this purchase return?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Purchase/DeleteReturn', { id: id }, function(res) {
+                        if (res.success) {
+                            Swal.fire('Deleted!', 'Return deleted.', 'success');
+                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
+

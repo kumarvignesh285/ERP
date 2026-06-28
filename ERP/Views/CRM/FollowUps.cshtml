@@ -1,0 +1,124 @@
+@model CrmLookupPageViewModel<FollowUp>
+@{
+    ViewData["Title"] = "Follow-ups";
+    var leads = Model?.Leads ?? new List<Lead>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-phone-volume me-2"></i> Follow-ups</h4>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#followupModal"><i class="fa-solid fa-plus me-1"></i> Add Follow-up</button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover datatable align-middle">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Lead</th>
+                        <th>Type</th>
+                        <th>Notes</th>
+                        <th>Next Date</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(Model != null)
+                    {
+                        foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>@item.FollowUpDate.ToString("dd-MM-yyyy HH:mm")</td>
+                                <td>@(item.Lead?.LeadName)</td>
+                                <td><span class="badge bg-secondary">@item.FollowUpType</span></td>
+                                <td>@item.Remarks</td>
+                                <td>@(item.NextFollowUpDate?.ToString("dd-MM-yyyy"))</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteFollowUp(@item.Id)"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="followupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Record Follow-up</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="SaveFollowUp" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="Id" value="0" />
+                    <div class="mb-3">
+                        <label class="form-label">Lead *</label>
+                        <select name="LeadId" class="form-select" required>
+                            <option value="">Select Lead</option>
+                            @if(leads.Any())
+                            {
+                                foreach(var l in leads)
+                                {
+                                    <option value="@l.Id">@l.LeadName - @l.CompanyName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Follow Up Date *</label>
+                        <input type="datetime-local" name="FollowUpDate" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select name="FollowUpType" class="form-select">
+                            <option>Call</option>
+                            <option>Email</option>
+                            <option>Meeting</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes *</label>
+                        <textarea name="Remarks" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Next Follow Up Date</label>
+                        <input type="date" name="NextFollowUpDate" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Follow-up</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteFollowUp(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this record?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/CRM/DeleteFollowUp', { id: id }, function(res) {
+                        if (res.success) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
+
