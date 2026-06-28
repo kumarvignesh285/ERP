@@ -1,0 +1,116 @@
+@model IEnumerable<ERP.Models.Unit>
+@{
+    ViewData["Title"] = "Unit Master";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-scale-balanced me-2"></i> Units List</h4>
+    <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Unit</button>
+</div>
+
+<div class="card max-width-600 mx-auto">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover datatable align-middle">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Unit Name</th>
+                        <th class="text-center no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model)
+                    {
+                        <tr id="row-@u.Id">
+                            <td class="font-weight-bold text-dark">@u.UnitSymbol</td>
+                            <td>@u.UnitName</td>
+                            <td class="text-center no-print">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editUnit(@Json.Serialize(u))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUnit(@u.Id)"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog -->
+<div class="modal fade" id="unitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">Add Unit</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SaveUnit" method="post" id="unitForm">
+                <div class="modal-body">
+                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div class="mb-3">
+                        <label class="form-label font-weight-semibold">Unit Symbol * (e.g. PCS, BOX)</label>
+                        <input type="text" id="UnitSymbol" name="UnitSymbol" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-semibold">Unit Name *</label>
+                        <input type="text" id="UnitName" name="UnitName" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var bootstrapModal;
+        document.addEventListener("DOMContentLoaded", function () {
+            bootstrapModal = new bootstrap.Modal(document.getElementById('unitModal'));
+        });
+
+        function openModal() {
+            document.getElementById('unitForm').reset();
+            document.getElementById('Id').value = "0";
+            document.getElementById('modalTitle').innerText = "Add Unit";
+            bootstrapModal.show();
+        }
+
+        function editUnit(u) {
+            document.getElementById('Id').value = u.id;
+            document.getElementById('UnitSymbol').value = u.unitSymbol;
+            document.getElementById('UnitName').value = u.unitName;
+            document.getElementById('modalTitle').innerText = "Edit Unit";
+            bootstrapModal.show();
+        }
+
+        function deleteUnit(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this unit?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Masters/DeleteUnit', { id: id }, function (res) {
+                        if (res.success) {
+                            Swal.fire('Deleted!', 'Unit has been deleted.', 'success');
+                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,150 @@
+@model IEnumerable<ERP.Models.Employee>
+@{
+    ViewData["Title"] = "Employee Master";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-user-tie me-2"></i> Employees List</h4>
+    <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Employee</button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover datatable align-middle">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Designation</th>
+                        <th>Department</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th class="text-center no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model)
+                    {
+                        <tr id="row-@e.Id">
+                            <td class="font-weight-bold">@e.EmployeeCode</td>
+                            <td class="font-weight-semibold text-dark">@e.EmployeeName</td>
+                            <td>@e.Designation</td>
+                            <td>@e.Department</td>
+                            <td>@e.Mobile</td>
+                            <td>@e.Email</td>
+                            <td class="text-center no-print">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editEmployee(@Json.Serialize(e))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee(@e.Id)"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog -->
+<div class="modal fade" id="employeeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">Add Employee</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SaveEmployee" method="post" id="employeeForm">
+                <div class="modal-body">
+                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Employee Code *</label>
+                            <input type="text" id="EmployeeCode" name="EmployeeCode" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Employee Name *</label>
+                            <input type="text" id="EmployeeName" name="EmployeeName" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Designation</label>
+                            <input type="text" id="Designation" name="Designation" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Department</label>
+                            <input type="text" id="Department" name="Department" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Mobile Number</label>
+                            <input type="text" id="MobileNumber" name="MobileNumber" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Email</label>
+                            <input type="email" id="Email" name="Email" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var bootstrapModal;
+        document.addEventListener("DOMContentLoaded", function () {
+            bootstrapModal = new bootstrap.Modal(document.getElementById('employeeModal'));
+        });
+
+        function openModal() {
+            document.getElementById('employeeForm').reset();
+            document.getElementById('Id').value = "0";
+            document.getElementById('modalTitle').innerText = "Add Employee";
+            bootstrapModal.show();
+        }
+
+        function editEmployee(e) {
+            document.getElementById('Id').value = e.id;
+            document.getElementById('EmployeeCode').value = e.employeeCode;
+            document.getElementById('EmployeeName').value = e.employeeName;
+            document.getElementById('Designation').value = e.designation || "";
+            document.getElementById('Department').value = e.department || "";
+            document.getElementById('MobileNumber').value = e.mobileNumber || "";
+            document.getElementById('Email').value = e.email || "";
+            document.getElementById('modalTitle').innerText = "Edit Employee";
+            bootstrapModal.show();
+        }
+
+        function deleteEmployee(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this employee?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Masters/DeleteEmployee', { id: id }, function (res) {
+                        if (res.success) {
+                            Swal.fire('Deleted!', 'Employee has been deleted.', 'success');
+                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,272 @@
+@model InventoryPageViewModel<PhysicalStockVerification>
+@{
+    ViewData["Title"] = "Physical Stock Verification";
+}
+
+<div id="listView">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-list-check me-2"></i> Physical Stock Verifications</h4>
+        <button class="btn btn-primary" onclick="showForm()"><i class="fa-solid fa-plus me-1"></i> New Audit</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover datatable align-middle">
+                    <thead>
+                        <tr>
+                            <th>Verification No</th>
+                            <th>Date</th>
+                            <th>Warehouse</th>
+                            <th>Remarks</th>
+                            <th class="text-center no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in Model.Items)
+                        {
+                            <tr id="row-@v.Id">
+                                <td class="font-weight-bold">@v.VerificationNumber</td>
+                                <td>@v.VerificationDate.ToString("dd-MM-yyyy")</td>
+                                <td>@v.Warehouse?.WarehouseName</td>
+                                <td>@v.Remarks</td>
+                                <td class="text-center no-print">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteVerification(@v.Id)"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="formView" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-plus me-2"></i> Start Stock Verification</h4>
+        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form id="verificationForm">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label font-weight-semibold">Verification Number *</label>
+                        <input type="text" id="VerificationNumber" class="form-control" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label font-weight-semibold">Verification Date *</label>
+                        <input type="date" id="VerificationDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label font-weight-semibold">Warehouse *</label>
+                        <select id="WarehouseId" class="form-select select2" required>
+                            <option value="">Select Warehouse</option>
+                            @foreach (var wh in Model.Warehouses)
+                            {
+                                <option value="@wh.Id">@wh.WarehouseName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <hr />
+
+                <h5>Products Audit Grid</h5>
+                <p class="text-muted fs-7">Select products to audit. System stock (Book Stock) will be compared to your physical stock inputs, calculating variances automatically.</p>
+                
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered align-middle" id="itemsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 45%">Product *</th>
+                                <th style="width: 15%">Book Stock</th>
+                                <th style="width: 20%">Physical Stock *</th>
+                                <th style="width: 20%">Variance</th>
+                                <th style="width: 10%" class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mb-4">
+                    <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Product</button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label font-weight-semibold">Remarks / Notes</label>
+                    <textarea id="Remarks" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div class="text-end">
+                    <button type="button" class="btn btn-secondary me-2" onclick="hideForm()">Cancel</button>
+                    <button type="button" class="btn btn-primary px-4" onclick="saveVerification()">Save Audit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var productsList = @Json.Serialize(Model.ProductLookups);
+
+        function showForm() {
+            $('#listView').hide();
+            $('#formView').show();
+            $('#verificationForm')[0].reset();
+            $('#VerificationNumber').val("PV-" + Date.now().toString().slice(-6));
+            $('#itemsTable tbody').empty();
+            $('#WarehouseId').val('').trigger('change');
+            addRow();
+        }
+
+        function hideForm() {
+            $('#formView').hide();
+            $('#listView').show();
+        }
+
+        function addRow() {
+            var catOptionsHtml = '<option value="">All Categories</option>';
+            var categoriesList = @Json.Serialize(Model.Categories);
+            categoriesList.forEach(function(c) {
+                catOptionsHtml += `<option value="${c.id}">${c.categoryName}</option>`;
+            });
+
+            var optionsHtml = '<option value="">Select Product</option>';
+            productsList.forEach(function(p) {
+                optionsHtml += `<option value="${p.id}">${p.productName}</option>`;
+            });
+
+            var rowHtml = `
+                <tr class="grid-item-row">
+                    <td>
+                        <select class="form-select select2-category" onchange="onCategorySelect(this)">
+                            ${catOptionsHtml}
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select select2-row" onchange="onProductSelect(this)" required>
+                            ${optionsHtml}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control book-input" value="0" readonly />
+                    </td>
+                    <td>
+                        <input type="number" class="form-control physical-input" value="0" min="0" oninput="calculateVariance(this)" required />
+                    </td>
+                    <td>
+                        <input type="number" class="form-control variance-input" value="0" readonly />
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+            var $row = $(rowHtml);
+            $('#itemsTable tbody').append($row);
+            window.initializeSelect2($row.find('.select2-row'));
+        }
+
+        function removeRow(btn) {
+            $(btn).closest('tr').remove();
+        }
+
+        function onProductSelect(select) {
+            var prodId = $(select).val();
+            var product = productsList.find(p => p.id == prodId);
+            var $row = $(select).closest('tr');
+            if (product) {
+                $row.find('.book-input').val(product.currentStock);
+                $row.find('.physical-input').val(product.currentStock);
+            }
+            calculateVariance(select);
+        }
+
+        function calculateVariance(elem) {
+            var $row = $(elem).closest('tr');
+            var book = parseFloat($row.find('.book-input').val()) || 0;
+            var physical = parseFloat($row.find('.physical-input').val()) || 0;
+            var variance = physical - book;
+            $row.find('.variance-input').val(variance);
+        }
+
+        function saveVerification() {
+            var items = [];
+            var isValid = true;
+            $('#itemsTable tbody tr').each(function() {
+                var prodId = $(this).find('.select2-row').val();
+                var book = parseFloat($(this).find('.book-input').val()) || 0;
+                var physical = parseFloat($(this).find('.physical-input').val()) || 0;
+                var variance = physical - book;
+
+                if (!prodId) {
+                    isValid = false;
+                    return false;
+                }
+                items.push({
+                    productId: parseInt(prodId),
+                    bookStock: book,
+                    physicalStock: physical,
+                    variance: variance
+                });
+            });
+
+            var whId = $('#WarehouseId').val();
+
+            if (!whId || items.length === 0 || !isValid) {
+                Swal.fire('Error!', 'Please fill all required fields.', 'error');
+                return;
+            }
+
+            var verification = {
+                id: 0,
+                verificationNumber: $('#VerificationNumber').val(),
+                verificationDate: $('#VerificationDate').val(),
+                warehouseId: parseInt(whId),
+                remarks: $('#Remarks').val(),
+                items: items
+            };
+
+            $.ajax({
+                url: '/Inventory/SavePhysicalVerification',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(verification),
+                success: function(res) {
+                    if (res.success) {
+                        Swal.fire('Success!', res.message, 'success').then(() => { location.reload(); });
+                    }
+                }
+            });
+        }
+
+        function deleteVerification(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this stock audit? This will revert stocks to previous levels!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Inventory/DeletePhysicalVerification', { id: id }, function(res) {
+                        if (res.success) {
+                            Swal.fire('Deleted!', 'Verification deleted.', 'success');
+                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
+

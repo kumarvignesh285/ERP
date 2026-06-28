@@ -1,0 +1,114 @@
+@model IEnumerable<ERP.Models.Lead>
+@{
+    ViewData["Title"] = "Leads";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-user-plus me-2"></i> Leads</h4>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#leadModal"><i class="fa-solid fa-plus me-1"></i> Add Lead</button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover datatable align-middle">
+                <thead>
+                    <tr>
+                        <th>Lead Name</th>
+                        <th>Company</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(Model != null)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="font-weight-bold">@item.LeadName</td>
+                                <td>@item.CompanyName</td>
+                                <td>@item.Email</td>
+                                <td>@item.Phone</td>
+                                <td><span class="badge bg-info">@item.Status</span></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLead(@item.Id)"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="leadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Add/Edit Lead</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="SaveLead" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="Id" value="0" />
+                    <div class="mb-3">
+                        <label class="form-label">Lead Name *</label>
+                        <input type="text" name="LeadName" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" name="CompanyName" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="Email" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="text" name="Phone" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="Status" class="form-select">
+                            <option>New</option>
+                            <option>Contacted</option>
+                            <option>Qualified</option>
+                            <option>Lost</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteLead(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this lead?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/CRM/DeleteLead', { id: id }, function(res) {
+                        if (res.success) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

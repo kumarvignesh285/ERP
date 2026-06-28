@@ -1,0 +1,266 @@
+@{
+    ViewData["Title"] = "Help & User Guide";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <h3 class="text-primary m-0"><i class="fa-solid fa-circle-question me-2"></i> SmartERP User & Operational Manual</h3>
+        <a href="/Help/DownloadDoc" class="btn btn-primary btn-lg"><i class="fa-solid fa-file-word me-2"></i> Download Word Document (.doc)</a>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-md-3 mb-4">
+            <div class="card position-sticky" style="top: 20px;">
+                <div class="card-header bg-light">
+                    <h6 class="m-0 font-weight-bold text-dark"><i class="fa-solid fa-list me-2"></i> Document Index</h6>
+                </div>
+                <div class="list-group list-group-flush" id="manual-toc">
+                    <a href="#roles-matrix" class="list-group-item list-group-item-action font-weight-medium">1. Role Permission Matrix</a>
+                    <a href="#auth-flow" class="list-group-item list-group-item-action font-weight-medium">2. Login & Session Flows</a>
+                    <a href="#dashboard" class="list-group-item list-group-item-action font-weight-medium">3. Main Dashboard</a>
+                    <a href="#masters" class="list-group-item list-group-item-action font-weight-medium">4. Master Configuration Setup</a>
+                    <a href="#sales" class="list-group-item list-group-item-action font-weight-medium">5. Sales Billing Cycle</a>
+                    <a href="#purchase" class="list-group-item list-group-item-action font-weight-medium">6. Purchase Procurement Cycle</a>
+                    <a href="#inventory" class="list-group-item list-group-item-action font-weight-medium">7. Inventory & Warehouse</a>
+                    <a href="#accounting" class="list-group-item list-group-item-action font-weight-medium">8. Bookkeeping Vouchers</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentation Content -->
+        <div class="col-md-9">
+            <!-- Section 1 -->
+            <div class="card mb-4" id="roles-matrix">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0"><i class="fa-solid fa-users-gear me-2"></i> 1. Role Access & Permission Matrix</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">The system features Role-Based Access Control (RBAC) defining exactly who does what work on which page:</p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-light text-primary">
+                                <tr>
+                                    <th>Module</th>
+                                    <th>Super Admin</th>
+                                    <th>Admin</th>
+                                    <th>Sales User</th>
+                                    <th>Purchase User</th>
+                                    <th>Accountant</th>
+                                    <th>Manager</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>System Config & Logs</strong></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                    <td><span class="badge bg-danger">No Access</span></td>
+                                    <td><span class="badge bg-danger">No Access</span></td>
+                                    <td><span class="badge bg-danger">No Access</span></td>
+                                    <td><span class="badge bg-danger">No Access</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Masters Setup</strong></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sales Billing</strong></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-danger">No Access</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Purchase & GRN</strong></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-danger">No Access</span></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Inventory Operations</strong></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                    <td><span class="badge bg-danger">No Access</span></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Accounting Vouchers</strong></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-danger">No Access</span></td>
+                                    <td><span class="badge bg-danger">No Access</span></td>
+                                    <td><span class="badge bg-success">Full Access</span></td>
+                                    <td><span class="badge bg-secondary">Read Only</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="card mb-4" id="auth-flow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0"><i class="fa-solid fa-lock me-2"></i> 2. Authentication & Login Flows</h5>
+                </div>
+                <div class="card-body">
+                    <h6>2.1 Login Form</h6>
+                    <p class="text-muted">Users are automatically redirected to this secure gate if their session has expired.</p>
+                    <ul>
+                        <li><strong>Access URL:</strong> <code>/Account/Login</code></li>
+                        <li><strong>Flow:</strong> Input seeded account email (e.g. <code>admin@smarterp.com</code>), password (e.g. <code>Admin@123</code>), and click log in.</li>
+                    </ul>
+                    <div class="text-center p-3 border bg-light rounded mb-3">
+                        <img src="/help/screenshot_login.png" class="img-fluid border rounded shadow-sm" alt="Login Screenshot" style="max-height: 400px;"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="card mb-4" id="dashboard">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0"><i class="fa-solid fa-gauge-high me-2"></i> 3. Operational Dashboard</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Landing dashboard showing real-time counters, recent transactions, low-stock warnings, and shortcut panels based on user roles.</p>
+                    <div class="text-center p-3 border bg-light rounded mb-3">
+                        <img src="/help/screenshot_dashboard.png" class="img-fluid border rounded shadow-sm" alt="Dashboard Screenshot" style="max-height: 400px;"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4 -->
+            <div class="card mb-4" id="masters">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0"><i class="fa-solid fa-folder-open me-2"></i> 4. Master Configurations (Setup Data)</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Setup forms defining business configurations. Enforces unified validation checks.</p>
+                    
+                    <h6 class="mt-3">4.1 Company Profile</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_company.png" class="img-fluid border" alt="Company Master" style="max-height: 300px;" />
+                    </div>
+                    
+                    <h6 class="mt-3">4.2 Customer Setup</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_customer.png" class="img-fluid border" alt="Customer Master" style="max-height: 300px;" />
+                    </div>
+
+                    <h6 class="mt-3">4.3 Supplier Setup</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_supplier.png" class="img-fluid border" alt="Supplier Master" style="max-height: 300px;" />
+                    </div>
+
+                    <h6 class="mt-3">4.4 Product Catalog (Excel Import Enabled)</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_product.png" class="img-fluid border" alt="Product Master" style="max-height: 300px;" />
+                    </div>
+
+                    <h6 class="mt-3">4.5 Category Setup</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_category.png" class="img-fluid border" alt="Category Master" style="max-height: 300px;" />
+                    </div>
+
+                    <h6 class="mt-3">4.6 Brands Setup</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_brand.png" class="img-fluid border" alt="Brand Master" style="max-height: 300px;" />
+                    </div>
+
+                    <h6 class="mt-3">4.7 Units Setup</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_unit.png" class="img-fluid border" alt="Unit Master" style="max-height: 300px;" />
+                    </div>
+
+                    <h6 class="mt-3">4.8 Warehouses</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_warehouse.png" class="img-fluid border" alt="Warehouse Master" style="max-height: 300px;" />
+                    </div>
+
+                    <h6 class="mt-3">4.9 Employee Setup</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_employee.png" class="img-fluid border" alt="Employee Master" style="max-height: 300px;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 5 -->
+            <div class="card mb-4" id="sales">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0"><i class="fa-solid fa-wallet me-2"></i> 5. Sales Billing Cycle</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Generate tax invoices, track balances, and select products with real-time Category-based filtering.</p>
+                    <div class="text-center p-3 border bg-light rounded mb-3">
+                        <img src="/help/screenshot_sales_invoice.png" class="img-fluid border rounded shadow-sm" alt="Sales Invoice Screenshot" style="max-height: 400px;"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 6 -->
+            <div class="card mb-4" id="purchase">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0"><i class="fa-solid fa-cart-shopping me-2"></i> 6. Purchase Procurement Cycle</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Enter vendor purchase invoices. Automatically increments stock counts when saved.</p>
+                    <div class="text-center p-3 border bg-light rounded mb-3">
+                        <img src="/help/screenshot_purchase_invoice.png" class="img-fluid border rounded shadow-sm" alt="Purchase Invoice Screenshot" style="max-height: 400px;"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 7 -->
+            <div class="card mb-4" id="inventory">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0"><i class="fa-solid fa-boxes-stacked me-2"></i> 7. Inventory & Warehouse Operations</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Log physical openings, warehouse-to-warehouse stock transfers, and audits.</p>
+                    
+                    <h6 class="mt-3">7.1 Stock Opening</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_stock_opening.png" class="img-fluid border" alt="Stock Opening" style="max-height: 300px;" />
+                    </div>
+
+                    <h6 class="mt-3">7.2 Stock Transfer</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_stock_transfer.png" class="img-fluid border" alt="Stock Transfer" style="max-height: 300px;" />
+                    </div>
+
+                    <h6 class="mt-3">7.3 Stock Adjustment</h6>
+                    <div class="text-center p-2 bg-light border rounded mb-3">
+                        <img src="/help/screenshot_stock_adjustment.png" class="img-fluid border" alt="Stock Adjustment" style="max-height: 300px;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 8 -->
+            <div class="card mb-4" id="accounting">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0"><i class="fa-solid fa-calculator me-2"></i> 8. Bookkeeping Vouchers</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Log contra deposits, journals, payments, and receipts. The system enforces zero-balance verification (Total Debits must equal Total Credits).</p>
+                    <div class="text-center p-3 border bg-light rounded mb-3">
+                        <img src="/help/screenshot_voucher_contra.png" class="img-fluid border rounded shadow-sm" alt="Voucher Contra Screenshot" style="max-height: 400px;"/>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

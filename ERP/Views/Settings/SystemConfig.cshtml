@@ -1,0 +1,58 @@
+@{
+    ViewData["Title"] = "System Configuration";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-cogs me-2"></i> System Configuration</h4>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="list-group">
+            <a href="#" class="list-group-item list-group-item-action active"><i class="fa-solid fa-envelope me-2"></i> Email Settings</a>
+            <a href="#" class="list-group-item list-group-item-action"><i class="fa-solid fa-comment-sms me-2"></i> SMS API</a>
+            <a href="/Settings/CompanySettings" class="list-group-item list-group-item-action"><i class="fa-solid fa-file-invoice me-2"></i> Invoice & Bill Settings</a>
+            <a href="#" class="list-group-item list-group-item-action"><i class="fa-solid fa-money-bill me-2"></i> Currency & Locale</a>
+            <a href="#" class="list-group-item list-group-item-action"><i class="fa-solid fa-shield-halved me-2"></i> Backup & Restore</a>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white font-weight-bold">
+                Email Settings
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">SMTP Server</label>
+                            <input type="text" class="form-control" value="smtp.gmail.com" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">SMTP Port</label>
+                            <input type="number" class="form-control" value="587" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">SMTP Username</label>
+                            <input type="email" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">SMTP Password</label>
+                            <input type="password" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="enableSsl" checked>
+                        <label class="form-check-label" for="enableSsl">Enable SSL/TLS</label>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-outline-secondary me-2">Test Connection</button>
+                        <button type="button" class="btn btn-primary">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

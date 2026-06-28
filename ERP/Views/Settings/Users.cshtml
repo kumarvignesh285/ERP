@@ -1,0 +1,157 @@
+@model UsersPageViewModel
+@{
+    ViewData["Title"] = "User Management";
+    var roles = Model.Roles;
+    var userRoles = Model.UserRoles;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-users-gear me-2"></i> User Management</h4>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal"><i class="fa-solid fa-plus me-1"></i> Add User</button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+        <div class="table-responsive">
+            <table class="table table-hover datatable align-middle">
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(Model != null)
+                    {
+                        foreach (var item in Model.Users)
+                        {
+                            var assignedRoles = userRoles.TryGetValue(item.Id, out var currentRoles) ? string.Join(", ", currentRoles) : "Not assigned";
+                            <tr>
+                                <td class="font-weight-bold">@item.FullName</td>
+                                <td>@item.Email</td>
+                                <td>@item.Mobile</td>
+                                <td><span class="badge bg-light text-primary border">@assignedRoles</span></td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary edit-user"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#userModal"
+                                            data-full-name="@item.FullName"
+                                            data-email="@item.Email"
+                                            data-mobile="@item.Mobile"
+                                            data-role="@assignedRoles"
+                                            data-active="@item.IsActive.ToString().ToLowerInvariant()">
+                                        <i class="fa-solid fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Add/Edit User</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="SaveUser" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" name="FullName" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email (Username) *</label>
+                        <input type="email" name="Email" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mobile</label>
+                        <input type="text" name="Mobile" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password *</label>
+                        <input type="password" name="Password" class="form-control" required />
+                        <div class="form-text">Required for new users. Existing users keep their current password.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role *</label>
+                        <select name="Role" class="form-select" required>
+                            <option value="">Select role</option>
+                            @foreach (var role in roles)
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="IsActive" value="true" checked />
+                        <input type="hidden" name="IsActive" value="false" />
+                        <label class="form-check-label">Active user</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            const modal = $('#userModal');
+
+            $('[data-bs-target="#userModal"]:not(.edit-user)').on('click', function () {
+                modal.find('.modal-title').text('Add User');
+                modal.find('input[name="FullName"]').val('');
+                modal.find('input[name="Email"]').val('').prop('readonly', false);
+                modal.find('input[name="Mobile"]').val('');
+                modal.find('input[name="Password"]').val('').prop('required', true);
+                modal.find('select[name="Role"]').val('');
+                modal.find('input[name="IsActive"][type="checkbox"]').prop('checked', true);
+            });
+
+            $('.edit-user').on('click', function () {
+                const button = $(this);
+                modal.find('.modal-title').text('Edit User');
+                modal.find('input[name="FullName"]').val(button.data('full-name'));
+                modal.find('input[name="Email"]').val(button.data('email')).prop('readonly', true);
+                modal.find('input[name="Mobile"]').val(button.data('mobile'));
+                modal.find('input[name="Password"]').val('').prop('required', false);
+                modal.find('select[name="Role"]').val(button.data('role'));
+                modal.find('input[name="IsActive"][type="checkbox"]').prop('checked', button.data('active') === true);
+            });
+        });
+    </script>
+}
+
+

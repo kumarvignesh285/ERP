@@ -1,0 +1,314 @@
+@model ProductPageViewModel
+@{
+    ViewData["Title"] = "Product Master";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-box-open me-2"></i> Products List</h4>
+    <div>
+        <a href="/Masters/DownloadProductTemplate" class="btn btn-outline-secondary me-2"><i class="fa-solid fa-file-excel me-1"></i> Download Excel Template</a>
+        <button class="btn btn-outline-primary me-2" onclick="openUploadModal()"><i class="fa-solid fa-upload me-1"></i> Bulk Upload</button>
+        <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Product</button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover datatable align-middle">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Brand</th>
+                        <th>Stock</th>
+                        <th>Unit</th>
+                        <th>Purchase Price</th>
+                        <th>Sales Price</th>
+                        <th class="text-center no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Products)
+                    {
+                        <tr id="row-@p.Id">
+                            <td class="font-weight-semibold">@p.ProductCode</td>
+                            <td>@p.ProductName</td>
+                            <td>@p.Category?.CategoryName</td>
+                            <td>@p.Brand?.BrandName</td>
+                            <td>@p.CurrentStock</td>
+                            <td>@p.Unit?.UnitSymbol</td>
+                            <td>₹@p.PurchasePrice.ToString("N2")</td>
+                            <td>₹@p.SalesPrice.ToString("N2")</td>
+                            <td class="text-center no-print">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editProductById(@p.Id)"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(@p.Id)"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog -->
+<div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">Add Product</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SaveProduct" method="post" id="productForm">
+                <div class="modal-body">
+                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Product Code *</label>
+                            <input type="text" id="ProductCode" name="ProductCode" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Product Name *</label>
+                            <input type="text" id="ProductName" name="ProductName" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Category</label>
+                            <select id="CategoryId" name="CategoryId" class="form-select select2">
+                                <option value="">Select Category</option>
+                                @foreach (var cat in Model.Categories)
+                                {
+                                    <option value="@cat.Id">@cat.CategoryName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Brand</label>
+                            <select id="BrandId" name="BrandId" class="form-select select2">
+                                <option value="">Select Brand</option>
+                                @foreach (var b in Model.Brands)
+                                {
+                                    <option value="@b.Id">@b.BrandName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Unit</label>
+                            <select id="UnitId" name="UnitId" class="form-select select2">
+                                <option value="">Select Unit</option>
+                                @foreach (var u in Model.Units)
+                                {
+                                    <option value="@u.Id">@u.UnitName (@u.UnitSymbol)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Default Warehouse</label>
+                            <select id="WarehouseId" name="WarehouseId" class="form-select select2">
+                                <option value="">Select Warehouse</option>
+                                @foreach (var wh in Model.Warehouses)
+                                {
+                                    <option value="@wh.Id">@wh.WarehouseName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-semibold">Purchase Price *</label>
+                            <input type="number" id="PurchasePrice" name="PurchasePrice" class="form-control" required step="0.01" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-semibold">Sales Price *</label>
+                            <input type="number" id="SalesPrice" name="SalesPrice" class="form-control" required step="0.01" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-semibold">MRP *</label>
+                            <input type="number" id="MRP" name="MRP" class="form-control" required step="0.01" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-semibold">GST % *</label>
+                            <input type="number" id="GSTPercentage" name="GSTPercentage" class="form-control" required value="18" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-semibold">Min Stock Alert</label>
+                            <input type="number" id="MinimumStock" name="MinimumStock" class="form-control" value="0" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-semibold">Reorder Level</label>
+                            <input type="number" id="ReorderLevel" name="ReorderLevel" class="form-control" value="0" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-semibold">Description</label>
+                        <textarea id="Description" name="Description" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal Dialog -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Bulk Upload Products</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <p class="text-muted">Please select a valid <strong>Excel file (.xlsx, .xls)</strong> to import products. Download the template to view the correct columns.</p>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-semibold">Select File (.xlsx, .xls) *</label>
+                        <input type="file" id="excelFile" name="file" class="form-control" accept=".xlsx, .xls" required />
+                    </div>
+                    <div id="uploadErrors" class="alert alert-danger d-none" style="max-height: 200px; overflow-y: auto;">
+                        <ul class="mb-0" id="errorsList"></ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="btnUploadSubmit">Upload & Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.productEditList = @Json.Serialize(Model.ProductEditLookups);
+        var bootstrapModal;
+        var uploadModal;
+        document.addEventListener("DOMContentLoaded", function () {
+            bootstrapModal = new bootstrap.Modal(document.getElementById('productModal'));
+            uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
+
+            $('#uploadForm').on('submit', function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                $('#btnUploadSubmit').prop('disabled', true).text('Uploading...');
+                $('#uploadErrors').addClass('d-none');
+                $('#errorsList').empty();
+
+                $.ajax({
+                    url: '/Masters/BulkUploadProducts',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        $('#btnUploadSubmit').prop('disabled', false).text('Upload & Import');
+                        if (res.success) {
+                            Swal.fire('Success!', res.message, 'success').then(function () {
+                                location.reload();
+                            });
+                        } else {
+                            if (res.errors && res.errors.length > 0) {
+                                $('#uploadErrors').removeClass('d-none');
+                                res.errors.forEach(function (err) {
+                                    $('#errorsList').append(`<li>${err}</li>`);
+                                });
+                            } else {
+                                Swal.fire('Error!', res.message || 'Upload failed.', 'error');
+                            }
+                        }
+                    },
+                    error: function () {
+                        $('#btnUploadSubmit').prop('disabled', false).text('Upload & Import');
+                        Swal.fire('Error!', 'An error occurred during upload.', 'error');
+                    }
+                });
+            });
+        });
+
+        function openUploadModal() {
+            $('#uploadForm')[0].reset();
+            $('#uploadErrors').addClass('d-none');
+            $('#errorsList').empty();
+            uploadModal.show();
+        }
+
+        function lookupValue(item, camelName, pascalName) {
+            return item[camelName] !== undefined && item[camelName] !== null ? item[camelName] : item[pascalName];
+        }
+
+        function setLookupSelect(selector, value) {
+            var normalizedValue = value !== undefined && value !== null ? value.toString() : '';
+            $(selector).val(normalizedValue).trigger('change');
+        }
+
+        function openModal() {
+            document.getElementById('productForm').reset();
+            document.getElementById('Id').value = "0";
+            $('#CategoryId, #BrandId, #UnitId, #WarehouseId').val('').trigger('change');
+            document.getElementById('modalTitle').innerText = "Add Product";
+            bootstrapModal.show();
+        }
+
+        function editProductById(id) {
+            var p = window.productEditList.find(function(item) { return item.id === id; });
+            if (!p) {
+                Swal.fire('Error!', 'Product details could not be loaded.', 'error');
+                return;
+            }
+
+            document.getElementById('productForm').reset();
+            document.getElementById('Id').value = lookupValue(p, 'id', 'Id');
+            document.getElementById('ProductCode').value = lookupValue(p, 'productCode', 'ProductCode');
+            document.getElementById('ProductName').value = lookupValue(p, 'productName', 'ProductName');
+            setLookupSelect('#CategoryId', lookupValue(p, 'categoryId', 'CategoryId'));
+            setLookupSelect('#BrandId', lookupValue(p, 'brandId', 'BrandId'));
+            setLookupSelect('#UnitId', lookupValue(p, 'unitId', 'UnitId'));
+            setLookupSelect('#WarehouseId', lookupValue(p, 'warehouseId', 'WarehouseId'));
+            document.getElementById('PurchasePrice').value = lookupValue(p, 'purchasePrice', 'PurchasePrice');
+            document.getElementById('SalesPrice').value = lookupValue(p, 'salesPrice', 'SalesPrice');
+            document.getElementById('MRP').value = lookupValue(p, 'mrp', 'MRP');
+            document.getElementById('GSTPercentage').value = lookupValue(p, 'gstPercentage', 'GSTPercentage');
+            document.getElementById('MinimumStock').value = lookupValue(p, 'minimumStock', 'MinimumStock');
+            document.getElementById('ReorderLevel').value = lookupValue(p, 'reorderLevel', 'ReorderLevel');
+            document.getElementById('Description').value = lookupValue(p, 'description', 'Description') || "";
+            document.getElementById('modalTitle').innerText = "Edit Product";
+            bootstrapModal.show();
+        }
+
+        function deleteProduct(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this product?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Masters/DeleteProduct', { id: id }, function (res) {
+                        if (res.success) {
+                            Swal.fire('Deleted!', 'Product has been deleted.', 'success');
+                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
+

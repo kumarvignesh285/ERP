@@ -1,0 +1,149 @@
+@model IEnumerable<ERP.Models.Tax>
+@{
+    ViewData["Title"] = "Tax Settings";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-percent me-2"></i> Tax Configuration List</h4>
+    <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Tax Slab</button>
+</div>
+
+<div class="card max-width-800 mx-auto">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover datatable align-middle">
+                <thead>
+                    <tr>
+                        <th>Tax Name</th>
+                        <th>Total Percentage</th>
+                        <th>CGST %</th>
+                        <th>SGST %</th>
+                        <th>IGST %</th>
+                        <th class="text-center no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model)
+                    {
+                        <tr id="row-@t.Id">
+                            <td class="font-weight-bold text-dark">@t.TaxName</td>
+                            <td class="font-weight-semibold">@t.TaxPercentage%</td>
+                            <td>@t.CGSTPercentage%</td>
+                            <td>@t.SGSTPercentage%</td>
+                            <td>@t.IGSTPercentage%</td>
+                            <td class="text-center no-print">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editTax(@Json.Serialize(t))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTax(@t.Id)"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog -->
+<div class="modal fade" id="taxModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">Add Tax Slab</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SaveTax" method="post" id="taxForm">
+                <div class="modal-body">
+                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div class="mb-3">
+                        <label class="form-label font-weight-semibold">Tax Name *</label>
+                        <input type="text" id="TaxName" name="TaxName" class="form-control" required placeholder="e.g. GST 18%" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Tax Percentage *</label>
+                            <input type="number" id="TaxPercentage" name="TaxPercentage" class="form-control" required step="0.01" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">IGST Percentage *</label>
+                            <input type="number" id="IGSTPercentage" name="IGSTPercentage" class="form-control" required step="0.01" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">CGST Percentage *</label>
+                            <input type="number" id="CGSTPercentage" name="CGSTPercentage" class="form-control" required step="0.01" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">SGST Percentage *</label>
+                            <input type="number" id="SGSTPercentage" name="SGSTPercentage" class="form-control" required step="0.01" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var bootstrapModal;
+        document.addEventListener("DOMContentLoaded", function () {
+            bootstrapModal = new bootstrap.Modal(document.getElementById('taxModal'));
+
+            // Auto calculations helper
+            $('#TaxPercentage').on('input', function() {
+                var val = parseFloat($(this).val()) || 0;
+                $('#IGSTPercentage').val(val);
+                $('#CGSTPercentage').val(val / 2);
+                $('#SGSTPercentage').val(val / 2);
+            });
+        });
+
+        function openModal() {
+            document.getElementById('taxForm').reset();
+            document.getElementById('Id').value = "0";
+            document.getElementById('modalTitle').innerText = "Add Tax Slab";
+            bootstrapModal.show();
+        }
+
+        function editTax(t) {
+            document.getElementById('Id').value = t.id;
+            document.getElementById('TaxName').value = t.taxName;
+            document.getElementById('TaxPercentage').value = t.taxPercentage;
+            document.getElementById('IGSTPercentage').value = t.igstPercentage;
+            document.getElementById('CGSTPercentage').value = t.cgstPercentage;
+            document.getElementById('SGSTPercentage').value = t.sgstPercentage;
+            document.getElementById('modalTitle').innerText = "Edit Tax Slab";
+            bootstrapModal.show();
+        }
+
+        function deleteTax(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this tax slab?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Masters/DeleteTax', { id: id }, function (res) {
+                        if (res.success) {
+                            Swal.fire('Deleted!', 'Tax slab has been deleted.', 'success');
+                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

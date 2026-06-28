@@ -1,0 +1,165 @@
+@model LedgerPageViewModel
+@{
+    ViewData["Title"] = "Ledger Master";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-book-bookmark me-2"></i> Ledgers List</h4>
+    <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Ledger</button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover datatable align-middle">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Ledger Name</th>
+                        <th>Account Group</th>
+                        <th>System Ledger?</th>
+                        <th>Opening Balance</th>
+                        <th class="text-center no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var l in Model.Ledgers)
+                    {
+                        <tr id="row-@l.Id">
+                            <td class="font-weight-bold text-dark">@l.LedgerCode</td>
+                            <td class="font-weight-semibold">@l.LedgerName</td>
+                            <td>@l.AccountGroup?.GroupName</td>
+                            <td>
+                                @if (l.IsSystemLedger)
+                                {
+                                    <span class="badge bg-success">Yes</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">No</span>
+                                }
+                            </td>
+                            <td>₹@l.OpeningBalance.ToString("N2") (@l.BalanceType)</td>
+                            <td class="text-center no-print">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editLedger(@Json.Serialize(l))" @(l.IsSystemLedger ? "disabled" : "")><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLedger(@l.Id)" @(l.IsSystemLedger ? "disabled" : "")><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog -->
+<div class="modal fade" id="ledgerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">Add Ledger</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SaveLedger" method="post" id="ledgerForm">
+                <div class="modal-body">
+                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Ledger Code *</label>
+                            <input type="text" id="LedgerCode" name="LedgerCode" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Ledger Name *</label>
+                            <input type="text" id="LedgerName" name="LedgerName" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-semibold">Account Group *</label>
+                            <select id="AccountGroupId" name="AccountGroupId" class="form-select select2" required>
+                                <option value="">Select Group</option>
+                                @foreach (var grp in Model.AccountGroups)
+                                {
+                                    <option value="@grp.Id">@grp.GroupName (@grp.GroupType)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <label class="form-label font-weight-semibold">Opening Balance</label>
+                                    <input type="number" id="OpeningBalance" name="OpeningBalance" class="form-control" value="0" step="0.01" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label font-weight-semibold">Dr/Cr</label>
+                                    <select id="BalanceType" name="BalanceType" class="form-select">
+                                        <option value="Dr">Dr</option>
+                                        <option value="Cr">Cr</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var bootstrapModal;
+        document.addEventListener("DOMContentLoaded", function () {
+            bootstrapModal = new bootstrap.Modal(document.getElementById('ledgerModal'));
+        });
+
+        function openModal() {
+            document.getElementById('ledgerForm').reset();
+            document.getElementById('Id').value = "0";
+            $('#AccountGroupId').val('').trigger('change');
+            document.getElementById('modalTitle').innerText = "Add Ledger";
+            bootstrapModal.show();
+        }
+
+        function editLedger(l) {
+            document.getElementById('Id').value = l.id;
+            document.getElementById('LedgerCode').value = l.ledgerCode;
+            document.getElementById('LedgerName').value = l.ledgerName;
+            $('#AccountGroupId').val(l.accountGroupId).trigger('change');
+            document.getElementById('OpeningBalance').value = l.openingBalance;
+            document.getElementById('BalanceType').value = l.balanceType;
+            document.getElementById('modalTitle').innerText = "Edit Ledger";
+            bootstrapModal.show();
+        }
+
+        function deleteLedger(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to delete this ledger?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Masters/DeleteLedger', { id: id }, function (res) {
+                        if (res.success) {
+                            Swal.fire('Deleted!', 'Ledger has been deleted.', 'success');
+                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
+

@@ -1,0 +1,138 @@
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SmartERP - MVC Billing & Accounting</title>
+    
+    <!-- CSS libraries -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/erp.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ERP.styles.css" asp-append-version="true" />
+</head>
+<body>
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var roleLabel = User.IsInRole("Super Admin") ? "Super Admin" :
+            User.IsInRole("Admin") ? "Admin" :
+            User.IsInRole("Manager") ? "Manager" :
+            User.IsInRole("Accountant") ? "Accountant" :
+            User.IsInRole("Purchase User") ? "Purchase User" :
+            User.IsInRole("Sales User") ? "Sales User" : "User";
+
+        <partial name="_Sidebar" />
+        
+        <div class="erp-wrapper">
+            <header class="erp-header no-print">
+                <div class="header-left d-flex align-items-center gap-3">
+                    <button class="btn btn-light icon-btn sidebar-toggle d-lg-none" type="button" aria-label="Open navigation" data-sidebar-toggle>
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h5 class="m-0 font-weight-bold text-primary">@ViewData["Title"]</h5>
+                </div>
+                <div class="header-right d-flex align-items-center gap-3">
+                    <!-- Notifications -->
+                    <div class="dropdown">
+                        <button class="btn btn-link text-secondary position-relative p-1" type="button" data-bs-toggle="dropdown">
+                            <i class="fa-regular fa-bell fs-5"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" id="notif-count" style="display:none">0</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="width: 300px;" id="notif-list">
+                            <li><h6 class="dropdown-header">Alerts & Notifications</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center text-muted" href="#">No new alerts</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- User Account -->
+                    <div class="dropdown">
+                        <button class="btn btn-link d-flex align-items-center gap-2 text-decoration-none text-dark p-0" type="button" data-bs-toggle="dropdown">
+                            <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-weight:600;">
+                                @User.Identity?.Name?[..1].ToUpper()
+                            </div>
+                            <div class="user-meta text-start d-none d-sm-block">
+                                <p class="m-0 lh-1 fs-7 font-weight-semibold">@User.Identity?.Name</p>
+                                <span class="text-muted fs-8">@roleLabel</span>
+                            </div>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><a class="dropdown-item" href="/Settings/CompanySettings"><i class="fa-solid fa-building me-2"></i> Company Setup</a></li>
+                            <li><a class="dropdown-item" href="/Settings/Users"><i class="fa-solid fa-user-gear me-2"></i> User Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form class="form-inline" action="/Account/Logout" method="post">
+                                    <button type="submit" class="dropdown-item text-danger"><i class="fa-solid fa-right-from-bracket me-2"></i> Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <main role="main" class="erp-content">
+                @RenderBody()
+            </main>
+        </div>
+    }
+    else
+    {
+        <main role="main">
+            @RenderBody()
+        </main>
+    }
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/erp-print.js" asp-append-version="true"></script>
+    <script src="~/js/erp-voucher.js" asp-append-version="true"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Apply beautiful DataTable defaults
+            $('.datatable').DataTable({
+                responsive: true,
+                language: {
+                    searchPlaceholder: "Search...",
+                    search: ""
+                }
+            });
+
+            // Initialize select2 elements
+            window.initializeSelect2('.select2');
+
+            // Load Notifications list via AJAX
+            $.getJSON('/api/erp/notifications', function(data) {
+                if (data && data.length > 0) {
+                    $('#notif-count').text(data.length).show();
+                    var list = $('#notif-list');
+                    list.find('.text-center').parent().remove();
+                    $.each(data, function(i, item) {
+                        list.append('<li><a class="dropdown-item py-2 border-bottom" href="' + (item.linkUrl || '#') + '">' +
+                            '<div class="d-flex justify-content-between align-items-center mb-1">' +
+                            '<span class="badge bg-light text-primary font-weight-medium">' + item.notificationType + '</span>' +
+                            '<span class="text-muted fs-8">' + new Date(item.createdAt).toLocaleDateString() + '</span>' +
+                            '</div>' +
+                            '<p class="m-0 fs-7 text-wrap text-dark">' + item.message + '</p>' +
+                            '</a></li>');
+                    });
+                }
+            });
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
