@@ -35,6 +35,70 @@ $(function () {
 
     // Fix Bootstrap modal backdrop overlay issues by appending modals to body
     $('.modal').appendTo('body');
+
+    // Reusable DataTable filtering by date range (From Date/To Date) and Status dropdown
+    if ($.fn.dataTable) {
+        $.fn.dataTable.ext.search.push(
+            function (settings, data, dataIndex) {
+                var fromDate = $('#filterFromDate').val();
+                var toDate = $('#filterToDate').val();
+                var status = $('#filterStatus').val();
+
+                var rowDate = null;
+                for (var i = 0; i < data.length; i++) {
+                    var cell = (data[i] || "").trim();
+                    if (/^\d{2}-\d{2}-\d{4}$/.test(cell)) {
+                        var parts = cell.split('-');
+                        rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                        break;
+                    }
+                }
+
+                var dateMatch = true;
+                if (fromDate || toDate) {
+                    if (!rowDate) {
+                        dateMatch = false;
+                    } else {
+                        if (fromDate) {
+                            var from = new Date(fromDate);
+                            from.setHours(0, 0, 0, 0);
+                            if (rowDate < from) dateMatch = false;
+                        }
+                        if (toDate) {
+                            var to = new Date(toDate);
+                            to.setHours(23, 59, 59, 999);
+                            if (rowDate > to) dateMatch = false;
+                        }
+                    }
+                }
+
+                var statusMatch = true;
+                if (status) {
+                    statusMatch = false;
+                    for (var i = 0; i < data.length; i++) {
+                        var cellVal = (data[i] || "").trim().toLowerCase();
+                        if (cellVal === status.trim().toLowerCase()) {
+                            statusMatch = true;
+                            break;
+                        }
+                    }
+                }
+
+                return dateMatch && statusMatch;
+            }
+        );
+
+        window.applyFilters = function () {
+            $('.datatable').DataTable().draw();
+        };
+
+        window.resetFilters = function () {
+            $('#filterFromDate').val('');
+            $('#filterToDate').val('');
+            $('#filterStatus').val('');
+            $('.datatable').DataTable().draw();
+        };
+    }
 });
 
 (function () {

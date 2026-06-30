@@ -18,6 +18,35 @@ public class MasterService : IMasterService
         _context = context;
     }
 
+    private async Task UpdateEntityAsync<T>(T entity) where T : BaseEntity
+    {
+        var existing = await _context.Set<T>().FindAsync(entity.Id);
+        if (existing != null)
+        {
+            entity.CreatedAt = existing.CreatedAt;
+            entity.CreatedBy = existing.CreatedBy;
+            entity.IsActive = existing.IsActive;
+
+            if (entity is Product prod && existing is Product existingProd)
+            {
+                prod.OpeningStock = existingProd.OpeningStock;
+                prod.CurrentStock = existingProd.CurrentStock;
+            }
+            else if (entity is Customer cust && existing is Customer existingCust)
+            {
+                cust.OpeningBalance = existingCust.OpeningBalance;
+                cust.BalanceType = existingCust.BalanceType;
+            }
+            else if (entity is Supplier supp && existing is Supplier existingSupp)
+            {
+                supp.OpeningBalance = existingSupp.OpeningBalance;
+                supp.BalanceType = existingSupp.BalanceType;
+            }
+
+            _context.Entry(existing).CurrentValues.SetValues(entity);
+        }
+    }
+
     // Company
     public async Task<Company?> GetCompanyAsync()
     {
@@ -32,7 +61,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Companies.Update(company);
+            await UpdateEntityAsync(company);
         }
         await _context.SaveChangesAsync();
         return company;
@@ -127,7 +156,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Customers.Update(customer);
+            await UpdateEntityAsync(customer);
         }
         await _context.SaveChangesAsync();
         return customer;
@@ -162,7 +191,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Suppliers.Update(supplier);
+            await UpdateEntityAsync(supplier);
         }
         await _context.SaveChangesAsync();
         return supplier;
@@ -207,7 +236,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Products.Update(product);
+            await UpdateEntityAsync(product);
         }
         await _context.SaveChangesAsync();
         return product;
@@ -242,7 +271,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Categories.Update(category);
+            await UpdateEntityAsync(category);
         }
         await _context.SaveChangesAsync();
         return category;
@@ -277,7 +306,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Brands.Update(brand);
+            await UpdateEntityAsync(brand);
         }
         await _context.SaveChangesAsync();
         return brand;
@@ -312,7 +341,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Units.Update(unit);
+            await UpdateEntityAsync(unit);
         }
         await _context.SaveChangesAsync();
         return unit;
@@ -347,7 +376,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Warehouses.Update(warehouse);
+            await UpdateEntityAsync(warehouse);
         }
         await _context.SaveChangesAsync();
         return warehouse;
@@ -382,7 +411,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Employees.Update(employee);
+            await UpdateEntityAsync(employee);
         }
         await _context.SaveChangesAsync();
         return employee;
@@ -417,7 +446,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.AccountGroups.Update(group);
+            await UpdateEntityAsync(group);
         }
         await _context.SaveChangesAsync();
         return group;
@@ -452,7 +481,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Ledgers.Update(ledger);
+            await UpdateEntityAsync(ledger);
         }
         await _context.SaveChangesAsync();
         return ledger;
@@ -487,7 +516,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Banks.Update(bank);
+            await UpdateEntityAsync(bank);
         }
         await _context.SaveChangesAsync();
         return bank;
@@ -522,7 +551,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.Taxes.Update(tax);
+            await UpdateEntityAsync(tax);
         }
         await _context.SaveChangesAsync();
         return tax;
@@ -557,7 +586,7 @@ public class MasterService : IMasterService
         }
         else
         {
-            _context.PaymentModes.Update(mode);
+            await UpdateEntityAsync(mode);
         }
         await _context.SaveChangesAsync();
         return mode;

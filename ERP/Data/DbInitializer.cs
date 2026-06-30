@@ -239,5 +239,16 @@ public static class DbInitializer
         }
 
         await context.SaveChangesAsync();
+
+        // Correct any existing negative stock values to 0
+        var negativeStockProducts = context.Products.Where(p => p.CurrentStock < 0).ToList();
+        if (negativeStockProducts.Any())
+        {
+            foreach (var p in negativeStockProducts)
+            {
+                p.CurrentStock = 0;
+            }
+            await context.SaveChangesAsync();
+        }
     }
 }

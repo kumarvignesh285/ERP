@@ -26,7 +26,17 @@
                         <tr id="row-@pm.Id">
                             <td>@pm.Id</td>
                             <td class="font-weight-semibold text-dark">@pm.ModeName</td>
-                            <td><span class="badge bg-light text-primary">@pm.ModeType</span></td>
+                            @{
+                                var badgeClass = pm.ModeType switch
+                                {
+                                    "Cash" => "badge-cash",
+                                    "Bank" => "badge-bank",
+                                    "Card" => "badge-card",
+                                    "UPI" => "badge-upi",
+                                    _ => "badge-other"
+                                };
+                            }
+                            <td><span class="badge @badgeClass">@pm.ModeType</span></td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-outline-primary" onclick="editPaymentMode(@Json.Serialize(pm))"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -79,7 +89,7 @@
 @section Scripts {
     <script>
         var bootstrapModal;
-        document.addEventListener("DOMContentLoaded", function () {
+        $(function () {
             bootstrapModal = new bootstrap.Modal(document.getElementById('paymentModeModal'));
         });
 

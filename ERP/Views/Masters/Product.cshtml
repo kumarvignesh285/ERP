@@ -195,7 +195,7 @@
         window.productEditList = @Json.Serialize(Model.ProductEditLookups);
         var bootstrapModal;
         var uploadModal;
-        document.addEventListener("DOMContentLoaded", function () {
+        $(function () {
             bootstrapModal = new bootstrap.Modal(document.getElementById('productModal'));
             uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
 

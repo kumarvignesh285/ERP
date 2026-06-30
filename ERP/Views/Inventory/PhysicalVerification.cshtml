@@ -203,6 +203,22 @@
             $(btn).closest('tr').remove();
         }
 
+        function onCategorySelect(select) {
+            var catId = $(select).val();
+            var $row = $(select).closest('tr');
+            var $prodSelect = $row.find('.select2-row');
+            
+            $prodSelect.empty();
+            $prodSelect.append('<option value="">Select Product</option>');
+            
+            productsList.forEach(function(p) {
+                if (!catId || p.categoryId == catId) {
+                    $prodSelect.append(`<option value="${p.id}">${p.productName}</option>`);
+                }
+            });
+            $prodSelect.trigger('change');
+        }
+
         function onProductSelect(select) {
             var prodId = $(select).val();
             var product = productsList.find(p => p.id == prodId);
