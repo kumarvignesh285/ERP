@@ -40,6 +40,7 @@ builder.Services.AddScoped<IAccountingService, AccountingService>();
 builder.Services.AddScoped<ICRMService, CRMService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
 
 // Add Razor Pages and Controllers with Views
 builder.Services.AddRazorPages(options =>

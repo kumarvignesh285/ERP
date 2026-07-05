@@ -156,6 +156,13 @@ public sealed class UsersPageViewModel
     public Dictionary<string, IList<string>> UserRoles { get; set; } = new();
 }
 
+public sealed class UserPermissionsPageViewModel
+{
+    public string SelectedUserId { get; set; } = string.Empty;
+    public List<AppUser> Users { get; set; } = new();
+    public List<ScreenPermission> Permissions { get; set; } = new();
+}
+
 public sealed class CrmLookupPageViewModel<TItem>
 {
     public List<TItem> Items { get; set; } = new();

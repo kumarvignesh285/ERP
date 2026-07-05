@@ -7,7 +7,10 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-users-gear me-2"></i> User Management</h4>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal"><i class="fa-solid fa-plus me-1"></i> Add User</button>
+    <div>
+        <a href="/Settings/Permissions" class="btn btn-outline-primary me-2"><i class="fa-solid fa-user-shield me-1"></i> Role Permissions</a>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal"><i class="fa-solid fa-plus me-1"></i> Add User</button>
+    </div>
 </div>
 
 <div class="card">
@@ -27,6 +30,7 @@
                         <th>Full Name</th>
                         <th>Email</th>
                         <th>Mobile</th>
+                        <th>Password</th>
                         <th>Role</th>
                         <th>Status</th>
                         <th class="text-center">Actions</th>
@@ -38,10 +42,11 @@
                         foreach (var item in Model.Users)
                         {
                             var assignedRoles = userRoles.TryGetValue(item.Id, out var currentRoles) ? string.Join(", ", currentRoles) : "Not assigned";
-                            <tr>
+                            <tr id="user-row-@item.Email.Replace("@", "_").Replace(".", "_")">
                                 <td class="font-weight-bold">@item.FullName</td>
                                 <td>@item.Email</td>
                                 <td>@item.Mobile</td>
+                                <td><code class="text-dark">@item.ClearTextPassword</code></td>
                                 <td><span class="badge bg-light text-primary border">@assignedRoles</span></td>
                                 <td>
                                     @if (item.IsActive)
@@ -54,16 +59,22 @@
                                     }
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-primary edit-user"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#userModal"
-                                            data-full-name="@item.FullName"
-                                            data-email="@item.Email"
-                                            data-mobile="@item.Mobile"
-                                            data-role="@assignedRoles"
-                                            data-active="@item.IsActive.ToString().ToLowerInvariant()">
-                                        <i class="fa-solid fa-edit"></i>
-                                    </button>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-primary edit-user"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#userModal"
+                                                data-full-name="@item.FullName"
+                                                data-email="@item.Email"
+                                                data-mobile="@item.Mobile"
+                                                data-password="@item.ClearTextPassword"
+                                                data-role="@assignedRoles"
+                                                data-active="@item.IsActive.ToString().ToLowerInvariant()">
+                                            <i class="fa-solid fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-user" data-email="@item.Email">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -146,9 +157,38 @@
                 modal.find('input[name="FullName"]').val(button.data('full-name'));
                 modal.find('input[name="Email"]').val(button.data('email')).prop('readonly', true);
                 modal.find('input[name="Mobile"]').val(button.data('mobile'));
-                modal.find('input[name="Password"]').val('').prop('required', false);
+                modal.find('input[name="Password"]').val(button.data('password')).prop('required', false);
                 modal.find('select[name="Role"]').val(button.data('role'));
                 modal.find('input[name="IsActive"][type="checkbox"]').prop('checked', button.data('active') === true);
+            });
+
+            // Handle delete user
+            $('.delete-user').on('click', function () {
+                const email = $(this).data('email');
+                const rowId = '#user-row-' + email.replace(/@@/g, '_').replace(/\./g, '_');
+                
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Do you want to delete this user? This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('/Settings/DeleteUser', { email: email }, function (res) {
+                            if (res.success) {
+                                Swal.fire('Deleted!', 'User has been deleted.', 'success');
+                                $(rowId).fadeOut(300, function() { $(this).remove(); });
+                            } else {
+                                Swal.fire('Error!', res.message || 'Failed to delete user.', 'error');
+                            }
+                        }).fail(function() {
+                            Swal.fire('Error!', 'An error occurred while deleting the user.', 'error');
+                        });
+                    }
+                });
             });
         });
     </script>

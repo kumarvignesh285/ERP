@@ -68,6 +68,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
     // Notifications
     public DbSet<Notification> Notifications { get; set; } = null!;
 
+    // Permissions
+    public DbSet<ScreenPermission> ScreenPermissions { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

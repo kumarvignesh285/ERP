@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Filters;
 using ERP.Interfaces;
 using ERP.Models;
 using ERP.ViewModels;
@@ -19,6 +20,7 @@ public class CRMController : Controller
 
     // --- Leads ---
     [HttpGet("Leads")]
+    [Permission("Leads", "View")]
     public async Task<IActionResult> Leads()
     {
         var list = await _crmService.GetLeadsAsync();
@@ -26,6 +28,7 @@ public class CRMController : Controller
     }
 
     [HttpPost("SaveLead")]
+    [Permission("Leads", "Edit")]
     public async Task<IActionResult> SaveLead(Lead lead)
     {
         if (ModelState.IsValid)
@@ -37,6 +40,7 @@ public class CRMController : Controller
     }
 
     [HttpPost("DeleteLead")]
+    [Permission("Leads", "Delete")]
     public async Task<IActionResult> DeleteLead(int id)
     {
         await _crmService.DeleteLeadAsync(id);
@@ -45,6 +49,7 @@ public class CRMController : Controller
 
     // --- Follow-ups ---
     [HttpGet("FollowUps")]
+    [Permission("Follow Ups", "View")]
     public async Task<IActionResult> FollowUps()
     {
         return View(new CrmLookupPageViewModel<FollowUp>
@@ -55,6 +60,7 @@ public class CRMController : Controller
     }
 
     [HttpPost("SaveFollowUp")]
+    [Permission("Follow Ups", "Edit")]
     public async Task<IActionResult> SaveFollowUp(FollowUp followUp)
     {
         if (ModelState.IsValid)
@@ -66,6 +72,7 @@ public class CRMController : Controller
     }
 
     [HttpPost("DeleteFollowUp")]
+    [Permission("Follow Ups", "Delete")]
     public async Task<IActionResult> DeleteFollowUp(int id)
     {
         await _crmService.DeleteFollowUpAsync(id);
@@ -74,6 +81,7 @@ public class CRMController : Controller
 
     // --- Opportunities ---
     [HttpGet("Opportunities")]
+    [Permission("Opportunities", "View")]
     public async Task<IActionResult> Opportunities()
     {
         return View(new CrmLookupPageViewModel<Opportunity>
@@ -84,6 +92,7 @@ public class CRMController : Controller
     }
 
     [HttpPost("SaveOpportunity")]
+    [Permission("Opportunities", "Edit")]
     public async Task<IActionResult> SaveOpportunity(Opportunity opportunity)
     {
         if (ModelState.IsValid)
@@ -95,6 +104,7 @@ public class CRMController : Controller
     }
 
     [HttpPost("DeleteOpportunity")]
+    [Permission("Opportunities", "Delete")]
     public async Task<IActionResult> DeleteOpportunity(int id)
     {
         await _crmService.DeleteOpportunityAsync(id);
@@ -103,6 +113,7 @@ public class CRMController : Controller
 
     // --- Pipeline View ---
     [HttpGet("Pipeline")]
+    [Permission("Pipeline View", "View")]
     public async Task<IActionResult> Pipeline()
     {
         var leads = await _crmService.GetLeadsAsync();

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Filters;
 using ERP.Interfaces;
 using ERP.Models;
 using ERP.ViewModels;
@@ -7,6 +8,7 @@ using ERP.ViewModels;
 namespace ERP.Controllers;
 
 [Authorize]
+[Permission("Accounts", "View")]
 [Route("Accounts")]
 public class AccountsController : Controller
 {

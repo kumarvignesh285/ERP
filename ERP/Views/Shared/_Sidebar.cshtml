@@ -1,3 +1,4 @@
+@inject ERP.Interfaces.IPermissionService PermissionService
 @functions {
     private sealed record MenuLink(string Text, string Url);
     private sealed record MenuSection(string Text, string Icon, string Url, string[] Roles, MenuLink[] Children);
@@ -113,40 +114,64 @@
 
         <li class="menu-header">Modules</li>
 
-        @foreach (var menu in moduleSections.Where(s => CanAccess(s.Roles)))
+        @foreach (var menu in moduleSections)
         {
-            var collapseId = $"{menu.Text.Replace(" ", "")}Submenu";
-            var active = IsActive(menu.Url);
-            <li class="menu-item @(active ? "active open" : "")">
-                <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())">
-                    <i class="fa-solid @menu.Icon"></i> <span>@menu.Text</span> <i class="fa-solid fa-chevron-down ms-auto fs-7"></i>
-                </a>
-                <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId" data-bs-parent="#sidebarMenu">
-                    @foreach (var child in menu.Children)
-                    {
-                        <li class="@(IsActive(child.Url) ? "active" : "")"><a href="@child.Url">@child.Text</a></li>
-                    }
-                </ul>
-            </li>
+            var accessibleChildren = new List<MenuLink>();
+            foreach (var child in menu.Children)
+            {
+                if (await PermissionService.HasPermissionAsync(User, child.Text, "View"))
+                {
+                    accessibleChildren.Add(child);
+                }
+            }
+
+            if (accessibleChildren.Any())
+            {
+                var collapseId = $"{menu.Text.Replace(" ", "")}Submenu";
+                var active = IsActive(menu.Url);
+                <li class="menu-item @(active ? "active open" : "")">
+                    <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())">
+                        <i class="fa-solid @menu.Icon"></i> <span>@menu.Text</span> <i class="fa-solid fa-chevron-down ms-auto fs-7"></i>
+                    </a>
+                    <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId" data-bs-parent="#sidebarMenu">
+                        @foreach (var child in accessibleChildren)
+                        {
+                            <li class="@(IsActive(child.Url) ? "active" : "")"><a href="@child.Url">@child.Text</a></li>
+                        }
+                    </ul>
+                </li>
+            }
         }
 
         <li class="menu-header">Reports & Settings</li>
 
-        @foreach (var menu in adminSections.Where(s => CanAccess(s.Roles)))
+        @foreach (var menu in adminSections)
         {
-            var collapseId = $"{menu.Text.Replace(" ", "")}Submenu";
-            var active = IsActive(menu.Url);
-            <li class="menu-item @(active ? "active open" : "")">
-                <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())">
-                    <i class="fa-solid @menu.Icon"></i> <span>@menu.Text</span> <i class="fa-solid fa-chevron-down ms-auto fs-7"></i>
-                </a>
-                <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId" data-bs-parent="#sidebarMenu">
-                    @foreach (var child in menu.Children)
-                    {
-                        <li class="@(IsActive(child.Url) ? "active" : "")"><a href="@child.Url">@child.Text</a></li>
-                    }
-                </ul>
-            </li>
+            var accessibleChildren = new List<MenuLink>();
+            foreach (var child in menu.Children)
+            {
+                if (await PermissionService.HasPermissionAsync(User, child.Text, "View"))
+                {
+                    accessibleChildren.Add(child);
+                }
+            }
+
+            if (accessibleChildren.Any())
+            {
+                var collapseId = $"{menu.Text.Replace(" ", "")}Submenu";
+                var active = IsActive(menu.Url);
+                <li class="menu-item @(active ? "active open" : "")">
+                    <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())">
+                        <i class="fa-solid @menu.Icon"></i> <span>@menu.Text</span> <i class="fa-solid fa-chevron-down ms-auto fs-7"></i>
+                    </a>
+                    <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId" data-bs-parent="#sidebarMenu">
+                        @foreach (var child in accessibleChildren)
+                        {
+                            <li class="@(IsActive(child.Url) ? "active" : "")"><a href="@child.Url">@child.Text</a></li>
+                        }
+                    </ul>
+                </li>
+            }
         }
 
         <li class="menu-item @(IsActive("/Help") ? "active" : "")">

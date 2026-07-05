@@ -28,13 +28,19 @@ public static class DbInitializer
                 Email = adminEmail,
                 FullName = "Administrator",
                 Mobile = "9876543210",
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                ClearTextPassword = "Admin@123"
             };
             var result = await userManager.CreateAsync(adminUser, "Admin@123");
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(adminUser, "Super Admin");
             }
+        }
+        else if (string.IsNullOrEmpty(adminUser.ClearTextPassword))
+        {
+            adminUser.ClearTextPassword = "Admin@123";
+            await userManager.UpdateAsync(adminUser);
         }
 
         // 3. Company
@@ -248,6 +254,46 @@ public static class DbInitializer
             {
                 p.CurrentStock = 0;
             }
+            await context.SaveChangesAsync();
+        }
+
+        // 11. Default Screen Permissions
+        if (adminUser != null && !context.ScreenPermissions.Any(sp => sp.UserId == adminUser.Id))
+        {
+            var defaultPermissions = new List<ScreenPermission>();
+            var allScreens = new[]
+            {
+                // Masters
+                "Company Master", "Customer Master", "Supplier Master", "Product Master", "Category Master", "Brand Master", "Unit Master", "Warehouse Master", "Ledger Master", "Employee Master", "Account Groups", "Bank Master", "Tax Settings", "Payment Modes",
+                // Sales
+                "Quotation", "Sales Order", "Delivery Challan", "Sales Invoice", "Sales Return",
+                // Purchase
+                "Purchase Order", "Goods Receipt Note", "Purchase Invoice", "Purchase Return",
+                // Inventory
+                "Stock Opening", "Stock Transfer", "Stock Adjustment", "Physical Stock",
+                // Accounts
+                "Receipt Voucher", "Payment Voucher", "Contra Voucher", "Journal Voucher", "Debit Note", "Credit Note", "Cash Book", "Bank Book",
+                // CRM
+                "Leads", "Follow Ups", "Opportunities", "Pipeline View",
+                // Reports
+                "Sales Reports", "Purchase Reports", "Inventory Reports", "Accounting Reports",
+                // Settings
+                "User Management", "Role Configuration", "Company Setup", "System Settings"
+            };
+
+            foreach (var screen in allScreens)
+            {
+                defaultPermissions.Add(new ScreenPermission
+                {
+                    UserId = adminUser.Id,
+                    ScreenName = screen,
+                    CanView = true,
+                    CanEdit = true,
+                    CanDelete = true
+                });
+            }
+
+            context.ScreenPermissions.AddRange(defaultPermissions);
             await context.SaveChangesAsync();
         }
     }
