@@ -35,3 +35,15 @@ Logs/
 # OS-specific files
 .DS_Store
 Thumbs.db
+
+# Node.js dependencies
+node_modules/
+**/node_modules/
+
+# Database backups and training data
+*.bak
+*.traineddata
+
+# Publish Profiles
+**/PublishProfiles/
+**/Properties/PublishProfiles/

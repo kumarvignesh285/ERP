@@ -128,15 +128,29 @@ public class MastersController : Controller
                 GSTPercentage = p.GSTPercentage,
                 MinimumStock = p.MinimumStock,
                 ReorderLevel = p.ReorderLevel,
-                Description = p.Description
+                Description = p.Description,
+                DocumentPath = p.DocumentPath
             }).ToList()
         };
         return View(model);
     }
 
     [HttpPost("SaveProduct")]
-    public async Task<IActionResult> SaveProduct(Product product)
+    public async Task<IActionResult> SaveProduct(Product product, IFormFile? pdfDocument)
     {
+        if (pdfDocument != null && pdfDocument.Length > 0)
+        {
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents", "Products");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + pdfDocument.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await pdfDocument.CopyToAsync(fileStream);
+            }
+            product.DocumentPath = "/uploads/documents/Products/" + uniqueFileName;
+        }
+
         if (ModelState.IsValid)
         {
             await _masterService.SaveProductAsync(product);
@@ -245,6 +259,64 @@ public class MastersController : Controller
         catch (Exception ex)
         {
             return Json(new { success = false, message = "An error occurred: " + ex.Message });
+        }
+    }
+
+    [HttpPost("PreviewImport")]
+    public async Task<IActionResult> PreviewImport(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return Json(new { success = false, message = "Please select a valid Excel or PDF file." });
+        }
+
+        var ext = System.IO.Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (ext is not (".xlsx" or ".xls" or ".pdf"))
+        {
+            return Json(new { success = false, message = "Only Excel (.xlsx, .xls) and PDF (.pdf) files are supported." });
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream();
+            var items = await _masterService.PreviewImportAsync(stream, ext);
+            
+            var categories = await _masterService.GetCategoriesAsync();
+            var brands = await _masterService.GetBrandsAsync();
+            var units = await _masterService.GetUnitsAsync();
+            var warehouses = await _masterService.GetWarehousesAsync();
+            
+            return Json(new { 
+                success = true, 
+                items = items,
+                categories = categories.Select(c => c.CategoryName).ToList(),
+                brands = brands.Select(b => b.BrandName).ToList(),
+                units = units.Select(u => u.UnitSymbol).ToList(),
+                warehouses = warehouses.Select(w => w.WarehouseName).ToList()
+            });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "An error occurred during parsing: " + ex.Message });
+        }
+    }
+
+    [HttpPost("CommitImport")]
+    public async Task<IActionResult> CommitImport([FromBody] List<ImportProductCommitDto> items)
+    {
+        if (items == null || !items.Any())
+        {
+            return Json(new { success = false, message = "No products provided for import." });
+        }
+
+        try
+        {
+            var list = await _masterService.CommitImportAsync(items);
+            return Json(new { success = true, items = list, message = $"Successfully imported/updated {list.Count} products." });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "An error occurred during import: " + ex.Message });
         }
     }
 

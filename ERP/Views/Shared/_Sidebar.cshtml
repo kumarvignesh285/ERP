@@ -106,7 +106,7 @@
         </div>
         <span>SMART ERP</span>
     </div>
-    <ul class="sidebar-menu">
+    <ul class="sidebar-menu" id="sidebarMenu">
         <li class="menu-item @(IsActive("/") ? "active" : "")">
             <a href="/"><i class="fa-solid fa-gauge"></i> <span>Dashboard</span></a>
         </li>
@@ -121,7 +121,7 @@
                 <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())">
                     <i class="fa-solid @menu.Icon"></i> <span>@menu.Text</span> <i class="fa-solid fa-chevron-down ms-auto fs-7"></i>
                 </a>
-                <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId">
+                <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId" data-bs-parent="#sidebarMenu">
                     @foreach (var child in menu.Children)
                     {
                         <li class="@(IsActive(child.Url) ? "active" : "")"><a href="@child.Url">@child.Text</a></li>
@@ -140,7 +140,7 @@
                 <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())">
                     <i class="fa-solid @menu.Icon"></i> <span>@menu.Text</span> <i class="fa-solid fa-chevron-down ms-auto fs-7"></i>
                 </a>
-                <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId">
+                <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId" data-bs-parent="#sidebarMenu">
                     @foreach (var child in menu.Children)
                     {
                         <li class="@(IsActive(child.Url) ? "active" : "")"><a href="@child.Url">@child.Text</a></li>

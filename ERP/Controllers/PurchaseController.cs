@@ -68,6 +68,30 @@ public class PurchaseController : Controller
         return Json(new { success = true });
     }
 
+    [HttpPost("UploadDocument")]
+    public async Task<IActionResult> UploadDocument(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return Json(new { success = false, message = "File not selected" });
+
+        try
+        {
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents", "PurchaseOrders");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+            return Json(new { success = true, filePath = "/uploads/documents/PurchaseOrders/" + uniqueFileName });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
     [HttpPost("ConvertOrderToInvoice")]
     public async Task<IActionResult> ConvertOrderToInvoice(int id)
     {
@@ -261,4 +285,144 @@ public class PurchaseController : Controller
         if (item == null) return NotFound();
         return Json(item);
     }
+
+    [HttpPost("ProcessUploadedProducts")]
+    public async Task<IActionResult> ProcessUploadedProducts([FromBody] List<UploadedProductItemDto> items)
+    {
+        if (items == null || !items.Any())
+        {
+            return Json(new { success = false, message = "No items parsed from image." });
+        }
+
+        try
+        {
+            var resultList = new List<object>();
+            
+            // Get all active categories, brands, units, warehouses for lookups
+            var categories = await _masterService.GetCategoriesAsync();
+            var brands = await _masterService.GetBrandsAsync();
+            var units = await _masterService.GetUnitsAsync();
+            var warehouses = await _masterService.GetWarehousesAsync();
+            var products = await _masterService.GetProductsAsync();
+
+            // Ensure we have a default warehouse, brand, unit
+            var defaultWarehouse = warehouses.FirstOrDefault() ?? new Warehouse { WarehouseCode = "MAIN-WH", WarehouseName = "Main Central Warehouse" };
+            if (defaultWarehouse.Id == 0)
+            {
+                defaultWarehouse = await _masterService.SaveWarehouseAsync(defaultWarehouse);
+            }
+
+            var defaultBrand = brands.FirstOrDefault(b => b.BrandName == "Generic") ?? new Brand { BrandName = "Generic" };
+            if (defaultBrand.Id == 0)
+            {
+                defaultBrand = await _masterService.SaveBrandAsync(defaultBrand);
+            }
+
+            var defaultUnit = units.FirstOrDefault(u => u.UnitSymbol == "PCS") ?? new Unit { UnitName = "Pieces", UnitSymbol = "PCS" };
+            if (defaultUnit.Id == 0)
+            {
+                defaultUnit = await _masterService.SaveUnitAsync(defaultUnit);
+            }
+
+            foreach (var item in items)
+            {
+                var name = item.ProductName.Trim();
+                if (string.IsNullOrEmpty(name)) continue;
+
+                // Check if product exists (case-insensitive)
+                var product = products.FirstOrDefault(p => p.ProductName.Equals(name, StringComparison.OrdinalIgnoreCase) && p.IsActive);
+
+                if (product == null)
+                {
+                    // Determine Category name based on description
+                    var categoryName = "General";
+                    var lowerName = name.ToLowerInvariant();
+                    if (lowerName.Contains("spanner") || lowerName.Contains("ring") || lowerName.Contains("sp r/s") || lowerName.Contains("wrench") || lowerName.Contains("sp "))
+                    {
+                        categoryName = "Spanners & Wrenches";
+                    }
+                    else if (lowerName.Contains("drill") || lowerName.Contains("hammer bit") || lowerName.Contains("bit") || lowerName.Contains("sds"))
+                    {
+                        categoryName = "Drill & Hammer Bits";
+                    }
+                    else if (lowerName.Contains("power tool") || lowerName.Contains("drill machine") || lowerName.Contains("saw"))
+                    {
+                        categoryName = "Power Tools";
+                    }
+                    else if (lowerName.Contains("hammer") || lowerName.Contains("pliers") || lowerName.Contains("screwdriver"))
+                    {
+                        categoryName = "Hand Tools";
+                    }
+
+                    var category = categories.FirstOrDefault(c => c.CategoryName.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+                    if (category == null)
+                    {
+                        category = new Category { CategoryName = categoryName };
+                        category = await _masterService.SaveCategoryAsync(category);
+                        categories = await _masterService.GetCategoriesAsync(); // Refresh list
+                    }
+
+                    // Determine Brand from name (e.g. Venus, ALKO PLUS, Ultra Touch)
+                    var brandName = "Generic";
+                    if (lowerName.Contains("venus")) brandName = "Venus";
+                    else if (lowerName.Contains("alko plus")) brandName = "ALKO PLUS";
+                    else if (lowerName.Contains("ultra touch")) brandName = "Ultra Touch";
+                    else if (lowerName.Contains("saw master")) brandName = "Saw Master";
+                    else if (lowerName.Contains("hi-smart")) brandName = "Hi-Smart";
+
+                    var brand = brands.FirstOrDefault(b => b.BrandName.Equals(brandName, StringComparison.OrdinalIgnoreCase));
+                    if (brand == null)
+                    {
+                        brand = new Brand { BrandName = brandName };
+                        brand = await _masterService.SaveBrandAsync(brand);
+                        brands = await _masterService.GetBrandsAsync(); // Refresh list
+                    }
+
+                    // Create the new product
+                    var nextId = products.Count + 1;
+                    product = new Product
+                    {
+                        ProductCode = $"PRD{DateTime.Now:yyyy}{nextId:0000}",
+                        ProductName = name,
+                        CategoryId = category.Id,
+                        BrandId = brand.Id,
+                        UnitId = defaultUnit.Id,
+                        WarehouseId = defaultWarehouse.Id,
+                        PurchasePrice = item.Rate,
+                        SalesPrice = Math.Round(item.Rate * 1.25m, 2), // 25% markup
+                        MRP = Math.Round(item.Rate * 1.30m, 2),        // 30% markup
+                        GSTPercentage = 18,                            // Default GST
+                        OpeningStock = 0,
+                        CurrentStock = 0,
+                        IsActive = true
+                    };
+
+                    product = await _masterService.SaveProductAsync(product);
+                    products = await _masterService.GetProductsAsync(); // Refresh list
+                }
+
+                resultList.Add(new
+                {
+                    productId = product.Id,
+                    productName = product.ProductName,
+                    categoryId = product.CategoryId,
+                    rate = product.PurchasePrice,
+                    qty = item.Qty
+                });
+            }
+
+            return Json(new { success = true, items = resultList });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+}
+
+public class UploadedProductItemDto
+{
+    public string ProductName { get; set; } = string.Empty;
+    public decimal Qty { get; set; }
+    public decimal Rate { get; set; }
 }

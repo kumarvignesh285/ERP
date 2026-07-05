@@ -38,4 +38,6 @@ public class Product : BaseEntity
     public string? ImagePath { get; set; }
     public bool IsBatchTracked { get; set; }
     public bool IsSerialTracked { get; set; }
+    [MaxLength(200)]
+    public string? DocumentPath { get; set; }
 }

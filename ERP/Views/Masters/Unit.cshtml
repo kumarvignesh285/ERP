@@ -8,7 +8,7 @@
     <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Unit</button>
 </div>
 
-<div class="card max-width-600 mx-auto">
+<div class="card">
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover datatable align-middle">
@@ -27,7 +27,7 @@
                             <td>@u.UnitName</td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editUnit(@Json.Serialize(u))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { u.Id, u.UnitName, u.UnitSymbol })" onclick="editUnit(this)"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button class="btn btn-sm btn-outline-danger" onclick="deleteUnit(@u.Id)"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </td>
@@ -61,7 +61,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
                 </div>
             </form>
         </div>
@@ -79,14 +79,17 @@
             document.getElementById('unitForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerText = "Add Unit";
+            document.getElementById('submitBtn').innerText = "Save";
             bootstrapModal.show();
         }
 
-        function editUnit(u) {
+        function editUnit(btn) {
+            var u = $(btn).data('item');
             document.getElementById('Id').value = window.getVal(u, 'id');
             document.getElementById('UnitSymbol').value = window.getVal(u, 'unitSymbol');
             document.getElementById('UnitName').value = window.getVal(u, 'unitName');
             document.getElementById('modalTitle').innerText = "Edit Unit";
+            document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();
         }
 

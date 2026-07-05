@@ -66,6 +66,13 @@ public class ErpApiController : ControllerBase
         return Ok(list);
     }
 
+    [HttpGet("products")]
+    public async Task<IActionResult> GetProducts()
+    {
+        var list = await _masterService.GetProductsAsync();
+        return Ok(list);
+    }
+
     [HttpGet("products/{id}")]
     public async Task<IActionResult> GetProduct(int id)
     {

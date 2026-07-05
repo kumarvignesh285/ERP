@@ -9,6 +9,36 @@
         <button class="btn btn-primary" onclick="showForm()"><i class="fa-solid fa-plus me-1"></i> New Challan</button>
     </div>
 
+    <!-- Filters Row -->
+    <div class="card mb-3 no-print">
+        <div class="card-body p-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label font-weight-semibold mb-1 small text-muted">From Date</label>
+                    <input type="date" id="filterFromDate" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label font-weight-semibold mb-1 small text-muted">To Date</label>
+                    <input type="date" id="filterToDate" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label font-weight-semibold mb-1 small text-muted">Status</label>
+                    <select id="filterStatus" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Dispatched">Dispatched</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2 align-self-end">
+                    <button class="btn btn-sm btn-primary w-100" onclick="applyFilters()"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                    <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetFilters()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -31,7 +61,17 @@
                                 <td>@c.ChallanDate.ToString("dd-MM-yyyy")</td>
                                 <td>@c.Customer?.CustomerName</td>
                                 <td class="font-weight-semibold text-dark">₹@c.GrandTotal.ToString("N2")</td>
-                                <td><span class="badge bg-success">@c.Status</span></td>
+                                @{
+                                    var statusBadgeClass = c.Status switch
+                                    {
+                                        "Pending" or "Draft" => "badge-pending",
+                                        "Dispatched" or "Sent" or "Issued" or "Active" => "badge-sent",
+                                        "Delivered" or "Completed" or "Paid" or "Accepted" or "Approved" => "badge-accepted",
+                                        "Cancelled" or "Rejected" or "Expired" => "badge-rejected",
+                                        _ => "badge-accepted"
+                                    };
+                                }
+                                <td><span class="badge @statusBadgeClass">@c.Status</span></td>
                                 <td class="text-center no-print">
                                     <div class="btn-group">
                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteChallan(@c.Id)"><i class="fa-solid fa-trash"></i></button>
@@ -136,7 +176,8 @@
                     salesPrice: window.getVal(p, 'salesPrice'),
                     purchasePrice: window.getVal(p, 'purchasePrice'),
                     gstPercentage: window.getVal(p, 'gstPercentage'),
-                    categoryId: window.getVal(p, 'categoryId')
+                    categoryId: window.getVal(p, 'categoryId'),
+                    currentStock: window.getVal(p, 'currentStock')
                 };
             });
         }
@@ -159,7 +200,7 @@
 
         function addRow() {
             var catOptionsHtml = '<option value="">All Categories</option>';
-            var categoriesList = @Json.Serialize(Model.Categories);
+            var categoriesList = @Json.Serialize(Model.Categories.Select(c => new { id = c.Id, categoryName = c.CategoryName }));
             if (categoriesList) {
                 categoriesList = categoriesList.map(function(c) {
                     return {
@@ -174,7 +215,8 @@
 
             var optionsHtml = '<option value="">Select Product</option>';
             productsList.forEach(function(p) {
-                optionsHtml += `<option value="${p.id}">${p.productName}</option>`;
+                var optionText = `${p.productName} (${p.productCode}) | Stock: ${p.currentStock || 0} | Price: ₹${(p.salesPrice || 0).toFixed(2)} | GST: ${p.gstPercentage || 0}%`;
+                optionsHtml += `<option value="${p.id}">${optionText}</option>`;
             });
 
             var rowHtml = `
@@ -224,8 +266,8 @@
             
             productsList.forEach(function(p) {
                 if (!catId || p.categoryId == catId) {
-                    var prodName = p.productCode ? `${p.productName} (${p.productCode})` : p.productName;
-                    $prodSelect.append(`<option value="${p.id}">${prodName}</option>`);
+                    var optionText = `${p.productName} (${p.productCode}) | Stock: ${p.currentStock || 0} | Price: ₹${(p.salesPrice || 0).toFixed(2)} | GST: ${p.gstPercentage || 0}%`;
+                    $prodSelect.append(`<option value="${p.id}">${optionText}</option>`);
                 }
             });
             $prodSelect.trigger('change');

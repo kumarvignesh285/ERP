@@ -32,6 +32,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // Register ERP Core Services
+builder.Services.AddScoped<IPdfProductParserService, PdfProductParserService>();
 builder.Services.AddScoped<IMasterService, MasterService>();
 builder.Services.AddScoped<ISalesService, SalesService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
@@ -90,11 +91,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
-}
+// Enable detailed developer exceptions in all environments to aid local network deployment troubleshooting
+app.UseDeveloperExceptionPage();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

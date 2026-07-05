@@ -25,6 +25,8 @@ public class PurchaseOrder : BaseEntity
     public string Status { get; set; } = "Pending";
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    [MaxLength(200)]
+    public string? DocumentPath { get; set; }
     public ICollection<PurchaseOrderItem> Items { get; set; } = new List<PurchaseOrderItem>();
 }
 

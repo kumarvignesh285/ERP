@@ -1,4 +1,5 @@
 using ERP.Models;
+using ERP.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
@@ -91,4 +92,8 @@ public interface IMasterService
     Task<PaymentMode?> GetPaymentModeByIdAsync(int id);
     Task<PaymentMode> SavePaymentModeAsync(PaymentMode mode);
     Task DeletePaymentModeAsync(int id);
+
+    // Bulk Import and Verification
+    Task<List<ImportProductPreviewDto>> PreviewImportAsync(System.IO.Stream fileStream, string fileExtension);
+    Task<List<ProductImportResultDto>> CommitImportAsync(List<ImportProductCommitDto> items);
 }

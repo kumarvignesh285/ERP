@@ -149,7 +149,7 @@
 
         function addRow() {
             var catOptionsHtml = '<option value="">All Categories</option>';
-            var categoriesList = @Json.Serialize(Model.Categories);
+            var categoriesList = @Json.Serialize(Model.Categories.Select(c => new { id = c.Id, categoryName = c.CategoryName }));
             if (categoriesList) {
                 categoriesList = categoriesList.map(function(c) {
                     return {
@@ -164,7 +164,8 @@
 
             var optionsHtml = '<option value="">Select Product</option>';
             productsList.forEach(function(p) {
-                optionsHtml += `<option value="${p.id}">${p.productName}</option>`;
+                var optionText = `${p.productName} (${p.productCode}) | Stock: ${p.currentStock || 0} | Cost: ₹${(p.purchasePrice || 0).toFixed(2)} | GST: ${p.gstPercentage || 0}%`;
+                optionsHtml += `<option value="${p.id}">${optionText}</option>`;
             });
 
             var rowHtml = `
@@ -213,7 +214,8 @@
             
             productsList.forEach(function(p) {
                 if (!catId || p.categoryId == catId) {
-                    $prodSelect.append(`<option value="${p.id}">${p.productName}</option>`);
+                    var optionText = `${p.productName} (${p.productCode}) | Stock: ${p.currentStock || 0} | Cost: ₹${(p.purchasePrice || 0).toFixed(2)} | GST: ${p.gstPercentage || 0}%`;
+                    $prodSelect.append(`<option value="${p.id}">${optionText}</option>`);
                 }
             });
             $prodSelect.trigger('change');

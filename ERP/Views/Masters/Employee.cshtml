@@ -8,6 +8,38 @@
     <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Employee</button>
 </div>
 
+<!-- Filters Row -->
+<div class="card mb-3 no-print">
+    <div class="card-body p-3">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label font-weight-semibold mb-1 small text-muted">Department</label>
+                <select id="filterDepartment" class="form-select form-select-sm select2">
+                    <option value="">All Departments</option>
+                    @foreach (var dept in Model.Where(e => !string.IsNullOrEmpty(e.Department)).Select(e => e.Department).Distinct())
+                    {
+                        <option value="@dept">@dept</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label font-weight-semibold mb-1 small text-muted">Designation</label>
+                <select id="filterDesignation" class="form-select form-select-sm select2">
+                    <option value="">All Designations</option>
+                    @foreach (var desig in Model.Where(e => !string.IsNullOrEmpty(e.Designation)).Select(e => e.Designation).Distinct())
+                    {
+                        <option value="@desig">@desig</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2 align-self-end">
+                <button class="btn btn-sm btn-primary w-100" onclick="applyFilters()"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetFilters()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
@@ -35,7 +67,7 @@
                             <td>@e.Email</td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editEmployee(@Json.Serialize(e))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { e.Id, e.EmployeeCode, e.EmployeeName, e.Designation, e.Department, e.Mobile, e.Email })" onclick="editEmployee(this)"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee(@e.Id)"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </td>
@@ -81,7 +113,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label font-weight-semibold">Mobile Number</label>
-                            <input type="text" id="MobileNumber" name="MobileNumber" class="form-control" />
+                            <input type="text" id="Mobile" name="Mobile" class="form-control" />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label font-weight-semibold">Email</label>
@@ -91,7 +123,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
                 </div>
             </form>
         </div>
@@ -109,18 +141,21 @@
             document.getElementById('employeeForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerText = "Add Employee";
+            document.getElementById('submitBtn').innerText = "Save";
             bootstrapModal.show();
         }
 
-        function editEmployee(e) {
+        function editEmployee(btn) {
+            var e = $(btn).data('item');
             document.getElementById('Id').value = window.getVal(e, 'id');
             document.getElementById('EmployeeCode').value = window.getVal(e, 'employeeCode');
             document.getElementById('EmployeeName').value = window.getVal(e, 'employeeName');
             document.getElementById('Designation').value = window.getVal(e, 'designation') || "";
             document.getElementById('Department').value = window.getVal(e, 'department') || "";
-            document.getElementById('MobileNumber').value = window.getVal(e, 'mobileNumber') || "";
+            document.getElementById('Mobile').value = window.getVal(e, 'mobile') || "";
             document.getElementById('Email').value = window.getVal(e, 'email') || "";
             document.getElementById('modalTitle').innerText = "Edit Employee";
+            document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();
         }
 

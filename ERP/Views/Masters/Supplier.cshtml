@@ -8,6 +8,28 @@
     <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Supplier</button>
 </div>
 
+<!-- Filters Row -->
+<div class="card mb-3 no-print">
+    <div class="card-body p-3">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-8">
+                <label class="form-label font-weight-semibold mb-1 small text-muted">City</label>
+                <select id="filterCity" class="form-select form-select-sm select2">
+                    <option value="">All Cities</option>
+                    @foreach (var city in Model.Where(s => !string.IsNullOrEmpty(s.City)).Select(s => s.City).Distinct())
+                    {
+                        <option value="@city">@city</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2 align-self-end">
+                <button class="btn btn-sm btn-primary w-100" onclick="applyFilters()"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetFilters()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
@@ -35,7 +57,7 @@
                             <td>@s.City</td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editSupplier(@Json.Serialize(s))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { s.Id, s.SupplierCode, s.SupplierName, s.ContactPerson, s.Mobile, s.Email, s.GSTNumber, s.Address, s.City, s.State, s.Country })" onclick="editSupplier(this)"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button class="btn btn-sm btn-outline-danger" onclick="deleteSupplier(@s.Id)"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </td>
@@ -109,7 +131,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
                 </div>
             </form>
         </div>
@@ -127,10 +149,12 @@
             document.getElementById('supplierForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerText = "Add Supplier";
+            document.getElementById('submitBtn').innerText = "Save";
             bootstrapModal.show();
         }
 
-        function editSupplier(supplier) {
+        function editSupplier(btn) {
+            var supplier = $(btn).data('item');
             document.getElementById('supplierForm').reset();
             document.getElementById('Id').value = window.getVal(supplier, 'id');
             document.getElementById('SupplierCode').value = window.getVal(supplier, 'supplierCode');
@@ -144,6 +168,7 @@
             document.getElementById('State').value = window.getVal(supplier, 'state') || "";
             document.getElementById('Country').value = window.getVal(supplier, 'country') || "India";
             document.getElementById('modalTitle').innerText = "Edit Supplier";
+            document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();
         }
 

@@ -141,7 +141,8 @@
                     salesPrice: window.getVal(p, 'salesPrice'),
                     purchasePrice: window.getVal(p, 'purchasePrice'),
                     gstPercentage: window.getVal(p, 'gstPercentage'),
-                    categoryId: window.getVal(p, 'categoryId')
+                    categoryId: window.getVal(p, 'categoryId'),
+                    currentStock: window.getVal(p, 'currentStock')
                 };
             });
         }
@@ -163,7 +164,7 @@
 
         function addRow() {
             var catOptionsHtml = '<option value="">All Categories</option>';
-            var categoriesList = @Json.Serialize(Model.Categories);
+            var categoriesList = @Json.Serialize(Model.Categories.Select(c => new { id = c.Id, categoryName = c.CategoryName }));
             if (categoriesList) {
                 categoriesList = categoriesList.map(function(c) {
                     return {
@@ -178,7 +179,8 @@
 
             var optionsHtml = '<option value="">Select Product</option>';
             productsList.forEach(function(p) {
-                optionsHtml += `<option value="${p.id}">${p.productName}</option>`;
+                var optionText = `${p.productName} (${p.productCode}) | Stock: ${p.currentStock || 0} | Cost: ₹${(p.purchasePrice || 0).toFixed(2)} | GST: ${p.gstPercentage || 0}%`;
+                optionsHtml += `<option value="${p.id}">${optionText}</option>`;
             });
 
             var rowHtml = `
@@ -212,6 +214,23 @@
 
         function removeRow(btn) {
             $(btn).closest('tr').remove();
+        }
+
+        function onCategorySelect(select) {
+            var catId = $(select).val();
+            var $row = $(select).closest('tr');
+            var $prodSelect = $row.find('.select2-row');
+            
+            $prodSelect.empty();
+            $prodSelect.append('<option value="">Select Product</option>');
+            
+            productsList.forEach(function(p) {
+                if (!catId || p.categoryId == catId) {
+                    var optionText = `${p.productName} (${p.productCode}) | Stock: ${p.currentStock || 0} | Cost: ₹${(p.purchasePrice || 0).toFixed(2)} | GST: ${p.gstPercentage || 0}%`;
+                    $prodSelect.append(`<option value="${p.id}">${optionText}</option>`);
+                }
+            });
+            $prodSelect.trigger('change');
         }
 
         function onProductSelect(select) {

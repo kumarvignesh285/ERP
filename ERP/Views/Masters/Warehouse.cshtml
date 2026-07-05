@@ -8,7 +8,7 @@
     <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Warehouse</button>
 </div>
 
-<div class="card max-width-800 mx-auto">
+<div class="card">
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover datatable align-middle">
@@ -31,7 +31,7 @@
                             <td>@w.State</td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editWarehouse(@Json.Serialize(w))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { w.Id, w.WarehouseCode, w.WarehouseName, w.Address, w.City, w.State })" onclick="editWarehouse(this)"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button class="btn btn-sm btn-outline-danger" onclick="deleteWarehouse(@w.Id)"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </td>
@@ -81,7 +81,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
                 </div>
             </form>
         </div>
@@ -99,10 +99,12 @@
             document.getElementById('warehouseForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerText = "Add Warehouse";
+            document.getElementById('submitBtn').innerText = "Save";
             bootstrapModal.show();
         }
 
-        function editWarehouse(w) {
+        function editWarehouse(btn) {
+            var w = $(btn).data('item');
             document.getElementById('Id').value = window.getVal(w, 'id');
             document.getElementById('WarehouseCode').value = window.getVal(w, 'warehouseCode');
             document.getElementById('WarehouseName').value = window.getVal(w, 'warehouseName');
@@ -110,6 +112,7 @@
             document.getElementById('City').value = window.getVal(w, 'city') || "";
             document.getElementById('State').value = window.getVal(w, 'state') || "";
             document.getElementById('modalTitle').innerText = "Edit Warehouse";
+            document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();
         }
 

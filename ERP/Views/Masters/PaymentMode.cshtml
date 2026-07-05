@@ -8,7 +8,7 @@
     <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Payment Mode</button>
 </div>
 
-<div class="card max-width-600 mx-auto">
+<div class="card">
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover datatable align-middle">
@@ -39,7 +39,7 @@
                             <td><span class="badge @badgeClass">@pm.ModeType</span></td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editPaymentMode(@Json.Serialize(pm))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { pm.Id, pm.ModeName, pm.ModeType })" onclick="editPaymentMode(this)"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button class="btn btn-sm btn-outline-danger" onclick="deletePaymentMode(@pm.Id)"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </td>
@@ -79,7 +79,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
                 </div>
             </form>
         </div>
@@ -97,14 +97,17 @@
             document.getElementById('paymentModeForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerText = "Add Payment Mode";
+            document.getElementById('submitBtn').innerText = "Save";
             bootstrapModal.show();
         }
 
-        function editPaymentMode(pm) {
+        function editPaymentMode(btn) {
+            var pm = $(btn).data('item');
             document.getElementById('Id').value = window.getVal(pm, 'id');
             document.getElementById('ModeName').value = window.getVal(pm, 'modeName');
             document.getElementById('ModeType').value = window.getVal(pm, 'modeType');
             document.getElementById('modalTitle').innerText = "Edit Payment Mode";
+            document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();
         }
 

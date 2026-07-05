@@ -27,8 +27,6 @@ public class ProductLookupViewModel
 
 public sealed class ProductEditLookupViewModel : ProductLookupViewModel
 {
-    [JsonPropertyName("categoryId")]
-    public int? CategoryId { get; set; }
     [JsonPropertyName("brandId")]
     public int? BrandId { get; set; }
     [JsonPropertyName("unitId")]
@@ -43,6 +41,8 @@ public sealed class ProductEditLookupViewModel : ProductLookupViewModel
     public decimal ReorderLevel { get; set; }
     [JsonPropertyName("description")]
     public string? Description { get; set; }
+    [JsonPropertyName("documentPath")]
+    public string? DocumentPath { get; set; }
 }
 
 public sealed class LedgerLookupViewModel

@@ -8,7 +8,7 @@
     <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Brand</button>
 </div>
 
-<div class="card max-width-600 mx-auto">
+<div class="card">
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover datatable align-middle">
@@ -27,7 +27,7 @@
                             <td class="font-weight-semibold">@b.BrandName</td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editBrand(@Json.Serialize(b))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { b.Id, b.BrandName })" onclick="editBrand(this)"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button class="btn btn-sm btn-outline-danger" onclick="deleteBrand(@b.Id)"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </td>
@@ -57,7 +57,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
                 </div>
             </form>
         </div>
@@ -75,13 +75,16 @@
             document.getElementById('brandForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerText = "Add Brand";
+            document.getElementById('submitBtn').innerText = "Save";
             bootstrapModal.show();
         }
 
-        function editBrand(b) {
+        function editBrand(btn) {
+            var b = $(btn).data('item');
             document.getElementById('Id').value = window.getVal(b, 'id');
             document.getElementById('BrandName').value = window.getVal(b, 'brandName');
             document.getElementById('modalTitle').innerText = "Edit Brand";
+            document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();
         }
 

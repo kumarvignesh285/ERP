@@ -36,13 +36,12 @@ $(function () {
     // Fix Bootstrap modal backdrop overlay issues by appending modals to body
     $('.modal').appendTo('body');
 
-    // Reusable DataTable filtering by date range (From Date/To Date) and Status dropdown
+    // Reusable DataTable filtering by date range and generic prefix inputs
     if ($.fn.dataTable) {
         $.fn.dataTable.ext.search.push(
             function (settings, data, dataIndex) {
                 var fromDate = $('#filterFromDate').val();
                 var toDate = $('#filterToDate').val();
-                var status = $('#filterStatus').val();
 
                 var rowDate = null;
                 for (var i = 0; i < data.length; i++) {
@@ -72,19 +71,30 @@ $(function () {
                     }
                 }
 
-                var statusMatch = true;
-                if (status) {
-                    statusMatch = false;
-                    for (var i = 0; i < data.length; i++) {
-                        var cellVal = (data[i] || "").trim().toLowerCase();
-                        if (cellVal === status.trim().toLowerCase()) {
-                            statusMatch = true;
-                            break;
+                var genericMatch = true;
+                $('[id^="filter"]').each(function() {
+                    var filterId = $(this).attr('id');
+                    if (filterId === 'filterFromDate' || filterId === 'filterToDate') return;
+
+                    var filterVal = $(this).val();
+                    if (filterVal) {
+                        var matchFound = false;
+                        var searchVal = filterVal.trim().toLowerCase();
+                        for (var i = 0; i < data.length; i++) {
+                            var cellVal = (data[i] || "").trim().toLowerCase();
+                            if (cellVal === searchVal || cellVal.indexOf(searchVal) !== -1) {
+                                matchFound = true;
+                                break;
+                            }
+                        }
+                        if (!matchFound) {
+                            genericMatch = false;
+                            return false; // break loop
                         }
                     }
-                }
+                });
 
-                return dateMatch && statusMatch;
+                return dateMatch && genericMatch;
             }
         );
 
@@ -93,9 +103,13 @@ $(function () {
         };
 
         window.resetFilters = function () {
-            $('#filterFromDate').val('');
-            $('#filterToDate').val('');
-            $('#filterStatus').val('');
+            $('[id^="filter"]').each(function() {
+                var element = $(this);
+                element.val('');
+                if (element.hasClass('select2') || element.hasClass('select2-row') || element.hasClass('form-select')) {
+                    element.trigger('change');
+                }
+            });
             $('.datatable').DataTable().draw();
         };
     }
@@ -163,18 +177,78 @@ $(function () {
             };
         }
 
+        function formatProductOption(state) {
+            if (!state.id) return state.text;
+            var parts = state.text.split('|');
+            if (parts.length > 1) {
+                var mainText = parts[0].trim();
+                var subText = parts.slice(1).map(function(p) { return p.trim(); }).join(' • ');
+                return $('<div class="d-flex flex-column">' +
+                    '<span class="font-weight-semibold text-dark fs-7">' + mainText + '</span>' +
+                    '<span class="text-muted fs-8">' + subText + '</span>' +
+                    '</div>');
+            }
+            return state.text;
+        }
+
+        function formatProductSelection(state) {
+            if (!state.id) return state.text;
+            var parts = state.text.split('|');
+            return parts[0].trim();
+        }
+
         window.initializeSelect2 = function (selectorOrElements) {
             const elements = $(selectorOrElements);
             elements.each(function () {
                 const select = $(this);
                 const modal = select.closest('.modal');
-                select.select2({
+                var options = {
                     width: '100%',
                     dropdownParent: modal.length ? modal : $('body')
-                });
+                };
+                
+                if (select.hasClass('select2-row')) {
+                    options.templateResult = formatProductOption;
+                    options.templateSelection = formatProductSelection;
+                }
+                
+                select.select2(options);
             });
             return elements;
         };
+
+        // Listen for changes on product selection dropdowns to show clean badges underneath
+        $(document).on('change', '.select2-row', function() {
+            var select = $(this);
+            var selectedVal = select.val();
+            var td = select.closest('td');
+            
+            // Remove existing badges
+            td.find('.product-details-helper').remove();
+            
+            if (!selectedVal) return;
+            
+            var selectedText = select.find('option:selected').text();
+            var parts = selectedText.split('|');
+            if (parts.length > 1) {
+                var badgeHtml = '<div class="product-details-helper mt-1 d-flex gap-2 flex-wrap" style="font-size: 0.72rem;">';
+                for (var i = 1; i < parts.length; i++) {
+                    var detail = parts[i].trim();
+                    var badgeClass = 'bg-light text-secondary border';
+                    if (detail.toLowerCase().includes('stock')) {
+                        var stockNum = parseFloat(detail.replace(/[^0-9.-]/g, '')) || 0;
+                        badgeClass = stockNum <= 0 ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle';
+                    } else if (detail.toLowerCase().includes('price')) {
+                        badgeClass = 'bg-primary-subtle text-primary border border-primary-subtle';
+                    } else if (detail.toLowerCase().includes('gst')) {
+                        badgeClass = 'bg-info-subtle text-info border border-info-subtle';
+                    }
+                    badgeHtml += `<span class="badge ${badgeClass} font-weight-medium">${detail}</span>`;
+                }
+                badgeHtml += '</div>';
+                td.append(badgeHtml);
+            }
+        });
 
         if (!$.fn.DataTable) {
             $.fn.DataTable = function () {

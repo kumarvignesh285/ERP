@@ -21,6 +21,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -118,6 +120,15 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
     <script src="~/lib/chart.js/chart.umd.js"></script>
@@ -127,13 +138,91 @@
 
     <script>
         $(document).ready(function() {
-            // Apply beautiful DataTable defaults
-            $('.datatable').DataTable({
-                responsive: true,
-                language: {
-                    searchPlaceholder: "Search...",
-                    search: ""
-                }
+            // Apply beautiful DataTable defaults with dynamic S.No. (serial number) column prepended
+            $('.datatable').each(function() {
+                var $table = $(this);
+                
+                // 1. Add "S.No." column header
+                $table.find('thead tr').each(function() {
+                    $(this).prepend('<th style="width: 60px;" class="text-center">S.No.</th>');
+                });
+                
+                // 2. Add empty cell in body rows so DataTables has a column to write into
+                $table.find('tbody tr').each(function() {
+                    $(this).prepend('<td class="text-center font-weight-semibold"></td>');
+                });
+
+                // 3. Add empty cell in footer rows if any
+                $table.find('tfoot tr').each(function() {
+                    $(this).prepend('<th></th>');
+                });
+
+                // Initialize DataTable on this specific table element
+                var table = $table.DataTable({
+                    responsive: true,
+                    lengthChange: false,
+                    dom: "<'dt-top-bar'<'dt-search-wrap'f><'dt-btn-wrap'B>>" +
+                         "<'row'<'col-12'tr>>" +
+                         "<'dt-bottom-bar'<'dt-info-wrap'i><'dt-paging-wrap'p>>",
+                    buttons: [
+                        {
+                            extend: 'excelHtml5',
+                            text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
+                            className: 'btn-dt-export btn-dt-excel',
+                            exportOptions: { columns: ':not(.no-print)' },
+                            title: document.title.split(' - ')[0]
+                        },
+                        {
+                            extend: 'csvHtml5',
+                            text: '<i class="fa-solid fa-file-csv me-1"></i> CSV',
+                            className: 'btn-dt-export btn-dt-csv',
+                            exportOptions: { columns: ':not(.no-print)' },
+                            title: document.title.split(' - ')[0]
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            text: '<i class="fa-solid fa-file-pdf me-1"></i> PDF',
+                            className: 'btn-dt-export btn-dt-pdf',
+                            exportOptions: { columns: ':not(.no-print)' },
+                            title: document.title.split(' - ')[0],
+                            orientation: 'landscape',
+                            pageSize: 'A4'
+                        },
+                        {
+                            extend: 'print',
+                            text: '<i class="fa-solid fa-print me-1"></i> Print',
+                            className: 'btn-dt-export btn-dt-print',
+                            exportOptions: { columns: ':not(.no-print)' },
+                            title: document.title.split(' - ')[0]
+                        }
+                    ],
+                    language: {
+                        searchPlaceholder: "Search records...",
+                        search: "",
+                        info: "Showing _START_ to _END_ of _TOTAL_ records",
+                        infoEmpty: "No records found",
+                        paginate: {
+                            previous: '<i class="fa-solid fa-chevron-left"></i>',
+                            next: '<i class="fa-solid fa-chevron-right"></i>'
+                        }
+                    },
+                    columnDefs: [
+                        {
+                            searchable: false,
+                            orderable: false,
+                            targets: 0
+                        }
+                    ],
+                    order: [[1, 'asc']] // order by the second column initially so S.No isn't sorted initially
+                });
+
+                // Keep the S.No column populated sequentially on draw
+                table.on('order.dt search.dt', function () {
+                    let i = 1;
+                    table.cells(null, 0, { search: 'applied', order: 'applied' }).every(function (cell) {
+                        this.data(i++);
+                    });
+                }).draw();
             });
 
             // Initialize select2 elements
