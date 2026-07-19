@@ -1,0 +1,64 @@
+<section class="py-24 bg-brand-black border-t border-white/5 no-print" id="newsletter-section">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
+        <div class="relative overflow-hidden border border-white/5 bg-brand-card-bg p-8 md:p-16 flex flex-col items-center text-center">
+            <!-- Background mesh -->
+            <div class="absolute inset-0 grid-mesh opacity-10 pointer-events-none"></div>
+            
+            <div class="relative z-10 max-w-xl flex flex-col items-center">
+                <div class="w-12 h-12 bg-brand-orange/10 border border-brand-orange/20 text-brand-orange flex items-center justify-center text-lg mb-6">
+                    <i class="fa-regular fa-paper-plane"></i>
+                </div>
+                
+                <span class="text-brand-orange font-syne font-extrabold text-xs tracking-widest uppercase block mb-3">TECHNICAL COMMUNICATIONS</span>
+                <h2 class="text-3xl md:text-5xl font-syne font-extrabold uppercase leading-tight text-white mb-6 tracking-luxury">
+                    SUBSCRIBE TO CATALOGS
+                </h2>
+                <p class="text-zinc-500 font-inter text-sm leading-relaxed mb-10">
+                    Get real-time bulletins on new industrial machinery, technical armature blueprints, and exclusive wholesale discount allocations.
+                </p>
+
+                <form class="flex flex-col sm:flex-row gap-3 w-full max-w-lg" id="newsletterForm">
+                    @Html.AntiForgeryToken()
+                    <input type="email" name="email" id="newsletterEmail" class="flex-grow bg-zinc-900 border border-zinc-800 focus:border-brand-orange focus:ring-1 focus:ring-brand-orange text-white font-inter text-xs px-5 py-4 placeholder-zinc-600 outline-none transition-colors duration-300" placeholder="Enter your business email address" required>
+                    <button type="submit" class="btn-magnetic bg-brand-orange text-white font-syne text-xs font-extrabold uppercase tracking-widest px-8 py-4 shadow-[0_0_15px_rgba(255,92,0,0.35)] transition-all duration-300">Subscribe</button>
+                </form>
+
+                <div id="newsletterMsg" class="mt-4 font-syne font-bold text-xs uppercase tracking-wider d-none"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const nForm = document.getElementById('newsletterForm');
+    if (!nForm) return;
+
+    nForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var email = document.getElementById('newsletterEmail').value;
+        var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        var msgDiv = document.getElementById('newsletterMsg');
+        
+        var response = await fetch('/Cms/Subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': token
+            },
+            body: 'email=' + encodeURIComponent(email)
+         });
+        
+        var result = await response.json();
+        msgDiv.classList.remove('d-none', 'text-green-500', 'text-red-500');
+        if (result.success) {
+            msgDiv.classList.add('text-green-500');
+            msgDiv.innerText = result.message;
+            document.getElementById('newsletterEmail').value = '';
+        } else {
+            msgDiv.classList.add('text-red-500');
+            msgDiv.innerText = result.message;
+        }
+    });
+});
+</script>

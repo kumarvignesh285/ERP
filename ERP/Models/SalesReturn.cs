@@ -24,6 +24,7 @@ public class SalesReturn : BaseEntity
     public string Status { get; set; } = "Draft";
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<SalesReturnItem> Items { get; set; } = new List<SalesReturnItem>();
 }
 

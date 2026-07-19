@@ -130,7 +130,7 @@ public class PurchaseService : IPurchaseService
     {
         return await _context.PurchaseInvoices
             .Include(i => i.Supplier)
-            .Include(i => i.Items)
+            .Include(i => i.Items).ThenInclude(item => item.Product)
             .FirstOrDefaultAsync(i => i.Id == id);
     }
 
@@ -148,15 +148,31 @@ public class PurchaseService : IPurchaseService
                     ?? throw new InvalidOperationException("One or more selected products were not found.");
 
                 item.ProductName = string.IsNullOrWhiteSpace(item.ProductName) ? product.ProductName : item.ProductName;
-                item.TaxPercentage = item.TaxPercentage == 0 ? product.GSTPercentage : item.TaxPercentage;
-                item.TaxAmount = item.TaxAmount == 0 ? item.Quantity * item.Rate * (item.TaxPercentage / 100) : item.TaxAmount;
-                item.Amount = item.Amount == 0 ? (item.Quantity * item.Rate) + item.TaxAmount : item.Amount;
+                if (!invoice.WithGST)
+                {
+                    item.TaxPercentage = 0;
+                    item.CGSTAmount = 0;
+                    item.SGSTAmount = 0;
+                    item.IGSTAmount = 0;
+                    item.TaxAmount = 0;
+                    item.Amount = item.Quantity * item.Rate;
+                }
+                else
+                {
+                    item.TaxPercentage = item.TaxPercentage == 0 ? product.GSTPercentage : item.TaxPercentage;
+                    item.TaxAmount = item.TaxAmount == 0 ? item.Quantity * item.Rate * (item.TaxPercentage / 100) : item.TaxAmount;
+                    item.Amount = item.Amount == 0 ? (item.Quantity * item.Rate) + item.TaxAmount : item.Amount;
+                }
             }
 
+            if (!invoice.WithGST)
+            {
+                invoice.TaxAmount = 0;
+            }
             invoice.SubTotal = invoice.SubTotal == 0 ? invoice.Items.Sum(i => i.Quantity * i.Rate) : invoice.SubTotal;
-            invoice.TaxAmount = invoice.TaxAmount == 0 ? invoice.Items.Sum(i => i.TaxAmount) : invoice.TaxAmount;
-            invoice.GrandTotal = invoice.GrandTotal == 0 ? invoice.SubTotal + invoice.TaxAmount - invoice.DiscountAmount + invoice.RoundOff : invoice.GrandTotal;
-            invoice.BalanceAmount = invoice.BalanceAmount == 0 ? invoice.GrandTotal - invoice.PaidAmount : invoice.BalanceAmount;
+            invoice.TaxAmount = !invoice.WithGST ? 0 : (invoice.TaxAmount == 0 ? invoice.Items.Sum(i => i.TaxAmount) : invoice.TaxAmount);
+            invoice.GrandTotal = invoice.SubTotal + invoice.TaxAmount - invoice.DiscountAmount + invoice.RoundOff;
+            invoice.BalanceAmount = invoice.GrandTotal - invoice.PaidAmount;
 
             if (invoice.Id == 0)
             {

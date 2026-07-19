@@ -1,0 +1,56 @@
+@model IEnumerable<VMRPowerTools.Domain.Entities.NewsletterSubscription>
+@{
+    ViewData["Title"] = "Newsletter Subscribers List";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <a asp-action="Index" class="text-decoration-none fs-7"><i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard</a>
+        <h1 class="h3 mb-0 text-gray-800 mt-2"><i class="fa-solid fa-users-envelope me-2 text-primary"></i> Newsletter Subscribers</h1>
+        <p class="text-muted fs-7 mb-0">View active email addresses collected from public page newsletter signup boxes.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
+        <div class="table-responsive">
+            <table class="table align-middle fs-7">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 10%;">ID</th>
+                        <th style="width: 50%;">Subscriber Email Address</th>
+                        <th style="width: 25%;">Signup Date</th>
+                        <th style="width: 15%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var sub in Model)
+                        {
+                            <tr>
+                                <td>@sub.Id</td>
+                                <td class="font-weight-bold text-dark">@sub.Email</td>
+                                <td class="text-muted">@sub.SubscribedAt.ToString("dd MMM yyyy HH:mm")</td>
+                                <td>
+                                    @if (sub.IsActive)
+                                    {
+                                        <span class="badge bg-success-subtle text-success">Active Subscribed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary">Opted Out</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No emails subscribed yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

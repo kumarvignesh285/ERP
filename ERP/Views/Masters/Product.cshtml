@@ -319,6 +319,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        function escapeHtml(str) {
+            if (str === undefined || str === null) return '';
+            return str.toString()
+                      .replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
         window.productEditList = @Json.Serialize(Model.ProductEditLookups);
         var bootstrapModal;
         var uploadModal;
@@ -453,8 +462,9 @@
                             </select>`;
                     } else if (item.matchStatus === 'SimilarMatch') {
                         stats.similars++;
-                        statusBadge = `<span class="badge bg-warning text-dark text-uppercase shadow-sm py-1.5 px-2.5" title="Similar to: ${item.similarMatchedName}"><i class="fa-solid fa-triangle-exclamation me-1"></i> Similar</span>
-                                       <div class="small text-muted mt-1" style="font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Ref: ${item.similarMatchedName}</div>`;
+                        var escapedSimilar = escapeHtml(item.similarMatchedName);
+                        statusBadge = `<span class="badge bg-warning text-dark text-uppercase shadow-sm py-1.5 px-2.5" title="Similar to: ${escapedSimilar}"><i class="fa-solid fa-triangle-exclamation me-1"></i> Similar</span>
+                                       <div class="small text-muted mt-1" style="font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Ref: ${escapedSimilar}</div>`;
                         actionSelect = `
                             <select class="form-select form-select-sm item-action" data-index="${index}">
                                 <option value="UpdateExisting" selected>Update Matched</option>
@@ -540,9 +550,9 @@
                         <tr data-index="${index}">
                             <td>${statusBadge}</td>
                             <td>${actionSelect}</td>
-                            <td><input type="text" class="form-control form-control-sm item-code font-weight-semibold" value="${item.productCode || ''}"></td>
-                            <td><input type="text" class="form-control form-control-sm item-name font-weight-semibold" value="${item.productName || ''}"></td>
-                            <td><input type="text" class="form-control form-control-sm item-hsn" value="${item.hsnCode || ''}"></td>
+                            <td><input type="text" class="form-control form-control-sm item-code font-weight-semibold" value="${escapeHtml(item.productCode)}"></td>
+                            <td><input type="text" class="form-control form-control-sm item-name font-weight-semibold" value="${escapeHtml(item.productName)}"></td>
+                            <td><input type="text" class="form-control form-control-sm item-hsn" value="${escapeHtml(item.hsnCode)}"></td>
                             <td>
                                 <select class="form-select form-select-sm item-category">
                                     ${catOptionsHtml}

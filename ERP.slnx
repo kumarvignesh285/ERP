@@ -1,3 +1,7 @@
 <Solution>
   <Project Path="ERP/ERP.csproj" />
+  <Project Path="VMRPowerTools.Domain/VMRPowerTools.Domain.csproj" />
+  <Project Path="VMRPowerTools.Application/VMRPowerTools.Application.csproj" />
+  <Project Path="VMRPowerTools.Infrastructure/VMRPowerTools.Infrastructure.csproj" />
+  <Project Path="VMRPowerTools.Website/VMRPowerTools.Website.csproj" />
 </Solution>

@@ -4,8 +4,21 @@ using ERP.Data;
 using ERP.Models;
 using ERP.Interfaces;
 using ERP.Services;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
+try
+{
+    Log.Information("Starting web application...");
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Services.AddSerilog((services, lc) => lc
+        .ReadFrom.Configuration(builder.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext());
 
 // Add Connection String & DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
@@ -63,8 +76,16 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-        // Apply pending migrations automatically
-        context.Database.Migrate();
+        try
+        {
+            // Apply pending migrations automatically
+            context.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning(ex, "Could not run context.Database.Migrate(). Continuing database startup sequence.");
+        }
         
         // Forcefully add missing columns if they were somehow dropped despite migrations showing as applied
         var sql = @"
@@ -110,4 +131,13 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapControllers();
 
-app.Run();
+    app.Run();
+}
+catch (Exception ex) when (ex.GetType().Name != "HostAbortedException")
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

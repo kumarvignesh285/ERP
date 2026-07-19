@@ -27,6 +27,7 @@ public class PurchaseOrder : BaseEntity
     public string? Notes { get; set; }
     [MaxLength(200)]
     public string? DocumentPath { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<PurchaseOrderItem> Items { get; set; } = new List<PurchaseOrderItem>();
 }
 

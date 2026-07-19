@@ -30,6 +30,7 @@ public class SalesOrder : BaseEntity
     public string? ShippingAddress { get; set; }
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<SalesOrderItem> Items { get; set; } = new List<SalesOrderItem>();
 }
 

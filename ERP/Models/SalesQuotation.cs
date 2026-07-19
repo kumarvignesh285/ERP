@@ -27,6 +27,7 @@ public class SalesQuotation : BaseEntity
     public string Status { get; set; } = "Draft";
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<SalesQuotationItem> Items { get; set; } = new List<SalesQuotationItem>();
 }
 

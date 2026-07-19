@@ -1,0 +1,102 @@
+@inject ICompanyService CompanyService
+@{
+    var company = await CompanyService.GetDefaultCompanyAsync();
+    var name = company?.CompanyName ?? "VMR Power Tools";
+    var address = company?.Address ?? "123 Industrial Hub, GST Road, Chennai, Tamil Nadu";
+    var phone = company?.Phone ?? "+91 98765 43210";
+    var email = company?.Email ?? "info@vmrpowertools.com";
+    var website = company?.Website ?? "www.vmrpowertools.com";
+}
+
+<footer class="no-print bg-[#050505] border-t border-white/5 py-16 px-4 md:px-8 mt-24">
+    <div class="container mx-auto max-w-7xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <!-- Brand Brief -->
+            <div class="flex flex-col gap-6">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" style="height: 34px; width: auto;">
+                        <polygon points="50,15 80,32 80,68 50,85 20,68 20,32" fill="none" stroke="#FF5C00" stroke-width="8"/>
+                        <circle cx="50" cy="50" r="16" fill="#FF5C00"/>
+                        <path d="M 50 35 L 50 65 M 35 50 L 65 50" stroke="#050505" stroke-width="4"/>
+                        <text x="105" y="72" font-family="'Syne', sans-serif" font-weight="900" font-size="64" fill="#ffffff" letter-spacing="-2">VMR</text>
+                        <text x="260" y="70" font-family="'Syne', sans-serif" font-weight="700" font-size="24" fill="#FF5C00" letter-spacing="4">TOOLS</text>
+                    </svg>
+                </div>
+                <p class="text-zinc-500 text-sm leading-relaxed max-w-sm font-inter">
+                    Redefining power and endurance through world-class precision engineering. VMR industrial machinery is built for high-performance operations and extreme work environments.
+                </p>
+                <div class="flex items-center gap-3 text-zinc-400 text-xs font-semibold tracking-wider uppercase font-syne bg-zinc-900/50 border border-zinc-800/80 px-4 py-2 w-fit">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
+                    </span>
+                    SmartERP Inventory Active
+                </div>
+            </div>
+
+            <!-- Quick Navigation -->
+            <div class="flex flex-col gap-6">
+                <h5 class="text-white text-xs font-bold uppercase tracking-widest font-syne text-brand-orange">Navigation</h5>
+                <ul class="flex flex-col gap-3 font-syne text-sm font-bold">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" class="text-zinc-400 hover:text-white transition-colors duration-300 flex items-center group">
+                            <span class="w-0 group-hover:w-2 h-[1px] bg-brand-orange mr-0 group-hover:mr-2 transition-all duration-300"></span>
+                            Home Portal
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Product" asp-action="Index" class="text-zinc-400 hover:text-white transition-colors duration-300 flex items-center group">
+                            <span class="w-0 group-hover:w-2 h-[1px] bg-brand-orange mr-0 group-hover:mr-2 transition-all duration-300"></span>
+                            Products Catalog
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home" asp-action="About" class="text-zinc-400 hover:text-white transition-colors duration-300 flex items-center group">
+                            <span class="w-0 group-hover:w-2 h-[1px] bg-brand-orange mr-0 group-hover:mr-2 transition-all duration-300"></span>
+                            About Heritage
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home" asp-action="Contact" class="text-zinc-400 hover:text-white transition-colors duration-300 flex items-center group">
+                            <span class="w-0 group-hover:w-2 h-[1px] bg-brand-orange mr-0 group-hover:mr-2 transition-all duration-300"></span>
+                            Contact & Support
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Contact & Logistics -->
+            <div class="flex flex-col gap-6">
+                <h5 class="text-white text-xs font-bold uppercase tracking-widest font-syne text-brand-orange">Logistics Desk</h5>
+                <ul class="flex flex-col gap-4 text-zinc-400 text-sm font-inter">
+                    <li class="flex gap-3 items-start">
+                        <i class="fa-solid fa-location-dot mt-1 text-brand-orange text-xs"></i>
+                        <span>@address</span>
+                    </li>
+                    <li class="flex gap-3 items-center">
+                        <i class="fa-solid fa-phone text-brand-orange text-xs"></i>
+                        <span>@phone</span>
+                    </li>
+                    <li class="flex gap-3 items-center">
+                        <i class="fa-solid fa-envelope text-brand-orange text-xs"></i>
+                        <a href="mailto:@email" class="hover:text-white transition-colors duration-300">@email</a>
+                    </li>
+                    <li class="flex gap-3 items-center">
+                        <i class="fa-solid fa-globe text-brand-orange text-xs"></i>
+                        <a href="http://@website" target="_blank" class="hover:text-white transition-colors duration-300">@website</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-white/5 mt-16 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 font-inter text-xs text-zinc-600">
+            <div>
+                &copy; @DateTime.Now.Year @name. Designed for industrial precision. All Rights Reserved.
+            </div>
+            <div class="flex gap-6">
+                <a href="#" class="hover:text-zinc-400 transition-colors duration-300">Privacy Policy</a>
+                <a href="#" class="hover:text-zinc-400 transition-colors duration-300">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>

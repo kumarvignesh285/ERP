@@ -1,0 +1,65 @@
+@{
+    ViewData["Title"] = "Premium Power Tools & Machinery";
+}
+
+<!-- Hero Slider -->
+<partial name="Partials/_HeroSlider" />
+
+<!-- Brands Logo Track -->
+<partial name="Partials/_BrandsSlider" />
+
+<!-- Categories Grid Section -->
+<partial name="Partials/_Categories" />
+
+<!-- Why Choose Us -->
+<partial name="Partials/_WhyChooseUs" />
+
+<!-- Statistics Segment -->
+<partial name="Partials/_Statistics" />
+
+<!-- Product Grids (Featured & Latest Arrivals) -->
+<partial name="Partials/_ProductGrids" />
+
+<!-- Special Offers Promotion Banner -->
+<partial name="Partials/_OffersBanner" />
+
+<!-- Testimonials Section -->
+<partial name="Partials/_Testimonials" />
+
+<!-- Newsletter Signup -->
+<partial name="Partials/_Newsletter" />
+
+<!-- Embedded Google Map -->
+<partial name="Partials/_GoogleMap" />
+
+<!-- WhatsApp Floating Badge -->
+<partial name="Partials/_WhatsAppButton" />
+
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "Organization",
+  "name": "VMR Power Tools",
+  "url": "https://www.vmrpowertools.com",
+  "logo": "https://www.vmrpowertools.com/images/logo.png",
+  "contactPoint": {
+    "@@type": "ContactPoint",
+    "telephone": "+91-98765-43210",
+    "contactType": "customer service",
+    "areaServed": "IN",
+    "availableLanguage": ["en", "ta"]
+  }
+}
+</script>
+
+@section Scripts {
+    <script>
+        function addToCart(event, productId) {
+            event.preventDefault();
+            event.stopPropagation();
+            $.post('/Cart/Add', { productId: productId, quantity: 1 }, function(res) {
+                location.reload();
+            });
+        }
+    </script>
+}

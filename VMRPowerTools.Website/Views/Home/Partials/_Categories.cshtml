@@ -1,0 +1,117 @@
+@inject VMRPowerTools.Application.Interfaces.IProductService ProductService
+@{
+    IEnumerable<Category> categories = null;
+    try
+    {
+        categories = await ProductService.GetActiveCategoriesAsync();
+    }
+    catch (Exception)
+    {
+        // Fallback to null, which triggers static defaults below
+    }
+}
+
+<section class="py-24 bg-brand-black border-b border-white/5 no-print" id="categories-section">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
+        <!-- Editorial Section Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
+            <div class="max-w-xl">
+                <span class="text-brand-orange font-syne font-extrabold text-xs tracking-widest uppercase block mb-3">LINE OF CLASSIFICATION</span>
+                <h2 class="text-4xl md:text-6xl font-syne font-extrabold uppercase leading-none text-white tracking-luxury">
+                    INDUSTRIAL<br><span class="text-zinc-600">DIVISIONS</span>
+                </h2>
+            </div>
+            <p class="text-zinc-500 font-inter text-sm max-w-sm leading-relaxed">
+                Machinery categorized by operational capability. Each series features distinct powertrain tolerances designed for specialized worksite applications.
+            </p>
+        </div>
+
+        <!-- Asymmetrical Grid Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            @if (categories != null && categories.Any())
+            {
+                int index = 0;
+                foreach (var cat in categories)
+                {
+                    index++;
+                    // Map categories to high-end Unsplash images
+                    var (imageSrc, iconClass) = cat.CategoryName.ToLower() switch
+                    {
+                        var c when c.Contains("drill") => ("https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&q=80&w=600", "fa-solid fa-screwdriver-wrench"),
+                        var c when c.Contains("grinder") => ("https://images.unsplash.com/photo-1530124560676-ac671c6d3bc8?auto=format&fit=crop&q=80&w=600", "fa-solid fa-dharmachakra"),
+                        var c when c.Contains("hammer") => ("https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600", "fa-solid fa-hammer"),
+                        var c when c.Contains("saw") => ("https://images.unsplash.com/photo-1540103711724-ebf833bde8d1?auto=format&fit=crop&q=80&w=600", "fa-solid fa-circle-notch"),
+                        var c when c.Contains("welding") => ("https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=600", "fa-solid fa-burst"),
+                        var c when c.Contains("safety") => ("https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=600", "fa-solid fa-helmet-safety"),
+                        _ => ("https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=600", "fa-solid fa-toolbox")
+                    };
+
+                    // Asymmetrical height classes
+                    var heightClass = index % 3 == 0 ? "h-[450px] lg:col-span-2" : "h-[350px]";
+
+                    <div class="relative overflow-hidden group cursor-none @heightClass border border-white/5 bg-brand-card-bg">
+                        <img src="@imageSrc" alt="@cat.CategoryName" class="absolute inset-0 w-full h-full object-cover grayscale opacity-45 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700 ease-out" loading="lazy">
+                        
+                        <!-- Ambient bottom shadow gradient -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent z-10"></div>
+                        
+                        <!-- Interactive Orange Corner Line -->
+                        <div class="absolute top-0 right-0 w-0 h-[2px] bg-brand-orange group-hover:w-full transition-all duration-500 z-20"></div>
+                        <div class="absolute top-0 right-0 w-[2px] h-0 bg-brand-orange group-hover:h-full transition-all duration-500 z-20"></div>
+
+                        <!-- Card Content -->
+                        <div class="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
+                            <span class="text-zinc-600 font-syne text-[10px] tracking-widest uppercase mb-1 block">SERIES 0@(index)</span>
+                            <div class="flex items-center gap-3">
+                                <i class="@iconClass text-brand-orange text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                                <h3 class="text-2xl font-syne font-extrabold uppercase text-white">@cat.CategoryName</h3>
+                            </div>
+                            
+                            <a asp-controller="Product" asp-action="Index" asp-route-categoryId="@cat.Id" class="mt-4 flex items-center gap-2 text-xs font-syne font-bold uppercase tracking-widest text-brand-orange opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                View Catalog <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                // Static premium fallbacks
+                var defaultCats = new[] {
+                    new { Name = "Rotary Hammers", Image = "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&q=80&w=600", Icon = "fa-solid fa-hammer", Span = "" },
+                    new { Name = "Angle Grinders", Image = "https://images.unsplash.com/photo-1530124560676-ac671c6d3bc8?auto=format&fit=crop&q=80&w=600", Icon = "fa-solid fa-dharmachakra", Span = "" },
+                    new { Name = "Circular Saws", Image = "https://images.unsplash.com/photo-1540103711724-ebf833bde8d1?auto=format&fit=crop&q=80&w=600", Icon = "fa-solid fa-circle-notch", Span = "lg:col-span-2 h-[450px]" },
+                    new { Name = "Welding Core", Image = "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=600", Icon = "fa-solid fa-burst", Span = "" },
+                    new { Name = "High-Torque Drills", Image = "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=600", Icon = "fa-solid fa-screwdriver-wrench", Span = "" }
+                };
+
+                int index = 0;
+                foreach (var cat in defaultCats)
+                {
+                    index++;
+                    var heightClass = string.IsNullOrEmpty(cat.Span) ? "h-[350px]" : cat.Span;
+                    
+                    <div class="relative overflow-hidden group cursor-none @heightClass border border-white/5 bg-brand-card-bg">
+                        <img src="@cat.Image" alt="@cat.Name" class="absolute inset-0 w-full h-full object-cover grayscale opacity-45 group-hover:opacity-85 group-hover:scale-105 transition-all duration-700 ease-out" loading="lazy">
+                        
+                        <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent z-10"></div>
+                        <div class="absolute top-0 right-0 w-0 h-[2px] bg-brand-orange group-hover:w-full transition-all duration-500 z-20"></div>
+                        <div class="absolute top-0 right-0 w-[2px] h-0 bg-brand-orange group-hover:h-full transition-all duration-500 z-20"></div>
+
+                        <div class="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
+                            <span class="text-zinc-600 font-syne text-[10px] tracking-widest uppercase mb-1 block">SERIES 0@(index)</span>
+                            <div class="flex items-center gap-3">
+                                <i class="@cat.Icon text-brand-orange text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                                <h3 class="text-2xl font-syne font-extrabold uppercase text-white">@cat.Name</h3>
+                            </div>
+                            
+                            <a asp-controller="Product" asp-action="Index" class="mt-4 flex items-center gap-2 text-xs font-syne font-bold uppercase tracking-widest text-brand-orange opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                View Catalog <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>

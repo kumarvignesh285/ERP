@@ -26,6 +26,7 @@ public class GoodsReceiptNote : BaseEntity
     public string Status { get; set; } = "Pending";
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<GoodsReceiptNoteItem> Items { get; set; } = new List<GoodsReceiptNoteItem>();
 }
 

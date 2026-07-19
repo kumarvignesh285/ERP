@@ -1,0 +1,46 @@
+<section class="py-12 bg-brand-black border-y border-white/5 overflow-hidden no-print">
+    <div class="container mx-auto px-4 text-center mb-8">
+        <span class="text-brand-orange font-syne font-extrabold text-xs tracking-widest uppercase block mb-1">GLOBAL ENGINEERING PARTNERS</span>
+        <h5 class="text-zinc-500 font-syne text-[10px] tracking-widest uppercase">Authorized Brand Distributors</h5>
+    </div>
+
+    <!-- Infinite horizontal scrolling marquee -->
+    <div class="relative w-full overflow-hidden flex items-center h-20">
+        <!-- Marquee track -->
+        <div class="flex gap-16 items-center animate-marquee whitespace-nowrap">
+            <!-- Set 1 -->
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">MILWAUKEE</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">BOSCH PRO</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">MAKITA</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">HILTI</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">DEWALT</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">STIHL</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">VMR ENGINE</div>
+            
+            <!-- Set 2 (duplicates for loop) -->
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">MILWAUKEE</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">BOSCH PRO</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">MAKITA</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">HILTI</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">DEWALT</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">STIHL</div>
+            <div class="text-zinc-600 font-syne font-extrabold text-3xl md:text-4xl tracking-widest select-none uppercase hover:text-white transition-colors duration-300">VMR ENGINE</div>
+        </div>
+    </div>
+</section>
+
+<!-- Custom marquee styling -->
+<style>
+@@keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 25s linear infinite;
+}
+.animate-marquee:hover {
+    animation-play-state: paused;
+}
+</style>

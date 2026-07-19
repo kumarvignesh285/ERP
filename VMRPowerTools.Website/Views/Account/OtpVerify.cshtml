@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Verify Account";
+    var email = TempData["ResetEmail"] as string;
+    var otp = TempData["ResetOtp"] as string;
+}
+
+<section class="py-5 bg-light d-flex align-items-center" style="min-height: 80vh;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card border-0 shadow-sm p-4 p-md-5 bg-white" style="border-radius: 16px;">
+                    <div class="text-center mb-4">
+                        <i class="fa-solid fa-shield-halved text-warning display-4 mb-3"></i>
+                        <h2 class="font-weight-bold">OTP Verification</h2>
+                        <p class="text-muted">A 6-digit OTP verification code has been dispatched to <strong>@email</strong>.</p>
+                        
+                        <!-- Visual indicator that the code is logged in terminal -->
+                        <div class="alert alert-warning border-0 p-2 fs-8 text-start mt-3">
+                            <i class="fa-solid fa-terminal me-1"></i> <strong>Simulation mode:</strong> Check terminal console output or enter <strong>123456</strong> to bypass.
+                        </div>
+                    </div>
+
+                    <form asp-action="OtpVerify" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="All" class="text-danger small font-weight-bold mb-3"></div>
+
+                        <div class="mb-4">
+                            <label class="form-label font-weight-semibold text-muted uppercase tracking-wider fs-8">6-Digit Verification Code</label>
+                            <input type="text" name="otpCode" class="form-control py-2 text-center font-weight-bold tracking-widest fs-5" required placeholder="XXXXXX" maxlength="6">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fs-6">Verify and Proceed</button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <a asp-action="ForgotPassword" class="text-decoration-none fs-7"><i class="fa-solid fa-rotate-left me-1"></i> Resend Code</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

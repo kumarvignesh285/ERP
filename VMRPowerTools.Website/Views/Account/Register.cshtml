@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Customer Registration";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card border-0 shadow-sm p-4 p-md-5 bg-white" style="border-radius: 16px;">
+                    <div class="text-center mb-4">
+                        <h2 class="font-weight-bold">Register Account</h2>
+                        <p class="text-muted fs-7">Create a new customer portal account</p>
+                    </div>
+
+                    <div asp-validation-summary="All" class="text-danger mb-3 small"></div>
+
+                    <form asp-controller="Account" asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label for="fullName" class="form-label fs-7 font-weight-semibold">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-user"></i></span>
+                                <input type="text" class="form-control py-2 border-start-0 bg-light" id="fullName" name="fullName" required placeholder="John Doe">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label fs-7 font-weight-semibold">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-envelope"></i></span>
+                                <input type="email" class="form-control py-2 border-start-0 bg-light" id="email" name="email" required placeholder="name@example.com">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label fs-7 font-weight-semibold">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-lock"></i></span>
+                                <input type="password" class="form-control py-2 border-start-0 bg-light" id="password" name="password" required placeholder="Minimum 6 characters">
+                            </div>
+                        </div>
+                        <div class="mb-4 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label fs-7 text-muted" for="terms">I agree to the <a href="#">Terms & Conditions</a></label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100 py-2 fs-6">Create Account</button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="text-muted fs-7 mb-0">Already have a portal account? <a asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="text-primary font-weight-semibold">Sign in here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

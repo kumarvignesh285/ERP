@@ -96,11 +96,11 @@
         <div class="card-body">
             <form id="challanForm">
                 <div class="row">
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-2 mb-3">
                         <label class="form-label font-weight-semibold">Challan Number *</label>
                         <input type="text" id="ChallanNumber" class="form-control" required />
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-2 mb-3">
                         <label class="form-label font-weight-semibold">Date *</label>
                         <input type="date" id="ChallanDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
                     </div>
@@ -114,7 +114,7 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-2 mb-3">
                         <label class="form-label font-weight-semibold">Status *</label>
                         <select id="Status" class="form-select" required>
                             <option value="Pending">Pending</option>
@@ -122,6 +122,14 @@
                             <option value="Delivered">Delivered</option>
                             <option value="Cancelled">Cancelled</option>
                         </select>
+                    </div>
+                    <div class="col-md-3 mb-3 align-self-end">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="WithGST" name="WithGST" onchange="toggleGST(this)" />
+                            <label class="form-check-label font-weight-bold" for="WithGST">
+                                With GST
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -133,9 +141,10 @@
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 20%">Category</th>
-                                <th style="width: 30%">Product *</th>
+                                <th style="width: 20%">Product *</th>
                                 <th style="width: 15%">Quantity *</th>
                                 <th style="width: 15%">Rate *</th>
+                                <th style="width: 10%" class="gst-column">GST %</th>
                                 <th style="width: 15%">Total</th>
                                 <th style="width: 5%" class="text-center">Action</th>
                             </tr>
@@ -148,6 +157,14 @@
                 <div class="d-flex justify-content-between mb-4">
                     <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
                     <div class="text-end" style="width: 300px;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Sub Total:</span>
+                            <span id="lblSubTotal" class="font-weight-semibold">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2" id="divTotalGST">
+                            <span>Total GST:</span>
+                            <span id="lblTotalGST" class="font-weight-semibold">₹0.00</span>
+                        </div>
                         <div class="d-flex justify-content-between border-top pt-2">
                             <span class="font-weight-bold">Grand Total:</span>
                             <span id="lblGrandTotal" class="font-weight-bold text-primary fs-5">₹0.00</span>
@@ -190,6 +207,8 @@
             $('#itemsTable tbody').empty();
             $('#CustomerId').val('').trigger('change');
             $('#Status').val('Pending');
+            $('#WithGST').prop('checked', false);
+            $('.gst-column').hide();
             addRow();
         }
 
@@ -198,7 +217,7 @@
             $('#listView').show();
         }
 
-        function addRow() {
+        function addRow(existingItem) {
             var catOptionsHtml = '<option value="">All Categories</option>';
             var categoriesList = @Json.Serialize(Model.Categories.Select(c => new { id = c.Id, categoryName = c.CategoryName }));
             if (categoriesList) {
@@ -237,6 +256,9 @@
                     <td>
                         <input type="number" class="form-control rate-input" value="0.00" step="0.01" oninput="calculateRow(this)" required />
                     </td>
+                    <td class="gst-column">
+                        <input type="number" class="form-control gst-input" value="18" oninput="calculateRow(this)" required />
+                    </td>
                     <td>
                         <input type="text" class="form-control total-input" value="0.00" readonly />
                     </td>
@@ -249,6 +271,21 @@
             $('#itemsTable tbody').append($row);
             window.initializeSelect2($row.find('.select2-row'));
             window.initializeSelect2($row.find('.select2-category'));
+
+            if ($('#WithGST').is(':checked')) {
+                $row.find('.gst-column').show();
+            } else {
+                $row.find('.gst-column').hide();
+                $row.find('.gst-input').val(0);
+            }
+
+            if (existingItem) {
+                $row.find('.select2-row').val(existingItem.productId).trigger('change');
+                $row.find('.qty-input').val(existingItem.quantity);
+                $row.find('.rate-input').val(existingItem.rate);
+                $row.find('.gst-input').val(existingItem.taxPercentage);
+                $row.find('.total-input').val((existingItem.quantity * existingItem.rate).toFixed(2));
+            }
         }
 
         function removeRow(btn) {
@@ -279,6 +316,7 @@
             var $row = $(select).closest('tr');
             if (product) {
                 $row.find('.rate-input').val(product.salesPrice);
+                $row.find('.gst-input').val(product.gstPercentage);
             }
             calculateRow(select);
         }
@@ -291,14 +329,45 @@
             calculateTotals();
         }
 
+        function toggleGST(elem) {
+            var isChecked = $(elem).is(':checked');
+            if (isChecked) {
+                $('.gst-column').show();
+            } else {
+                $('.gst-column').hide();
+                $('.gst-input').val(0);
+            }
+            calculateTotals();
+        }
+
         function calculateTotals() {
-            var total = 0;
+            var subTotal = 0;
+            var totalGST = 0;
+            var withGst = $('#WithGST').is(':checked');
+
             $('#itemsTable tbody tr').each(function() {
                 var qty = parseFloat($(this).find('.qty-input').val()) || 0;
                 var rate = parseFloat($(this).find('.rate-input').val()) || 0;
-                total += (qty * rate);
+                var gst = withGst ? (parseFloat($(this).find('.gst-input').val()) || 0) : 0;
+                
+                var lineTotal = qty * rate;
+                var lineGST = lineTotal * (gst / 100);
+
+                subTotal += lineTotal;
+                totalGST += lineGST;
             });
-            $('#lblGrandTotal').text('₹' + total.toFixed(2));
+
+            var grandTotal = subTotal + totalGST;
+
+            $('#lblSubTotal').text('₹' + subTotal.toFixed(2));
+            $('#lblTotalGST').text('₹' + totalGST.toFixed(2));
+            $('#lblGrandTotal').text('₹' + grandTotal.toFixed(2));
+
+            if (withGst) {
+                $('#divTotalGST').show();
+            } else {
+                $('#divTotalGST').hide();
+            }
         }
 
         function saveChallan() {
@@ -312,11 +381,15 @@
                     isValid = false;
                     return false;
                 }
+                var product = productsList.find(p => p.id == prodId);
+                var gst = $('#WithGST').is(':checked') ? (parseFloat($(this).find('.gst-input').val()) || 0) : 0;
                 items.push({
                     productId: parseInt(prodId),
                     quantity: qty,
                     rate: rate,
-                    totalAmount: qty * rate
+                    taxPercentage: gst,
+                    taxAmount: qty * rate * (gst / 100),
+                    amount: (qty * rate) + (qty * rate * (gst / 100))
                 });
             });
 
@@ -331,9 +404,12 @@
                 challanNumber: $('#ChallanNumber').val(),
                 challanDate: $('#ChallanDate').val(),
                 customerId: parseInt(customerId),
+                subTotal: parseFloat($('#lblSubTotal').text().replace('₹', '')) || 0,
+                taxAmount: parseFloat($('#lblTotalGST').text().replace('₹', '')) || 0,
                 grandTotal: parseFloat($('#lblGrandTotal').text().replace('₹', '')) || 0,
                 status: $('#Status').val(),
-                items: items
+                items: items,
+                withGST: $('#WithGST').is(':checked')
             };
 
             $.ajax({

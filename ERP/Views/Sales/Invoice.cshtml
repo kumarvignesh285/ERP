@@ -133,7 +133,7 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-1 mb-3">
                         <label class="form-label font-weight-semibold">Terms (Days)</label>
                         <input type="number" id="CreditDays" class="form-control" value="0" />
                     </div>
@@ -146,6 +146,14 @@
                             <option value="Paid">Paid</option>
                             <option value="Cancelled">Cancelled</option>
                         </select>
+                    </div>
+                    <div class="col-md-2 mb-3 align-self-end">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="WithGST" name="WithGST" onchange="toggleGST(this)" />
+                            <label class="form-check-label font-weight-bold" for="WithGST">
+                                With GST
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -160,7 +168,7 @@
                                 <th style="width: 20%">Product *</th>
                                 <th style="width: 12%">Quantity *</th>
                                 <th style="width: 15%">Rate *</th>
-                                <th style="width: 10%">GST %</th>
+                                <th style="width: 10%" class="gst-column">GST %</th>
                                 <th style="width: 15%">Total</th>
                                 <th style="width: 8%" class="text-center">Action</th>
                             </tr>
@@ -234,6 +242,8 @@
             $('#CustomerId').val('').trigger('change');
             $('#Status').val('Draft');
             $('#InvoiceDate').val('@DateTime.Today.ToString("yyyy-MM-dd")');
+            $('#WithGST').prop('checked', false);
+            $('.gst-column').hide();
             ErpPrint.fetchNextBillNumber('sales').done(function(res) {
                 $('#InvoiceNumber').val(res.billNumber);
             });
@@ -262,6 +272,15 @@
                     var days = parseInt(payTerms) || 0;
                     $('#CreditDays').val(days);
                 }
+
+                var withGst = window.getVal(inv, 'withGST') || false;
+                $('#WithGST').prop('checked', withGst);
+                if (withGst) {
+                    $('.gst-column').show();
+                } else {
+                    $('.gst-column').hide();
+                }
+
                 $('#itemsTable tbody').empty();
                 
                 var items = window.getVal(inv, 'items') || [];
@@ -324,7 +343,7 @@
                     <td>
                         <input type="number" class="form-control rate-input" value="0.00" step="0.01" oninput="calculateRow(this)" required />
                     </td>
-                    <td>
+                    <td class="gst-column">
                         <input type="number" class="form-control gst-input" value="18" oninput="calculateRow(this)" required />
                     </td>
                     <td>
@@ -340,6 +359,13 @@
             $('#itemsTable tbody').append($row);
             window.initializeSelect2($row.find('.select2-row'));
             window.initializeSelect2($row.find('.select2-category'));
+
+            if ($('#WithGST').is(':checked')) {
+                $row.find('.gst-column').show();
+            } else {
+                $row.find('.gst-column').hide();
+                $row.find('.gst-input').val(0);
+            }
 
             if (existingItem) {
                 $row.find('.select2-row').val(existingItem.productId).trigger('change');
@@ -395,14 +421,26 @@
             calculateTotals();
         }
 
+        function toggleGST(elem) {
+            var isChecked = $(elem).is(':checked');
+            if (isChecked) {
+                $('.gst-column').show();
+            } else {
+                $('.gst-column').hide();
+                $('.gst-input').val(0);
+            }
+            calculateTotals();
+        }
+
         function calculateTotals() {
             var subTotal = 0;
             var totalGST = 0;
+            var withGst = $('#WithGST').is(':checked');
 
             $('#itemsTable tbody tr').each(function() {
                 var qty = parseFloat($(this).find('.qty-input').val()) || 0;
                 var rate = parseFloat($(this).find('.rate-input').val()) || 0;
-                var gst = parseFloat($(this).find('.gst-input').val()) || 0;
+                var gst = withGst ? (parseFloat($(this).find('.gst-input').val()) || 0) : 0;
 
                 var lineTotal = qty * rate;
                 var lineGST = lineTotal * (gst / 100);
@@ -416,6 +454,12 @@
             $('#lblSubTotal').text('₹' + subTotal.toFixed(2));
             $('#lblTotalGST').text('₹' + totalGST.toFixed(2));
             $('#lblGrandTotal').text('₹' + grandTotal.toFixed(2));
+
+            if (withGst) {
+                $('#lblTotalGST').closest('div').show();
+            } else {
+                $('#lblTotalGST').closest('div').hide();
+            }
         }
 
         function saveInvoice() {
@@ -464,7 +508,8 @@
                 taxAmount: parseFloat($('#lblTotalGST').text().replace('₹', '')) || 0,
                 grandTotal: parseFloat($('#lblGrandTotal').text().replace('₹', '')) || 0,
                 balanceAmount: parseFloat($('#lblGrandTotal').text().replace('₹', '')) || 0,
-                items: items
+                items: items,
+                withGST: $('#WithGST').is(':checked')
             };
 
             $.ajax({

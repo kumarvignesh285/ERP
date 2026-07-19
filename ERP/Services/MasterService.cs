@@ -629,12 +629,33 @@ public class MasterService : IMasterService
                 
                 string getValue(string key) => dict.TryGetValue(key, out var val) ? val?.ToString()?.Trim() ?? "" : "";
 
-                var productCode = getValue("productcode");
                 var productName = getValue("productname");
+                if (string.IsNullOrEmpty(productName)) productName = getValue("descriptionofgoods");
+                if (string.IsNullOrEmpty(productName)) productName = getValue("description");
+
+                var productCode = getValue("productcode");
+                if (string.IsNullOrEmpty(productCode))
+                {
+                    var hsn = getValue("hsnsac");
+                    if (string.IsNullOrEmpty(hsn)) hsn = getValue("hsncode");
+                    var brand = getValue("brand");
+                    if (!string.IsNullOrEmpty(hsn) && !string.IsNullOrEmpty(brand))
+                    {
+                        productCode = $"{brand}-{hsn}";
+                    }
+                    else if (!string.IsNullOrEmpty(hsn))
+                    {
+                        productCode = hsn;
+                    }
+                    else if (!string.IsNullOrEmpty(productName))
+                    {
+                        productCode = "PRD-" + Math.Abs(productName.GetHashCode()).ToString();
+                    }
+                }
 
                 if (string.IsNullOrEmpty(productCode) || string.IsNullOrEmpty(productName))
                 {
-                    errors.Add($"Row {rowNum}: ProductCode and ProductName are required.");
+                    errors.Add($"Row {rowNum}: ProductCode (or HSN) and ProductName (or Description) are required.");
                     continue;
                 }
 
@@ -718,16 +739,42 @@ public class MasterService : IMasterService
                 prod.BrandId = brandId;
                 prod.UnitId = unitId;
                 prod.WarehouseId = warehouseId;
-                prod.HSNCode = getValue("hsncode");
+
+                var hsnVal = getValue("hsncode");
+                if (string.IsNullOrEmpty(hsnVal)) hsnVal = getValue("hsnsac");
+                prod.HSNCode = hsnVal;
+
                 prod.Barcode = getValue("barcode");
-                prod.Description = getValue("description");
-                
-                prod.PurchasePrice = parseDecimal("purchaseprice");
-                prod.SalesPrice = parseDecimal("salesprice");
-                prod.MRP = parseDecimal("mrp");
-                prod.Discount = parseDecimal("discount");
-                prod.GSTPercentage = parseDecimal("gstpercentage");
-                prod.OpeningStock = parseDecimal("openingstock");
+
+                var descriptionVal = getValue("description");
+                if (string.IsNullOrEmpty(descriptionVal)) descriptionVal = getValue("descriptionofgoods");
+                prod.Description = descriptionVal;
+
+                var purchasePrice = parseDecimal("purchaseprice");
+                if (purchasePrice == 0) purchasePrice = parseDecimal("rate(excl.tax)");
+                if (purchasePrice == 0) purchasePrice = parseDecimal("rate(incl.tax)") / 1.18m; // fallback 18%
+                prod.PurchasePrice = purchasePrice;
+
+                var salesPrice = parseDecimal("salesprice");
+                if (salesPrice == 0) salesPrice = Math.Round(purchasePrice * 1.25m, 2);
+                prod.SalesPrice = salesPrice;
+
+                var mrp = parseDecimal("mrp");
+                if (mrp == 0) mrp = Math.Round(purchasePrice * 1.30m, 2);
+                prod.MRP = mrp;
+
+                var discount = parseDecimal("discount");
+                if (discount == 0) discount = parseDecimal("disc%");
+                prod.Discount = discount;
+
+                var gstPercentage = parseDecimal("gstpercentage");
+                if (gstPercentage == 0) gstPercentage = 18; // default
+                prod.GSTPercentage = gstPercentage;
+
+                var openingStock = parseDecimal("openingstock");
+                if (openingStock == 0) openingStock = parseDecimal("quantity");
+                prod.OpeningStock = openingStock;
+
                 prod.MinimumStock = parseDecimal("minimumstock");
                 prod.MaximumStock = parseDecimal("maximumstock");
                 prod.ReorderLevel = parseDecimal("reorderlevel");
@@ -767,44 +814,118 @@ public class MasterService : IMasterService
         {
             try
             {
-                var rows = MiniExcelQuery(fileStream);
-                var rowNum = 1;
-                foreach (var row in rows)
+                using var ms = new System.IO.MemoryStream();
+                await fileStream.CopyToAsync(ms);
+
+                List<string> sheetNames = new List<string>();
+                try
                 {
-                    rowNum++;
-                    var dict = row.ToDictionary(k => k.Key.ToLower().Replace(" ", "").Replace("_", ""), v => v.Value);
-                    string getValue(string key) => dict.TryGetValue(key, out var val) ? val?.ToString()?.Trim() ?? "" : "";
-                    decimal parseDecimal(string key) => decimal.TryParse(getValue(key), out var d) ? d : 0;
+                    ms.Position = 0;
+                    sheetNames = MiniExcel.GetSheetNames(ms).ToList();
+                }
+                catch
+                {
+                    sheetNames.Add("Sheet1");
+                }
 
-                    var productName = getValue("productname");
-                    if (string.IsNullOrEmpty(productName)) continue;
+                foreach (var sheetName in sheetNames)
+                {
+                    if (sheetName.Equals("Summary", StringComparison.OrdinalIgnoreCase))
+                        continue;
 
-                    var catName = getValue("category");
-                    if (string.IsNullOrEmpty(catName))
+                    ms.Position = 0;
+                    var rows = MiniExcel.Query(ms, sheetName: sheetName, useHeaderRow: false)
+                                        .Cast<IDictionary<string, object>>()
+                                        .ToList();
+
+                    Dictionary<string, string> mappings = null;
+                    int headerRowIndex = -1;
+
+                    // Scan first 15 rows for the header
+                    for (int i = 0; i < Math.Min(rows.Count, 15); i++)
                     {
-                        catName = (productName.Contains("chainsaw", StringComparison.OrdinalIgnoreCase) || 
-                                   productName.Contains("chain saw", StringComparison.OrdinalIgnoreCase)) 
-                                   ? "Chain saw" 
-                                   : "Power Tools";
+                        if (IsHeaderRow(rows[i], out var tempMappings))
+                        {
+                            mappings = tempMappings;
+                            headerRowIndex = i;
+                            break;
+                        }
                     }
 
-                    list.Add(new ImportProductPreviewDto
+                    if (mappings == null) continue;
+
+                    for (int i = headerRowIndex + 1; i < rows.Count; i++)
                     {
-                        ProductCode = getValue("productcode"),
-                        ProductName = productName,
-                        CategoryName = catName,
-                        BrandName = getValue("brand"),
-                        UnitName = getValue("unit"),
-                        WarehouseName = getValue("warehouse"),
-                        HSNCode = getValue("hsncode"),
-                        PurchasePrice = parseDecimal("purchaseprice"),
-                        SalesPrice = parseDecimal("salesprice"),
-                        MRP = parseDecimal("mrp"),
-                        Discount = parseDecimal("discount"),
-                        GSTPercentage = parseDecimal("gstpercentage") == 0 ? 18 : parseDecimal("gstpercentage"),
-                        OpeningStock = parseDecimal("openingstock"),
-                        Description = getValue("description")
-                    });
+                        var row = rows[i];
+                        string getValue(string logicKey)
+                        {
+                            if (mappings.TryGetValue(logicKey, out var colKey) && row.TryGetValue(colKey, out var val))
+                            {
+                                return val?.ToString()?.Trim() ?? "";
+                            }
+                            return "";
+                        }
+
+                        decimal parseDecimal(string logicKey)
+                        {
+                            var valStr = getValue(logicKey);
+                            return decimal.TryParse(valStr, out var d) ? d : 0;
+                        }
+
+                        var productName = getValue("productname");
+                        if (string.IsNullOrEmpty(productName)) continue;
+
+                        var brandName = getValue("brand");
+                        var categoryName = getValue("category");
+                        if (string.IsNullOrEmpty(categoryName))
+                        {
+                            categoryName = (productName.Contains("chainsaw", StringComparison.OrdinalIgnoreCase) || 
+                                            productName.Contains("chain saw", StringComparison.OrdinalIgnoreCase)) 
+                                            ? "Chain saw" 
+                                            : sheetName;
+                        }
+
+                        var hsnCode = getValue("hsn");
+                        var purchasePrice = parseDecimal("purchaseprice");
+                        var salesPrice = parseDecimal("salesprice");
+                        var mrp = parseDecimal("mrp");
+                        
+                        if (purchasePrice == 0) purchasePrice = salesPrice;
+                        if (salesPrice == 0) salesPrice = purchasePrice;
+                        if (mrp == 0) mrp = salesPrice;
+
+                        var productCode = getValue("productcode");
+                        if (string.IsNullOrEmpty(productCode))
+                        {
+                            if (!string.IsNullOrEmpty(hsnCode) && !string.IsNullOrEmpty(brandName))
+                                productCode = $"{brandName}-{hsnCode}";
+                            else if (!string.IsNullOrEmpty(hsnCode))
+                                productCode = hsnCode;
+                            else
+                                productCode = "PRD-" + Math.Abs(productName.GetHashCode()).ToString();
+                        }
+
+                        var gstPercent = parseDecimal("gst");
+                        if (gstPercent == 0) gstPercent = 18;
+
+                        list.Add(new ImportProductPreviewDto
+                        {
+                            ProductCode = productCode,
+                            ProductName = productName,
+                            CategoryName = categoryName,
+                            BrandName = brandName,
+                            UnitName = getValue("unit"),
+                            WarehouseName = getValue("warehouse"),
+                            HSNCode = hsnCode,
+                            PurchasePrice = purchasePrice,
+                            SalesPrice = salesPrice,
+                            MRP = mrp,
+                            Discount = parseDecimal("discount"),
+                            GSTPercentage = gstPercent,
+                            OpeningStock = parseDecimal("quantity"),
+                            Description = getValue("description")
+                        });
+                    }
                 }
             }
             catch (Exception ex)
@@ -818,9 +939,8 @@ public class MasterService : IMasterService
 
         foreach (var item in list)
         {
-            // Try to find exact match
+            // Try to find exact match by name
             var exactMatch = dbProducts.FirstOrDefault(p =>
-                (!string.IsNullOrEmpty(item.ProductCode) && p.ProductCode.Equals(item.ProductCode, StringComparison.OrdinalIgnoreCase)) ||
                 p.ProductName.Equals(item.ProductName, StringComparison.OrdinalIgnoreCase));
 
             if (exactMatch != null)
@@ -866,6 +986,86 @@ public class MasterService : IMasterService
     private List<IDictionary<string, object>> MiniExcelQuery(System.IO.Stream stream)
     {
         return MiniExcel.Query(stream, useHeaderRow: true).Cast<IDictionary<string, object>>().ToList();
+    }
+
+    private bool IsHeaderRow(IDictionary<string, object> dict, out Dictionary<string, string> mappings)
+    {
+        mappings = new Dictionary<string, string>();
+        bool foundName = false;
+
+        foreach (var kvp in dict)
+        {
+            var valStr = kvp.Value?.ToString()?.Trim()?.ToLower()
+                .Replace(" ", "")
+                .Replace("_", "")
+                .Replace("/", "")
+                .Replace("\\", "")
+                .Replace("(", "")
+                .Replace(")", "")
+                .Replace(".", "")
+                .Replace("%", "");
+
+            if (string.IsNullOrEmpty(valStr)) continue;
+
+            if (valStr == "descriptionofgoods" || valStr == "productname" || valStr == "name" || valStr == "itemname" || valStr == "description")
+            {
+                mappings["productname"] = kvp.Key;
+                foundName = true;
+            }
+            else if (valStr == "brand" || valStr == "brandname" || valStr == "make")
+            {
+                mappings["brand"] = kvp.Key;
+            }
+            else if (valStr == "category" || valStr == "categoryname" || valStr == "group")
+            {
+                mappings["category"] = kvp.Key;
+            }
+            else if (valStr == "hsnsac" || valStr == "hsncode" || valStr == "hsn")
+            {
+                mappings["hsn"] = kvp.Key;
+            }
+            else if (valStr == "quantity" || valStr == "qty" || valStr == "openingstock" || valStr == "stock")
+            {
+                mappings["quantity"] = kvp.Key;
+            }
+            else if (valStr == "unit" || valStr == "unitname" || valStr == "uom")
+            {
+                mappings["unit"] = kvp.Key;
+            }
+            else if (valStr == "rateexcltax" || valStr == "rateexcltax" || valStr == "rateexcl.tax" || valStr == "rateexcl" || valStr == "purchaseprice" || valStr == "purchase" || valStr == "rate")
+            {
+                if (!mappings.ContainsKey("purchaseprice") || valStr.Contains("excl"))
+                {
+                    mappings["purchaseprice"] = kvp.Key;
+                }
+            }
+            else if (valStr == "rateincltax" || valStr == "rateincltax" || valStr == "rateincl.tax" || valStr == "rateincl" || valStr == "salesprice" || valStr == "sales" || valStr == "mrp")
+            {
+                mappings["salesprice"] = kvp.Key;
+            }
+            else if (valStr == "discount" || valStr == "disc" || valStr == "disc%")
+            {
+                mappings["discount"] = kvp.Key;
+            }
+            else if (valStr == "gstpercentage" || valStr == "gst" || valStr == "gst%")
+            {
+                mappings["gst"] = kvp.Key;
+            }
+            else if (valStr == "warehouse" || valStr == "warehousename" || valStr == "location")
+            {
+                mappings["warehouse"] = kvp.Key;
+            }
+            else if (valStr == "productcode" || valStr == "code" || valStr == "itemcode")
+            {
+                mappings["productcode"] = kvp.Key;
+            }
+            else if (valStr == "description" || valStr == "remarks")
+            {
+                mappings["description"] = kvp.Key;
+            }
+        }
+
+        return foundName;
     }
 
     public async Task<List<ProductImportResultDto>> CommitImportAsync(List<ImportProductCommitDto> items)
@@ -976,15 +1176,12 @@ public class MasterService : IMasterService
                 prod = await _context.Products.FindAsync(item.ExistingProductId.Value);
             }
 
-            // Deduplication Fallback: Search by exact product name or code if not found by ID
+            // Deduplication Fallback: Search by exact product name ONLY
             if (prod == null)
             {
                 var trimmedName = item.ProductName.Trim();
-                var trimmedCode = item.ProductCode?.Trim();
-
                 prod = await _context.Products.FirstOrDefaultAsync(p => p.IsActive &&
-                    (p.ProductName.ToLower() == trimmedName.ToLower() ||
-                     (!string.IsNullOrEmpty(trimmedCode) && p.ProductCode.ToLower() == trimmedCode.ToLower())));
+                    p.ProductName.ToLower() == trimmedName.ToLower());
             }
 
             if (prod == null)
@@ -1008,18 +1205,20 @@ public class MasterService : IMasterService
 
             if (isNew)
             {
-                prod.ProductCode = string.IsNullOrEmpty(item.ProductCode) 
-                    ? $"PRD{DateTime.Now:yyyy}{products.Count + importedCount + 1:0000}" 
-                    : item.ProductCode.Trim();
+                prod.ProductCode = await GenerateUniqueProductCodeAsync(item.BrandName, item.HSNCode, item.ProductName);
                 prod.OpeningStock = item.OpeningStock;
                 prod.CurrentStock = item.OpeningStock;
                 _context.Products.Add(prod);
             }
             else
             {
-                if (!string.IsNullOrEmpty(item.ProductCode))
+                if (!string.IsNullOrEmpty(item.ProductCode) && !prod.ProductCode.Equals(item.ProductCode.Trim(), StringComparison.OrdinalIgnoreCase))
                 {
-                    prod.ProductCode = item.ProductCode.Trim();
+                    var codeExists = await _context.Products.AnyAsync(p => p.Id != prod.Id && p.ProductCode == item.ProductCode.Trim());
+                    if (!codeExists)
+                    {
+                        prod.ProductCode = item.ProductCode.Trim();
+                    }
                 }
                 prod.UpdatedAt = DateTime.Now;
                 _context.Products.Update(prod);
@@ -1040,6 +1239,41 @@ public class MasterService : IMasterService
         }
 
         return results;
+    }
+
+    private async Task<string> GenerateUniqueProductCodeAsync(string? brandName, string? hsnCode, string productName)
+    {
+        string baseCode;
+        if (!string.IsNullOrEmpty(brandName) && !string.IsNullOrEmpty(hsnCode))
+        {
+            baseCode = $"{brandName.Trim()}-{hsnCode.Trim()}";
+        }
+        else if (!string.IsNullOrEmpty(hsnCode))
+        {
+            baseCode = hsnCode.Trim();
+        }
+        else if (productName.StartsWith("P-", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = productName.Split(' ');
+            baseCode = parts[0];
+        }
+        else
+        {
+            baseCode = "PRD-" + Math.Abs(productName.GetHashCode()).ToString();
+        }
+
+        // Clean the baseCode to be alphanumeric/dashes
+        baseCode = new string(baseCode.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
+
+        // Check if exists in DB, append suffix if it does
+        string uniqueCode = baseCode;
+        int suffix = 1;
+        while (await _context.Products.AnyAsync(p => p.ProductCode == uniqueCode))
+        {
+            uniqueCode = $"{baseCode}-{suffix}";
+            suffix++;
+        }
+        return uniqueCode;
     }
 
     private static double GetLevenshteinSimilarity(string s, string t)

@@ -1,0 +1,110 @@
+@model IEnumerable<Product>
+@{
+    ViewData["Title"] = "My Wishlist";
+}
+
+<section class="py-5 bg-white border-bottom">
+    <div class="container">
+        <h1>My Wishlist</h1>
+        <p class="text-muted mb-0">Saved tools and spare parts you're tracking for future orders.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar Navigation Links -->
+            <div class="col-lg-3">
+                <div class="list-group shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
+                    <a asp-action="Profile" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-gears me-2"></i> Account Dashboard</a>
+                    <a asp-action="MyOrders" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-clock-rotate-left me-2"></i> My Orders</a>
+                    <a asp-action="Invoices" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-receipt me-2"></i> My Invoices</a>
+                    <a asp-action="Wishlist" class="list-group-item list-group-item-action border-0 py-3 active"><i class="fa-solid fa-heart me-2"></i> Wishlist</a>
+                    <a asp-action="SavedAddress" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-map-location-dot me-2"></i> Saved Addresses</a>
+                </div>
+            </div>
+
+            <!-- Wishlist Products Grid -->
+            <div class="col-lg-9">
+                <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
+                    <h5 class="mb-4 font-weight-bold">Saved Items</h5>
+
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="row g-4">
+                            @foreach (var product in Model)
+                            {
+                                <div class="col-md-6 col-lg-4" id="wishlist-col-@product.Id">
+                                    <div class="product-card">
+                                        <div class="product-img-wrap">
+                                            @if (!string.IsNullOrEmpty(product.ImagePath))
+                                            {
+                                                <img src="@product.ImagePath" alt="@product.ProductName" class="product-img">
+                                            }
+                                            else
+                                            {
+                                                <i class="fa-solid fa-toolbox text-muted fs-2"></i>
+                                            }
+                                        </div>
+                                        <div class="product-body">
+                                            <span class="product-category">@product.ProductCode</span>
+                                            <h6 class="product-title text-truncate">@product.ProductName</h6>
+                                            <span class="product-price mb-3 d-block">₹@product.SalesPrice.ToString("N2")</span>
+                                            
+                                            <div class="mt-auto d-flex gap-2 border-top pt-2">
+                                                <button class="btn btn-sm btn-primary flex-grow-1" onclick="addToCart(@product.Id, '@product.ProductName')"><i class="fa-solid fa-cart-plus"></i> Cart</button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="removeFromWishlist(@product.Id)" title="Remove"><i class="fa-regular fa-trash-can"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fa-regular fa-heart text-muted mb-3" style="font-size: 4rem; opacity: 0.3;"></i>
+                            <h6>Your wishlist is empty</h6>
+                            <p class="text-muted fs-8 mb-4">Save products here as you browse our catalog.</p>
+                            <a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-sm">Browse Tools</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function addToCart(productId, productName) {
+            $.post('/Cart/Add', { productId: productId, quantity: 1 }, function (res) {
+                if (res.success) {
+                    Swal.fire({
+                        title: 'Added!',
+                        text: `${productName} added to cart.`,
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            });
+        }
+
+        function removeFromWishlist(productId) {
+            $.post('/Account/RemoveFromWishlist', { productId: productId }, function (res) {
+                if (res.success) {
+                    $('#wishlist-col-' + productId).fadeOut(400, function () {
+                        $(this).remove();
+                        if ($('.product-card').length === 0) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

@@ -17,6 +17,8 @@ public class Company : BaseEntity
     [MaxLength(100)]
     public string? Country { get; set; } = "India";
     [MaxLength(20)]
+    public string? Pincode { get; set; }
+    [MaxLength(20)]
     public string? Phone { get; set; }
     [MaxLength(100)]
     public string? Email { get; set; }

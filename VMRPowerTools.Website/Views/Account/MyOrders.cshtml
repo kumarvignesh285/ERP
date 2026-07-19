@@ -1,0 +1,79 @@
+@model IEnumerable<SalesOrder>
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<section class="py-5 bg-white border-bottom">
+    <div class="container">
+        <h1>My Orders</h1>
+        <p class="text-muted mb-0">Track dispatches, check pricing, and view invoice references for historical purchases.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar Navigation Links -->
+            <div class="col-lg-3">
+                <div class="list-group shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
+                    <a asp-action="Profile" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-gears me-2"></i> Account Dashboard</a>
+                    <a asp-action="MyOrders" class="list-group-item list-group-item-action border-0 py-3 active"><i class="fa-solid fa-clock-rotate-left me-2"></i> My Orders</a>
+                    <a asp-action="Invoices" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-receipt me-2"></i> My Invoices</a>
+                    <a asp-action="Wishlist" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-heart me-2"></i> Wishlist</a>
+                    <a asp-action="SavedAddress" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-map-location-dot me-2"></i> Saved Addresses</a>
+                </div>
+            </div>
+
+            <!-- Orders Table List -->
+            <div class="col-lg-9">
+                <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
+                    <h5 class="mb-4 font-weight-bold">Order History</h5>
+
+                    <div class="table-responsive">
+                        @if (Model != null && Model.Any())
+                        {
+                            <table class="table align-middle fs-7">
+                                <thead>
+                                    <tr class="text-muted font-weight-semibold">
+                                        <th>Order Code</th>
+                                        <th>Date</th>
+                                        <th>Items Count</th>
+                                        <th>Total Amount</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model)
+                                    {
+                                        <tr>
+                                            <td><strong class="text-dark">@order.OrderNumber</strong></td>
+                                            <td>@order.OrderDate.ToString("dd MMM yyyy")</td>
+                                            <td>@order.Items.Count items</td>
+                                            <td class="font-weight-bold text-primary">₹@order.GrandTotal.ToString("N2")</td>
+                                            <td>
+                                                <span class="badge bg-warning-subtle text-warning px-2 py-1">@order.Status</span>
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-sm btn-outline-primary" asp-action="OrderDetails" asp-route-id="@order.Id"><i class="fa-regular fa-file-lines me-1"></i> Details</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fa-solid fa-clock-rotate-left text-muted mb-3" style="font-size: 4rem; opacity: 0.3;"></i>
+                                <h6>No past orders found</h6>
+                                <p class="text-muted fs-8 mb-4">You have not completed any checkouts yet.</p>
+                                <a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-sm">Shop Now</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,102 @@
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+@inject ICartService CartService
+@{
+    var cartSummary = await CartService.GetCartAsync();
+    var itemCount = cartSummary?.Items?.Sum(i => i.Quantity) ?? 0;
+}
+
+<nav class="navbar navbar-expand-lg navbar-dark no-print nav-glass fixed top-0 w-full z-50 py-3 transition-all duration-300">
+    <div class="container mx-auto px-4 md:px-8 flex items-center justify-between">
+        <!-- Luxury Brand Logo -->
+        <a class="navbar-brand flex items-center transform transition-transform duration-500 hover:scale-105" asp-controller="Home" asp-action="Index">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" style="height: 38px; width: auto;">
+                <polygon points="50,15 80,32 80,68 50,85 20,68 20,32" fill="none" stroke="#FF5C00" stroke-width="8" class="orange-glow-sm"/>
+                <circle cx="50" cy="50" r="16" fill="#FF5C00"/>
+                <path d="M 50 35 L 50 65 M 35 50 L 65 50" stroke="#050505" stroke-width="4"/>
+                <text x="105" y="72" font-family="'Syne', sans-serif" font-weight="900" font-size="64" fill="#ffffff" letter-spacing="-2">VMR</text>
+                <text x="260" y="70" font-family="'Syne', sans-serif" font-weight="700" font-size="24" fill="#FF5C00" letter-spacing="4">TOOLS</text>
+            </svg>
+        </a>
+
+        <!-- Mobile Toggler -->
+        <button class="navbar-toggler lg:hidden border-0 text-white p-2 focus:outline-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fa-solid fa-bars fs-5"></i>
+        </button>
+
+        <!-- Navbar items -->
+        <div class="collapse navbar-collapse lg:flex lg:items-center lg:justify-between lg:w-full" id="navbarContent">
+            <ul class="navbar-nav mx-auto flex flex-col lg:flex-row gap-2 lg:gap-8 items-center mt-4 lg:mt-0">
+                <li class="nav-item relative group">
+                    <a class="nav-link text-zinc-400 group-hover:text-white font-syne font-bold text-sm tracking-widest uppercase transition-colors duration-300 py-2 block" asp-controller="Home" asp-action="Index">
+                        Home
+                    </a>
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-orange transition-all duration-300 group-hover:w-full"></span>
+                </li>
+                <li class="nav-item relative group">
+                    <a class="nav-link text-zinc-400 group-hover:text-white font-syne font-bold text-sm tracking-widest uppercase transition-colors duration-300 py-2 block" asp-controller="Product" asp-action="Index">
+                        Products
+                    </a>
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-orange transition-all duration-300 group-hover:w-full"></span>
+                </li>
+                <li class="nav-item relative group">
+                    <a class="nav-link text-zinc-400 group-hover:text-white font-syne font-bold text-sm tracking-widest uppercase transition-colors duration-300 py-2 block" asp-controller="Home" asp-action="About">
+                        About
+                    </a>
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-orange transition-all duration-300 group-hover:w-full"></span>
+                </li>
+                <li class="nav-item relative group">
+                    <a class="nav-link text-zinc-400 group-hover:text-white font-syne font-bold text-sm tracking-widest uppercase transition-colors duration-300 py-2 block" asp-controller="Home" asp-action="Contact">
+                        Contact
+                    </a>
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-orange transition-all duration-300 group-hover:w-full"></span>
+                </li>
+            </ul>
+
+            <div class="flex items-center gap-6 mt-4 lg:mt-0 justify-center">
+                <!-- Shopping Cart Icon -->
+                <a asp-controller="Cart" asp-action="Index" class="relative text-zinc-300 hover:text-white transition-colors duration-300 flex items-center justify-center w-10 h-10 border border-white/10 rounded-full hover:border-brand-orange hover:bg-brand-orange/5" title="View Shopping Cart">
+                    <i class="fa-solid fa-cart-shopping text-base"></i>
+                    @if (itemCount > 0)
+                    {
+                        <span class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand-orange text-[10px] font-bold text-white border border-brand-black">
+                            @itemCount
+                        </span>
+                    }
+                </a>
+
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle flex items-center gap-2 py-2 px-4 border border-zinc-700 hover:border-brand-orange hover:bg-brand-orange/5 text-white font-syne text-xs uppercase tracking-widest font-bold rounded-none" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-regular fa-user text-brand-orange"></i> @User.Identity?.Name
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2 bg-[#0b0b0d] text-white dropdown-menu-dark-custom" aria-labelledby="userMenuButton" style="border-radius: 4px;">
+                            <li>
+                                <a class="dropdown-item py-2 px-3 text-zinc-400 hover:text-white rounded text-xs tracking-wider" asp-controller="Account" asp-action="Profile">
+                                    <i class="fa-solid fa-gears me-2 text-brand-orange"></i> Account Portal
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider bg-zinc-800 my-1"></li>
+                            <li>
+                                <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+                                    <button type="submit" class="dropdown-item py-2 px-3 text-red-500 hover:bg-red-500/10 rounded text-xs tracking-wider bg-transparent border-0 w-100 text-start">
+                                        <i class="fa-solid fa-right-from-bracket me-2"></i> Sign Out
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <a class="text-zinc-400 hover:text-white font-syne text-xs uppercase tracking-widest font-bold transition-colors duration-300" asp-controller="Account" asp-action="Login">Sign In</a>
+                    <a class="btn-magnetic px-5 py-2.5 bg-brand-orange hover:bg-brand-orange/90 text-white font-syne text-xs uppercase tracking-widest font-extrabold transition-all duration-300 shadow-[0_0_15px_rgba(255,92,0,0.3)] hover:shadow-[0_0_25px_rgba(255,92,0,0.5)] border border-brand-orange" asp-controller="Account" asp-action="Register">Register</a>
+                }
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Push main content below the fixed navbar -->
+<div class="h-20"></div>

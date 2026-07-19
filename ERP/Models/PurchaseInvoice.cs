@@ -35,6 +35,7 @@ public class PurchaseInvoice : BaseEntity
     public string? Notes { get; set; }
     public int? PurchaseOrderId { get; set; }
     public int? GoodsReceiptNoteId { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<PurchaseInvoiceItem> Items { get; set; } = new List<PurchaseInvoiceItem>();
 }
 

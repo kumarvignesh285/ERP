@@ -1,0 +1,87 @@
+@model IEnumerable<SalesInvoice>
+@{
+    ViewData["Title"] = "My Invoices";
+}
+
+<section class="py-5 bg-white border-bottom">
+    <div class="container">
+        <h1>My Invoices</h1>
+        <p class="text-muted mb-0">Inspect billing statements, print invoice copies, and track account outstanding balances.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar Navigation Links -->
+            <div class="col-lg-3">
+                <div class="list-group shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
+                    <a asp-action="Profile" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-gears me-2"></i> Account Dashboard</a>
+                    <a asp-action="MyOrders" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-clock-rotate-left me-2"></i> My Orders</a>
+                    <a asp-action="Invoices" class="list-group-item list-group-item-action border-0 py-3 active"><i class="fa-solid fa-receipt me-2"></i> My Invoices</a>
+                    <a asp-action="Wishlist" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-heart me-2"></i> Wishlist</a>
+                    <a asp-action="SavedAddress" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-map-location-dot me-2"></i> Saved Addresses</a>
+                </div>
+            </div>
+
+            <!-- Invoices Table List -->
+            <div class="col-lg-9">
+                <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
+                    <h5 class="mb-4 font-weight-bold">Invoices Summary</h5>
+
+                    <div class="table-responsive">
+                        @if (Model != null && Model.Any())
+                        {
+                            <table class="table align-middle fs-7">
+                                <thead>
+                                    <tr class="text-muted font-weight-semibold">
+                                        <th>Invoice Code</th>
+                                        <th>Date</th>
+                                        <th>Order Ref</th>
+                                        <th>Paid Amount</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var inv in Model)
+                                    {
+                                        <tr>
+                                            <td><strong class="text-dark">@inv.InvoiceNumber</strong></td>
+                                            <td>@inv.InvoiceDate.ToString("dd MMM yyyy")</td>
+                                            <td>@inv.ReferenceNumber</td>
+                                            <td class="text-success font-weight-bold">₹@inv.PaidAmount.ToString("N2")</td>
+                                            <td class="text-danger font-weight-bold">₹@inv.BalanceAmount.ToString("N2")</td>
+                                            <td>
+                                                @if (inv.Status == "Paid")
+                                                {
+                                                    <span class="badge bg-success-subtle text-success px-2 py-1">@inv.Status</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger-subtle text-danger px-2 py-1">@inv.Status</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-sm btn-outline-primary" asp-action="InvoiceDetails" asp-route-id="@inv.Id"><i class="fa-regular fa-eye me-1"></i> View</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fa-solid fa-receipt text-muted mb-3" style="font-size: 4rem; opacity: 0.3;"></i>
+                                <h6>No invoices registered</h6>
+                                <p class="text-muted fs-8 mb-0">Completed checkouts will automatically register invoices here.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

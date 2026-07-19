@@ -37,6 +37,7 @@ public class SalesInvoice : BaseEntity
     public string? Notes { get; set; }
     public bool IsPrinted { get; set; }
     public int? SalesOrderId { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<SalesInvoiceItem> Items { get; set; } = new List<SalesInvoiceItem>();
 }
 

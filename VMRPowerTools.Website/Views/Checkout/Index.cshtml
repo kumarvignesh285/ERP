@@ -1,0 +1,259 @@
+@model CheckoutRequest
+@{
+    ViewData["Title"] = "Checkout Shipping";
+    var cart = ViewBag.Cart as CartSummary ?? new CartSummary();
+}
+
+<section class="py-5 bg-white border-bottom">
+    <div class="container">
+        <h1>Secure Checkout</h1>
+        <p class="text-muted mb-0">Provide your shipping address and select a payment method to generate your order.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div asp-validation-summary="All" class="text-danger mb-4 small font-weight-bold"></div>
+
+        <div class="row g-4">
+            <!-- Left: Checkout Forms -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm p-4 p-md-5 bg-white mb-4" style="border-radius: 12px;">
+                    <!-- Guest Checkout Check -->
+                    @if (User.Identity?.IsAuthenticated != true)
+                    {
+                        <div class="alert alert-info border-0 p-3 mb-4 fs-7" style="background-color: #eff6ff; color: #1e40af; border-radius: 8px;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-user-gear fs-5"></i>
+                                <span>You are checking out as a <strong>Guest</strong>. <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="/Checkout" class="text-primary font-weight-bold text-decoration-none">Sign In here</a> to link this order with your history.</span>
+                            </div>
+                        </div>
+                    }
+
+                    <h4 class="mb-4">Shipping & Delivery Details</h4>
+                    
+                    <form id="checkoutForm" asp-controller="Checkout" asp-action="PlaceOrder" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="UserId" />
+
+                        <div class="row g-3">
+                            <!-- Name -->
+                            <div class="col-md-6">
+                                <label asp-for="Name" class="form-label fs-7 font-weight-semibold">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" asp-for="Name" class="form-control py-2" required placeholder="John Doe">
+                            </div>
+
+                            <!-- Company Name -->
+                            <div class="col-md-6">
+                                <label asp-for="CompanyName" class="form-label fs-7 font-weight-semibold">Company Name</label>
+                                <input type="text" asp-for="CompanyName" class="form-control py-2" placeholder="VMR Engineering Ltd.">
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label fs-7 font-weight-semibold">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" name="Email" value="@Model.Email" class="form-control py-2" required placeholder="john@example.com" @(User.Identity?.IsAuthenticated == true ? "readonly" : "")>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label fs-7 font-weight-semibold">Phone Number <span class="text-danger">*</span></label>
+                                <input type="tel" asp-for="Phone" class="form-control py-2" required placeholder="+91 XXXXX XXXXX">
+                            </div>
+
+                            <!-- Address -->
+                            <div class="col-12">
+                                <label asp-for="Address" class="form-label fs-7 font-weight-semibold">Street Address <span class="text-danger">*</span></label>
+                                <input type="text" asp-for="Address" class="form-control py-2" required placeholder="Flat, House No., Building, Company area">
+                            </div>
+
+                            <!-- City -->
+                            <div class="col-md-4">
+                                <label asp-for="City" class="form-label fs-7 font-weight-semibold">City <span class="text-danger">*</span></label>
+                                <input type="text" asp-for="City" class="form-control py-2" required placeholder="Guindy">
+                            </div>
+
+                            <!-- State (Dropdown selection to calculate CGST/SGST/IGST dynamically!) -->
+                            <div class="col-md-4">
+                                <label asp-for="State" class="form-label fs-7 font-weight-semibold">State <span class="text-danger">*</span></label>
+                                <select asp-for="State" class="form-select py-2" required onchange="recalculateGst(this.value)">
+                                    <option value="Tamil Nadu">Tamil Nadu</option>
+                                    <option value="Karnataka">Karnataka</option>
+                                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                    <option value="Maharashtra">Maharashtra</option>
+                                    <option value="Kerala">Kerala</option>
+                                    <option value="Delhi">Delhi</option>
+                                </select>
+                            </div>
+
+                            <!-- Pincode -->
+                            <div class="col-md-4">
+                                <label asp-for="Pincode" class="form-label fs-7 font-weight-semibold">Pincode <span class="text-danger">*</span></label>
+                                <input type="text" asp-for="Pincode" class="form-control py-2" required placeholder="600032">
+                            </div>
+
+                            <!-- Order Notes -->
+                            <div class="col-12">
+                                <label asp-for="Notes" class="form-label fs-7 font-weight-semibold">Order Notes (Optional)</label>
+                                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Special delivery requirements, Gate code details, etc."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Payment Methods -->
+                        <h4 class="mt-5 mb-4">Payment Selection</h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card border p-3 cursor-pointer h-100 payment-card active" onclick="selectPayment('Cash on Delivery')">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="PaymentMethod" id="pay_cod" value="Cash on Delivery" checked>
+                                        <label class="form-check-label font-weight-bold" for="pay_cod">Cash on Delivery</label>
+                                    </div>
+                                    <p class="text-muted fs-8 mb-0 mt-2">Pay in cash or credit card directly to dispatch driver upon delivery.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border p-3 cursor-pointer h-100 payment-card" onclick="selectPayment('Bank Transfer')">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="PaymentMethod" id="pay_bank" value="Bank Transfer">
+                                        <label class="form-check-label font-weight-bold" for="pay_bank">Bank Transfer</label>
+                                    </div>
+                                    <p class="text-muted fs-8 mb-0 mt-2">Transfer amount directly to VMR Corporate Bank account.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fs-6"><i class="fa-solid fa-shield-halved me-2"></i> Finalize and Place Order</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right: Order Summary Panel -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm p-4 bg-white sticky-top" style="border-radius: 12px; top: 2rem;">
+                    <h5 class="mb-4 font-weight-bold border-bottom pb-2">Order Items</h5>
+                    
+                    <div class="mb-4" style="max-height: 250px; overflow-y: auto;">
+                        @foreach (var item in cart.Items)
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom-light">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-light p-1 rounded d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                        @if (!string.IsNullOrEmpty(item.ImagePath))
+                                        {
+                                            <img src="@item.ImagePath" alt="@item.ProductName" class="img-fluid" style="max-height: 100%;">
+                                        }
+                                        else
+                                        {
+                                            <i class="fa-solid fa-toolbox text-muted fs-5"></i>
+                                        }
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fs-7 text-truncate font-weight-semibold" style="max-width: 200px;">@item.ProductName</h6>
+                                        <span class="fs-8 text-muted">@item.Quantity x ₹@item.Rate.ToString("N2")</span>
+                                    </div>
+                                </div>
+                                <span class="fs-7 font-weight-bold">₹@item.SubTotal.ToString("N2")</span>
+                            </div>
+                        }
+                    </div>
+
+                    <table class="table table-borderless align-middle mb-0">
+                        <tbody>
+                            <tr class="fs-7 text-muted">
+                                <td>Items Subtotal</td>
+                                <td class="text-end text-dark font-weight-semibold" id="checkout-subtotal">₹@cart.SubTotal.ToString("N2")</td>
+                            </tr>
+                            @if (cart.DiscountAmount > 0)
+                            {
+                                <tr class="fs-7 text-success">
+                                    <td>Coupon Discount</td>
+                                    <td class="text-end font-weight-semibold" id="checkout-discount">-₹@cart.DiscountAmount.ToString("N2")</td>
+                                </tr>
+                            }
+                            <tr class="fs-7 text-muted">
+                                <td>Tax (<span id="tax-breakdown-label">@cart.TaxBreakdown</span>)</td>
+                                <td class="text-end text-dark font-weight-semibold" id="checkout-tax">₹@cart.TaxAmount.ToString("N2")</td>
+                            </tr>
+                            <tr class="fs-7 text-muted">
+                                <td>Shipping Rate</td>
+                                <td class="text-end text-dark font-weight-semibold" id="checkout-shipping">
+                                    @if (cart.ShippingCharge > 0)
+                                    {
+                                        <span>₹@cart.ShippingCharge.ToString("N2")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success px-2 py-1">Free</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr class="border-top fs-4 font-weight-bold">
+                                <td class="pt-3">Grand Total</td>
+                                <td class="text-end text-primary pt-3" id="checkout-grandtotal">₹@cart.GrandTotal.ToString("N2")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function selectPayment(method) {
+            $('.payment-card').removeClass('active');
+            if (method === 'Cash on Delivery') {
+                $('#pay_cod').prop('checked', true);
+                $('#pay_cod').closest('.payment-card').addClass('active');
+            } else {
+                $('#pay_bank').prop('checked', true);
+                $('#pay_bank').closest('.payment-card').addClass('active');
+            }
+        }
+
+        function recalculateGst(stateName) {
+            $.post('/Checkout/UpdateTotals', { stateName: stateName }, function (res) {
+                if (res.success) {
+                    // Update views with recalculated totals dynamically
+                    $('#checkout-subtotal').text('₹' + res.subTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+                    if (res.discount > 0) {
+                        $('#checkout-discount').text('-₹' + res.discount.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+                    }
+                    $('#checkout-tax').text('₹' + res.tax.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+                    
+                    if (res.shipping > 0) {
+                        $('#checkout-shipping').text('₹' + res.shipping.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+                    } else {
+                        $('#checkout-shipping').html('<span class="badge bg-success-subtle text-success px-2 py-1">Free</span>');
+                    }
+                    
+                    $('#checkout-grandtotal').text('₹' + res.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+                    $('#tax-breakdown-label').text(res.breakdown);
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    
+    .payment-card {
+        border-width: 2px !important;
+        transition: all 0.3s ease;
+    }
+    
+    .payment-card.active {
+        border-color: var(--primary) !important;
+        background-color: #fffaf7;
+    }
+    
+    .border-bottom-light {
+        border-bottom: 1px solid #f1f5f9;
+    }
+</style>

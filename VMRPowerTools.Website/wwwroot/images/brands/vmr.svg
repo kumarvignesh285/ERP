@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="none"/>
+  <!-- VMR Icon (Hexagonal Gear with Bolts) -->
+  <polygon points="50,15 80,32 80,68 50,85 20,68 20,32" fill="none" stroke="#f97316" stroke-width="8"/>
+  <circle cx="50" cy="50" r="16" fill="#f97316"/>
+  <path d="M 50 35 L 50 65 M 35 50 L 65 50" stroke="#0f172a" stroke-width="4"/>
+  <!-- VMR Text -->
+  <text x="105" y="70" font-family="'Inter', 'Outfit', 'Montserrat', sans-serif" font-weight="900" font-size="64" fill="#0f172a">VMR</text>
+  <text x="255" y="70" font-family="'Inter', 'Outfit', 'Montserrat', sans-serif" font-weight="400" font-size="24" fill="#f97316" letter-spacing="4">TOOLS</text>
+</svg>

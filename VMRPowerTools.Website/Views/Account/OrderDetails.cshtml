@@ -1,0 +1,112 @@
+@model SalesOrder
+@{
+    ViewData["Title"] = $"Order Details - {Model.OrderNumber}";
+}
+
+<section class="py-5 bg-white border-bottom">
+    <div class="container">
+        <h1>Order Summary</h1>
+        <p class="text-muted mb-0">Review product quantities, status updates, and invoice receipts for order <strong>@Model.OrderNumber</strong>.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Sidebar Navigation Links -->
+            <div class="col-lg-3">
+                <div class="list-group shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
+                    <a asp-action="Profile" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-gears me-2"></i> Account Dashboard</a>
+                    <a asp-action="MyOrders" class="list-group-item list-group-item-action border-0 py-3 active"><i class="fa-solid fa-clock-rotate-left me-2"></i> My Orders</a>
+                    <a asp-action="Invoices" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-receipt me-2"></i> My Invoices</a>
+                    <a asp-action="Wishlist" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-heart me-2"></i> Wishlist</a>
+                    <a asp-action="SavedAddress" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-map-location-dot me-2"></i> Saved Addresses</a>
+                </div>
+            </div>
+
+            <!-- Detailed Summary Grid -->
+            <div class="col-lg-9">
+                <div class="card border-0 shadow-sm p-4 bg-white mb-4" style="border-radius: 12px;">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                        <h5 class="mb-0 font-weight-bold">Order #@Model.OrderNumber</h5>
+                        <span class="badge bg-warning-subtle text-warning px-3 py-2 fs-8 font-weight-bold">@Model.Status</span>
+                    </div>
+
+                    <div class="row g-3 fs-7 mb-4">
+                        <div class="col-sm-6 col-md-3">
+                            <span class="text-muted d-block">Order Date:</span>
+                            <strong class="text-dark">@Model.OrderDate.ToString("dd MMMM yyyy")</strong>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <span class="text-muted d-block">Estimated Delivery:</span>
+                            <strong class="text-dark">@(Model.DeliveryDate.HasValue ? Model.DeliveryDate.Value.ToString("dd MMMM yyyy") : "Reconciling dispatches")</strong>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <span class="text-muted d-block">Shipping Address:</span>
+                            <strong class="text-dark">@Model.ShippingAddress</strong>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <span class="text-muted d-block">Reference Notes:</span>
+                            <strong class="text-dark">@(Model.ReferenceNumber ?? "No notes submitted")</strong>
+                        </div>
+                    </div>
+
+                    <h6 class="mb-3 border-bottom pb-1 font-weight-bold fs-7">Ordered Items</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table align-middle fs-7 mb-0">
+                            <thead>
+                                <tr class="text-muted font-weight-bold">
+                                    <th>Product Name</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Rate</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="font-weight-semibold text-dark">@item.ProductName</div>
+                                            <span class="fs-8 text-muted">@item.Product?.ProductCode</span>
+                                        </td>
+                                        <td>@item.Quantity.ToString("N0")</td>
+                                        <td>₹@item.Rate.ToString("N2")</td>
+                                        <td class="text-end font-weight-semibold">₹@item.Amount.ToString("N2")</td>
+                                    </tr>
+                                }
+                                <tr class="border-top-0">
+                                    <td colspan="3" class="text-end text-muted py-1">Subtotal:</td>
+                                    <td class="text-end font-weight-semibold py-1">₹@Model.SubTotal.ToString("N2")</td>
+                                </tr>
+                                @if (Model.DiscountAmount > 0)
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-end text-success py-1">Discount:</td>
+                                        <td class="text-end font-weight-semibold text-success py-1">-₹@Model.DiscountAmount.ToString("N2")</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td colspan="3" class="text-end text-muted py-1">Tax:</td>
+                                    <td class="text-end font-weight-semibold py-1">₹@Model.TaxAmount.ToString("N2")</td>
+                                </tr>
+                                <tr class="border-top fs-6 font-weight-bold">
+                                    <td colspan="3" class="text-end pt-3">Grand Total:</td>
+                                    <td class="text-end text-primary pt-3">₹@Model.GrandTotal.ToString("N2")</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3 pt-3 border-top">
+                        <a asp-action="MyOrders" class="btn btn-secondary"><i class="fa-solid fa-arrow-left me-2"></i> Back to Orders</a>
+                        @if (Model.Items != null && Model.Items.Any())
+                        {
+                            <a href="https://wa.me/919876543210?text=Hi%2C%20I%20want%20to%20enquire%20about%20Order%20%23@Model.OrderNumber" target="_blank" rel="noopener noreferrer" class="btn btn-success"><i class="fa-brands fa-whatsapp me-2"></i> Inquiry WhatsApp</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

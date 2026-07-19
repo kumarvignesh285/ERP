@@ -575,6 +575,9 @@ namespace ERP.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<bool>("WithGST")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -838,6 +841,9 @@ namespace ERP.Migrations
                     b.Property<string>("VehicleNumber")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("WithGST")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -1459,6 +1465,9 @@ namespace ERP.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("WithGST")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SupplierId");
@@ -1601,6 +1610,9 @@ namespace ERP.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("WithGST")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SupplierId");
@@ -1722,6 +1734,9 @@ namespace ERP.Migrations
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("WithGST")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -1866,6 +1881,9 @@ namespace ERP.Migrations
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("WithGST")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -2016,6 +2034,9 @@ namespace ERP.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("WithGST")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -2145,6 +2166,9 @@ namespace ERP.Migrations
                     b.Property<DateTime?>("ValidUntil")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("WithGST")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -2263,6 +2287,9 @@ namespace ERP.Migrations
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("WithGST")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
