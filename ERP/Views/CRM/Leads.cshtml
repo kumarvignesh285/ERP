@@ -4,15 +4,18 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-user-plus me-2"></i> Leads</h4>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#leadModal"><i class="fa-solid fa-plus me-1"></i> Add Lead</button>
+    <div>
+        <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-user-plus me-2"></i> CRM Leads</h4>
+        <p class="text-muted small m-0 mt-1">Manage prospective clients, lead contacts, and qualification pipeline</p>
+    </div>
+    <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#leadModal"><i class="fa-solid fa-plus me-1.5"></i> Add Lead</button>
 </div>
 
-<div class="card">
+<div class="card shadow-sm border-0">
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover datatable align-middle">
-                <thead>
+                <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                     <tr>
                         <th>Lead Name</th>
                         <th>Company</th>
@@ -28,13 +31,13 @@
                         foreach (var item in Model)
                         {
                             <tr>
-                                <td class="font-weight-bold">@item.LeadName</td>
-                                <td>@item.CompanyName</td>
+                                <td class="fw-bold text-primary">@item.LeadName</td>
+                                <td class="fw-semibold text-dark">@item.CompanyName</td>
                                 <td>@item.Email</td>
                                 <td>@item.Phone</td>
-                                <td><span class="badge bg-info">@item.Status</span></td>
+                                <td><span class="badge bg-info-subtle text-info border border-info-subtle fw-semibold">@item.Status</span></td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLead(@item.Id)"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLead(@item.Id)" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </td>
                             </tr>
                         }
@@ -46,33 +49,35 @@
 </div>
 
 <div class="modal fade" id="leadModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Add/Edit Lead</h5>
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Add / Edit Lead</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form asp-action="SaveLead" method="post">
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <input type="hidden" name="Id" id="Id" value="0" />
                     <div class="mb-3">
-                        <label class="form-label">Lead Name *</label>
-                        <input type="text" name="LeadName" class="form-control" required />
+                        <label class="form-label fw-semibold text-dark">Lead Name <span class="text-danger">*</span></label>
+                        <input type="text" name="LeadName" class="form-control" required placeholder="e.g. John Doe" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Company Name</label>
-                        <input type="text" name="CompanyName" class="form-control" />
+                        <label class="form-label fw-semibold text-dark">Company Name</label>
+                        <input type="text" name="CompanyName" class="form-control" placeholder="e.g. Acme Corp" />
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Email</label>
+                            <input type="email" name="Email" class="form-control" placeholder="john@example.com" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Phone</label>
+                            <input type="text" name="Phone" class="form-control" placeholder="+91 9876543210" />
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="Email" class="form-control" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Phone</label>
-                        <input type="text" name="Phone" class="form-control" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
+                        <label class="form-label fw-semibold text-dark">Lead Status</label>
                         <select name="Status" class="form-select">
                             <option>New</option>
                             <option>Contacted</option>
@@ -81,9 +86,9 @@
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Lead</button>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm"><i class="fa-solid fa-floppy-disk me-1.5"></i>Save Lead</button>
                 </div>
             </form>
         </div>

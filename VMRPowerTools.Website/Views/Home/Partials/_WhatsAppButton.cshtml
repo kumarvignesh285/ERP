@@ -1,49 +1,53 @@
-<!-- Floating WhatsApp Support Button -->
+<!-- Compact Glassmorphism WhatsApp FAB Button (Expands on Hover) -->
 <a href="https://wa.me/919876543210?text=Hi%2C%20I%20am%20interested%20in%20VMR%20Power%20Tools.%20Please%20share%20your%20product%20catalog." 
-   class="whatsapp-float no-print interactable" 
+   class="whatsapp-fab-button no-print group" 
    target="_blank" 
    rel="noopener noreferrer"
-   title="Chat with Support on WhatsApp">
+   title="Chat with Technical Support on WhatsApp">
     <!-- Pulsing glow ring -->
-    <span class="absolute inset-0 rounded-full bg-brand-orange/20 animate-ping"></span>
-    <i class="fa-brands fa-whatsapp text-lg relative z-10"></i>
-    <span class="font-syne font-extrabold text-[10px] tracking-widest uppercase relative z-10">WhatsApp Desk</span>
+    <span class="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping"></span>
+    
+    <!-- Icon -->
+    <div class="w-11 h-11 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl shrink-0 group-hover:bg-emerald-500 group-hover:text-black transition-all duration-300 shadow-lg">
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+
+    <!-- Hidden text that expands on hover -->
+    <span class="whatsapp-fab-label font-syne font-extrabold text-[11px] uppercase tracking-wider text-white whitespace-nowrap overflow-hidden max-w-0 group-hover:max-w-[140px] group-hover:ml-2.5 transition-all duration-300">
+        WhatsApp Desk
+    </span>
 </a>
 
 <style>
-    .whatsapp-float {
+    .whatsapp-fab-button {
         position: fixed;
         bottom: 2rem;
         right: 2rem;
-        background-color: #0b0b0d;
-        color: #fff;
-        border: 1px solid rgba(255, 92, 0, 0.4);
-        border-radius: 0;
+        background: rgba(11, 11, 13, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 9999px;
         z-index: 100;
         display: flex;
         align-items: center;
-        gap: 0.6rem;
-        padding: 0.85rem 1.4rem;
+        padding: 0.25rem;
         text-decoration: none;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(255, 92, 0, 0.1);
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(16, 185, 129, 0.15);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .whatsapp-float:hover {
-        border-color: #FF5C00;
-        transform: translateY(-4px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.9), 0 0 25px rgba(255, 92, 0, 0.25);
-        color: #FF5C00;
+    .whatsapp-fab-button:hover {
+        border-color: rgba(16, 185, 129, 0.5);
+        padding-right: 1.25rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(16, 185, 129, 0.3);
+        transform: translateY(-3px);
     }
 
-    @@media (max-width: 576px) {
-        .whatsapp-float {
-            bottom: 1.5rem;
-            right: 1.5rem;
-            padding: 0.85rem;
-        }
-        .whatsapp-float span {
-            display: none;
+    @@media (max-width: 640px) {
+        .whatsapp-fab-button {
+            bottom: 4.5rem; /* Sits above mobile bottom bar */
+            right: 1.25rem;
         }
     }
 </style>

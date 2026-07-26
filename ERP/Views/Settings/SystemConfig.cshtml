@@ -3,7 +3,7 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-cogs me-2"></i> System Configuration</h4>
+    <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-cogs me-2"></i> System Configuration</h4>
 </div>
 
 <div class="row">
@@ -19,54 +19,54 @@
     
     <div class="col-md-9">
         <!-- 1. Email Settings Panel -->
-        <div class="card shadow-sm config-panel" id="panel-email">
-            <div class="card-header bg-white font-weight-bold">
-                Email Settings
+        <div class="card shadow-sm border-0 config-panel" id="panel-email">
+            <div class="card-header bg-white fw-bold py-3 text-primary">
+                <i class="fa-solid fa-envelope me-2"></i>Email Settings
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form onsubmit="event.preventDefault(); Swal.fire('Saved!', 'Email configuration has been updated.', 'success');">
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">SMTP Server</label>
+                            <label class="form-label fw-semibold text-dark">SMTP Server</label>
                             <input type="text" class="form-control" value="smtp.gmail.com" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">SMTP Port</label>
+                            <label class="form-label fw-semibold text-dark">SMTP Port</label>
                             <input type="number" class="form-control" value="587" required />
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">SMTP Username</label>
+                            <label class="form-label fw-semibold text-dark">SMTP Username</label>
                             <input type="email" class="form-control" value="notifications@smarterp.com" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">SMTP Password</label>
+                            <label class="form-label fw-semibold text-dark">SMTP Password</label>
                             <input type="password" class="form-control" value="••••••••••••••••" required />
                         </div>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="enableSsl" checked>
-                        <label class="form-check-label" for="enableSsl">Enable SSL/TLS</label>
+                        <label class="form-check-label fw-semibold" for="enableSsl">Enable SSL/TLS</label>
                     </div>
                     <div class="text-end">
                         <button type="button" class="btn btn-outline-secondary me-2" onclick="Swal.fire('Testing Connection', 'Sending test email to administrator...', 'info').then(() => Swal.fire('Connected!', 'SMTP test connection succeeded.', 'success'))">Test Connection</button>
-                        <button type="submit" class="btn btn-primary px-4">Save Settings</button>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm"><i class="fa-solid fa-floppy-disk me-1.5"></i>Save Settings</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- 2. SMS API Panel -->
-        <div class="card shadow-sm config-panel" id="panel-sms" style="display: none;">
-            <div class="card-header bg-white font-weight-bold">
-                SMS API Gateway Configuration
+        <div class="card shadow-sm border-0 config-panel" id="panel-sms" style="display: none;">
+            <div class="card-header bg-white fw-bold py-3 text-primary">
+                <i class="fa-solid fa-comment-sms me-2"></i>SMS API Gateway Configuration
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form onsubmit="event.preventDefault(); Swal.fire('Saved!', 'SMS Gateway configurations have been saved.', 'success');">
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">SMS Provider *</label>
+                            <label class="form-label fw-semibold text-dark">SMS Provider *</label>
                             <select class="form-select" required>
                                 <option value="twilio">Twilio SMS</option>
                                 <option value="msg91">MSG91</option>
@@ -75,38 +75,38 @@
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Sender ID / From Number *</label>
+                            <label class="form-label fw-semibold text-dark">Sender ID / From Number *</label>
                             <input type="text" class="form-control" value="SMRTERP" required />
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Account SID / API Key *</label>
+                            <label class="form-label fw-semibold text-dark">Account SID / API Key *</label>
                             <input type="text" class="form-control" value="AC88bf764ab89ce1d34ef6" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Auth Token *</label>
+                            <label class="form-label fw-semibold text-dark">Auth Token *</label>
                             <input type="password" class="form-control" value="••••••••••••••••••••••••••••••••" required />
                         </div>
                     </div>
                     <div class="text-end">
                         <button type="button" class="btn btn-outline-secondary me-2" onclick="Swal.fire({ title: 'Test SMS', input: 'text', inputLabel: 'Mobile Number', inputPlaceholder: 'Enter number with country code' }).then(r => { if (r.value) Swal.fire('Success!', 'Test SMS sent successfully.', 'success'); })">Test Gateway</button>
-                        <button type="submit" class="btn btn-primary px-4">Save Settings</button>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm"><i class="fa-solid fa-floppy-disk me-1.5"></i>Save Settings</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- 3. Currency & Locale Panel -->
-        <div class="card shadow-sm config-panel" id="panel-currency" style="display: none;">
-            <div class="card-header bg-white font-weight-bold">
-                Currency & Localization Settings
+        <div class="card shadow-sm border-0 config-panel" id="panel-currency" style="display: none;">
+            <div class="card-header bg-white fw-bold py-3 text-primary">
+                <i class="fa-solid fa-globe me-2"></i>Currency & Localization Settings
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form onsubmit="event.preventDefault(); Swal.fire('Saved!', 'Currency and locale settings updated.', 'success');">
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Base Currency *</label>
+                            <label class="form-label fw-semibold text-dark">Base Currency *</label>
                             <select class="form-select" required>
                                 <option value="INR">Indian Rupee (INR)</option>
                                 <option value="USD">US Dollar (USD)</option>
@@ -115,13 +115,13 @@
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Currency Symbol *</label>
+                            <label class="form-label fw-semibold text-dark">Currency Symbol *</label>
                             <input type="text" class="form-control" value="₹" required />
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Date Format *</label>
+                            <label class="form-label fw-semibold text-dark">Date Format *</label>
                             <select class="form-select" required>
                                 <option value="dd-MM-yyyy">DD-MM-YYYY (e.g. 30-06-2026)</option>
                                 <option value="MM/dd/yyyy">MM/DD/YYYY (e.g. 06/30/2026)</option>
@@ -129,7 +129,7 @@
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Time Zone *</label>
+                            <label class="form-label fw-semibold text-dark">Time Zone *</label>
                             <select class="form-select" required>
                                 <option value="IST">(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi</option>
                                 <option value="UTC">(UTC+00:00) Coordinated Universal Time</option>
@@ -138,25 +138,25 @@
                         </div>
                     </div>
                     <div class="text-end">
-                        <button type="submit" class="btn btn-primary px-4">Save Settings</button>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm"><i class="fa-solid fa-floppy-disk me-1.5"></i>Save Settings</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- 4. Backup & Restore Panel -->
-        <div class="card shadow-sm config-panel" id="panel-backup" style="display: none;">
-            <div class="card-header bg-white font-weight-bold">
-                System Backup & Database Restore
+        <div class="card shadow-sm border-0 config-panel" id="panel-backup" style="display: none;">
+            <div class="card-header bg-white fw-bold py-3 text-primary">
+                <i class="fa-solid fa-database me-2"></i>System Backup & Database Restore
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <div class="row mb-4">
                     <div class="col-md-8">
-                        <h6>Create System Backup</h6>
-                        <p class="text-muted small">Download a full SQL backup file containing all database tables, masters, transactions, and company setup data.</p>
+                        <h6 class="fw-bold text-dark">Create System Backup</h6>
+                        <p class="text-muted small m-0">Download a full SQL backup file containing all database tables, masters, transactions, and company setup data.</p>
                     </div>
-                    <div class="col-md-4 text-md-end">
-                        <button type="button" class="btn btn-outline-primary" onclick="Swal.fire('Processing Backup', 'Compiling database tables and generating SQL script...', 'info').then(() => Swal.fire('Backup Complete!', 'SQL Dump file successfully generated and downloaded.', 'success'))"><i class="fa-solid fa-download me-1"></i> Generate Backup</button>
+                    <div class="col-md-4 text-md-end align-self-center">
+                        <button type="button" class="btn btn-outline-primary shadow-sm" onclick="Swal.fire('Processing Backup', 'Compiling database tables and generating SQL script...', 'info').then(() => Swal.fire('Backup Complete!', 'SQL Dump file successfully generated and downloaded.', 'success'))"><i class="fa-solid fa-download me-1.5"></i> Generate Backup</button>
                     </div>
                 </div>
                 <hr />

@@ -5,23 +5,26 @@
 
 <div id="listView">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Receipt Vouchers</h4>
-        <button class="btn btn-primary" onclick="showForm()"><i class="fa-solid fa-plus me-1"></i> New Receipt Voucher</button>
+        <div>
+            <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-hand-holding-dollar me-2"></i> Receipt Vouchers</h4>
+            <p class="text-muted small m-0 mt-1">Record customer collections, incoming revenue, and cash/bank receipt entries</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" onclick="showForm()"><i class="fa-solid fa-plus me-1.5"></i> New Receipt Voucher</button>
     </div>
 
     <!-- Filters Row -->
-    <div class="card mb-3 no-print">
+    <div class="card mb-3 no-print shadow-sm border-0">
         <div class="card-body p-3">
-            <div class="row g-2 align-items-center">
-                <div class="col-md-4">
-                    <label class="form-label font-weight-semibold mb-1 small text-muted">From Date</label>
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-sm-6 col-md-4">
+                    <label class="form-label fw-semibold mb-1 small text-muted">From Date</label>
                     <input type="date" id="filterFromDate" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label font-weight-semibold mb-1 small text-muted">To Date</label>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <label class="form-label fw-semibold mb-1 small text-muted">To Date</label>
                     <input type="date" id="filterToDate" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-4 d-flex gap-2 align-self-end">
+                <div class="col-12 col-sm-12 col-md-4 d-flex gap-2 align-self-end">
                     <button class="btn btn-sm btn-primary w-100" onclick="applyFilters()"><i class="fa-solid fa-filter me-1"></i> Filter</button>
                     <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetFilters()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
                 </div>
@@ -29,11 +32,11 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="card shadow-sm border-0">
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover datatable align-middle">
-                    <thead>
+                    <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                         <tr>
                             <th>Voucher No</th>
                             <th>Date</th>
@@ -47,16 +50,16 @@
                         @foreach (var v in Model.Vouchers)
                         {
                             <tr id="row-@v.Id">
-                                <td class="font-weight-bold">@v.VoucherNumber</td>
+                                <td class="fw-bold text-primary">@v.VoucherNumber</td>
                                 <td>@v.VoucherDate.ToString("dd-MM-yyyy")</td>
                                 <td>@v.ReferenceNumber</td>
-                                <td class="font-weight-semibold text-dark">₹@v.TotalAmount.ToString("N2")</td>
-                                <td>@v.Narration</td>
+                                <td class="fw-bold text-dark">₹@v.TotalAmount.ToString("N2")</td>
+                                <td class="fs-8 text-muted">@v.Narration</td>
                                 <td class="text-center no-print">
                                     <div class="btn-group">
                                         <button class="btn btn-sm btn-outline-primary" onclick="editVoucher(@v.Id)" title="Edit"><i class="fa-solid fa-pen"></i></button>
                                         <button class="btn btn-sm btn-outline-secondary" onclick="ErpPrint.printBillById('voucher', @v.Id)" title="Print"><i class="fa-solid fa-print"></i></button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteVoucher(@v.Id)"><i class="fa-solid fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteVoucher(@v.Id)" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -70,37 +73,51 @@
 
 <div id="formView" style="display:none">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-plus me-2"></i> Record Receipt Voucher</h4>
-        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</button>
+        <h4 class="m-0 fw-bold text-primary" id="formTitle"><i class="fa-solid fa-plus me-2"></i> Record Receipt Voucher</h4>
+        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1.5"></i> Back to List</button>
     </div>
 
-    <div class="card">
-        <div class="card-body">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
             <form id="voucherForm">
-                <input type="hidden" id="Id" value="0" />
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label font-weight-semibold">Voucher Number *</label>
-                        <input type="text" id="VoucherNumber" class="form-control" required />
+                <input type="hidden" id="Id" name="Id" value="0" />
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <label class="form-label fw-semibold text-dark">Voucher Number <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-hashtag text-muted"></i></span>
+                            <input type="text" id="VoucherNumber" class="form-control border-start-0 fw-bold" required />
+                        </div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label font-weight-semibold">Date *</label>
-                        <input type="date" id="VoucherDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <label class="form-label fw-semibold text-dark">Voucher Date <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-calendar text-muted"></i></span>
+                            <input type="date" id="VoucherDate" class="form-control border-start-0" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label font-weight-semibold">Reference Number</label>
-                        <input type="text" id="ReferenceNumber" class="form-control" />
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <label class="form-label fw-semibold text-dark">Reference Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-receipt text-muted"></i></span>
+                            <input type="text" id="ReferenceNumber" class="form-control border-start-0" placeholder="e.g. Cheque/NEFT/UPI Ref" />
+                        </div>
                     </div>
                 </div>
 
-                <hr />
+                <hr class="my-4" />
 
-                <h5>Debit & Credit Ledger Allocations</h5>
-                <p class="text-muted fs-7">Add rows to debit/credit specific ledgers. Note: Total Debit must exactly equal Total Credit before saving.</p>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <h5 class="m-0 fw-bold text-dark"><i class="fa-solid fa-list-check me-2 text-primary"></i> Debit & Credit Ledger Allocations</h5>
+                        <p class="text-muted fs-8 m-0 mt-1">Add rows to debit/credit ledgers. Total Debit must equal Total Credit before saving.</p>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
+                </div>
 
-                <div class="table-responsive mb-3">
-                    <table class="table table-bordered align-middle" id="itemsTable">
-                        <thead class="table-light">
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle shadow-sm" id="itemsTable">
+                        <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                             <tr>
                                 <th style="width: 40%">Ledger Account *</th>
                                 <th style="width: 20%">Debit Amount (Dr) *</th>
@@ -114,33 +131,32 @@
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-start mb-4">
-                    <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
+                <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
+                    <div class="flex-grow-1" style="max-width: 500px;">
+                        <label class="form-label fw-semibold text-dark">Narration <span class="text-danger">*</span></label>
+                        <textarea id="Narration" class="form-control" rows="3" placeholder="Receipt description or customer collection remarks..." required></textarea>
+                    </div>
                     
-                    <div class="text-end" style="width: 300px;">
+                    <div class="summary-calc-card text-end ms-auto shadow-sm">
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Total Debit (Dr):</span>
-                            <span id="lblTotalDebit" class="font-weight-semibold">₹0.00</span>
+                            <span class="text-muted">Total Debit (Dr):</span>
+                            <span id="lblTotalDebit" class="fw-bold text-dark">₹0.00</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Total Credit (Cr):</span>
-                            <span id="lblTotalCredit" class="font-weight-semibold">₹0.00</span>
+                            <span class="text-muted">Total Credit (Cr):</span>
+                            <span id="lblTotalCredit" class="fw-bold text-dark">₹0.00</span>
                         </div>
-                        <div class="d-flex justify-content-between border-top pt-2">
-                            <span class="font-weight-bold">Difference:</span>
-                            <span id="lblDifference" class="font-weight-bold text-danger">₹0.00</span>
+                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                            <span class="fw-bold text-dark">Difference:</span>
+                            <span id="lblDifference" class="fw-bold text-danger">₹0.00</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label font-weight-semibold">Narration *</label>
-                    <textarea id="Narration" class="form-control" rows="2" required placeholder="Enter narration details..."></textarea>
-                </div>
-
-                <div class="text-end">
-                    <button type="button" class="btn btn-secondary me-2" onclick="hideForm()">Cancel</button>
-                    <button type="button" class="btn btn-primary px-4" onclick="saveVoucher()">Save Voucher</button>
+                <!-- Sticky Bottom Actions Bar -->
+                <div class="d-flex justify-content-end gap-2 border-top pt-3 sticky-bottom bg-white">
+                    <button type="button" class="btn btn-secondary px-3" onclick="hideForm()">Cancel</button>
+                    <button type="button" class="btn btn-primary px-4 shadow-sm" onclick="saveVoucher()"><i class="fa-solid fa-floppy-disk me-1.5"></i> Save Receipt Voucher</button>
                 </div>
             </form>
         </div>

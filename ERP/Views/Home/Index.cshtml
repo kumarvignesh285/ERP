@@ -3,123 +3,212 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<!-- Dashboard Header -->
-<div class="d-flex justify-content-between align-items-center mb-4 dashboard-header-row">
-    <h4 class="dashboard-page-title text-uppercase m-0">Dashboard</h4>
+<!-- Dashboard Header Banner -->
+<div class="card border-0 shadow-sm mb-4 bg-primary text-white rounded-3 overflow-hidden position-relative no-print" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);">
+    <div class="card-body p-4 position-relative z-1">
+        <div class="row align-items-center g-3">
+            <div class="col-12 col-md-7 col-lg-8">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white bg-opacity-20 text-white px-3 py-1.5 rounded-pill fs-8 fw-semibold">
+                        <i class="fa-solid fa-bolt text-warning me-1.5"></i>Live Overview
+                    </span>
+                    <span class="text-white-50 small"><i class="fa-regular fa-calendar me-1"></i>@DateTime.Now.ToString("dd MMMM yyyy")</span>
+                </div>
+                <h3 class="fw-bold m-0 text-white">Welcome back to SmartERP! 👋</h3>
+                <p class="text-white-50 m-0 mt-1.5 small">Here is what is happening with your sales, purchases, inventory, and accounts today.</p>
+            </div>
+            <div class="col-12 col-md-5 col-lg-4 text-md-end d-flex gap-2 justify-content-md-end flex-wrap">
+                <a href="/Sales/Invoice" class="btn btn-primary px-3 shadow-sm border-0" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                    <i class="fa-solid fa-plus me-1.5"></i>New Invoice
+                </a>
+                <a href="/Purchase/Invoice" class="btn btn-light bg-white bg-opacity-10 text-white border-white border-opacity-20 px-3 hover-shadow">
+                    <i class="fa-solid fa-cart-plus me-1.5"></i>New Purchase
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- KPI Cards Grid (Row 1) -->
-<div class="row mb-3">
+<!-- KPI Cards Grid (Row 1 - Financial & Trading) -->
+<div class="row g-3 mb-4">
     <!-- Card 1: Today's Sales -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="premium-kpi-card card-blue-tint">
-            <div class="kpi-card-body">
-                <div class="kpi-card-details">
-                    <span class="kpi-title">Today's Sales</span>
-                    <h3 class="kpi-value">₹@Model.TodaySales.ToString("N0")</h3>
-                    <span class="kpi-trend trend-up"><i class="fa-solid fa-arrow-trend-up me-1"></i>Daily invoices</span>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden position-relative hover-lift transition-all">
+            <div class="card-body p-3.5">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase tracking-wider">Today's Sales</span>
+                    <div class="avatar bg-primary bg-opacity-10 text-primary rounded-3 p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-file-invoice-dollar fs-5"></i>
+                    </div>
                 </div>
-                <div class="kpi-card-icon-container">
-                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                <h3 class="fw-bold text-dark m-0 mb-2 fs-3">₹@Model.TodaySales.ToString("N0")</h3>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill fs-8 fw-semibold px-2 py-1">
+                        <i class="fa-solid fa-arrow-trend-up me-1"></i>Daily Invoices
+                    </span>
+                    <span class="text-muted fs-8">Updated live</span>
                 </div>
+            </div>
+            <div class="progress" style="height: 3px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
         </div>
     </div>
 
     <!-- Card 2: Today's Purchases -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="premium-kpi-card card-green-tint">
-            <div class="kpi-card-body">
-                <div class="kpi-card-details">
-                    <span class="kpi-title">Today's Purchases</span>
-                    <h3 class="kpi-value">₹@Model.TodayPurchases.ToString("N0")</h3>
-                    <span class="kpi-trend"><i class="fa-solid fa-truck-ramp-box me-1"></i>Daily receipts</span>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden position-relative hover-lift transition-all">
+            <div class="card-body p-3.5">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase tracking-wider">Today's Purchases</span>
+                    <div class="avatar bg-success bg-opacity-10 text-success rounded-3 p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-cart-flatbed fs-5"></i>
+                    </div>
                 </div>
-                <div class="kpi-card-icon-container">
-                    <i class="fa-solid fa-cart-flatbed"></i>
+                <h3 class="fw-bold text-dark m-0 mb-2 fs-3">₹@Model.TodayPurchases.ToString("N0")</h3>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill fs-8 fw-semibold px-2 py-1">
+                        <i class="fa-solid fa-truck-ramp-box me-1"></i>Daily Receipts
+                    </span>
+                    <span class="text-muted fs-8">Procurement</span>
                 </div>
+            </div>
+            <div class="progress" style="height: 3px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
         </div>
     </div>
 
-    <!-- Card 3: Receivables -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="premium-kpi-card card-grey-tint">
-            <div class="kpi-card-body">
-                <div class="kpi-card-details">
-                    <span class="kpi-title">Receivables</span>
-                    <h3 class="kpi-value">₹@Model.TotalReceivables.ToString("N0")</h3>
-                    <span class="kpi-trend"><i class="fa-solid fa-hand-holding-dollar me-1"></i>Outstanding collections</span>
+    <!-- Card 3: Total Receivables -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden position-relative hover-lift transition-all">
+            <div class="card-body p-3.5">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase tracking-wider">Receivables</span>
+                    <div class="avatar bg-warning bg-opacity-10 text-warning rounded-3 p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-hand-holding-dollar fs-5"></i>
+                    </div>
                 </div>
-                <div class="kpi-card-icon-container">
-                    <i class="fa-solid fa-file-invoice"></i>
+                <h3 class="fw-bold text-dark m-0 mb-2 fs-3">₹@Model.TotalReceivables.ToString("N0")</h3>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill fs-8 fw-semibold px-2 py-1">
+                        <i class="fa-solid fa-clock me-1"></i>Outstanding
+                    </span>
+                    <span class="text-muted fs-8">Customer Dues</span>
                 </div>
+            </div>
+            <div class="progress" style="height: 3px;">
+                <div class="progress-bar bg-warning" role="progressbar" style="width: 45%" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
         </div>
     </div>
 
-    <!-- Card 4: Payables -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="premium-kpi-card card-purple-tint">
-            <div class="kpi-card-body">
-                <div class="kpi-card-details">
-                    <span class="kpi-title">Payables</span>
-                    <h3 class="kpi-value">₹@Model.TotalPayables.ToString("N0")</h3>
-                    <span class="kpi-trend"><i class="fa-solid fa-file-signature me-1"></i>Outstanding payments</span>
+    <!-- Card 4: Total Payables -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden position-relative hover-lift transition-all">
+            <div class="card-body p-3.5">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase tracking-wider">Payables</span>
+                    <div class="avatar bg-danger bg-opacity-10 text-danger rounded-3 p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-credit-card fs-5"></i>
+                    </div>
                 </div>
-                <div class="kpi-card-icon-container">
-                    <i class="fa-solid fa-credit-card"></i>
+                <h3 class="fw-bold text-dark m-0 mb-2 fs-3">₹@Model.TotalPayables.ToString("N0")</h3>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill fs-8 fw-semibold px-2 py-1">
+                        <i class="fa-solid fa-file-signature me-1"></i>Vendor Dues
+                    </span>
+                    <span class="text-muted fs-8">Upcoming</span>
                 </div>
+            </div>
+            <div class="progress" style="height: 3px;">
+                <div class="progress-bar bg-danger" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- KPI Cards Grid (Row 2) -->
-<div class="row mb-4">
-    <!-- Card 5: Stock Value -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="premium-kpi-card card-teal-tint">
-            <div class="kpi-card-body">
-                <div class="kpi-card-details">
-                    <span class="kpi-title">Stock Value</span>
-                    <h3 class="kpi-value">₹@Model.AvailableStockValue.ToString("N0")</h3>
-                    <span class="kpi-trend"><i class="fa-solid fa-boxes-stacked me-1"></i>Total inventory value</span>
+<!-- KPI Cards Grid (Row 2 - Inventory & Masters) -->
+<div class="row g-3 mb-4">
+    <!-- Card 5: Available Stock Value -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden position-relative hover-lift transition-all">
+            <div class="card-body p-3.5">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase tracking-wider">Available Stock Value</span>
+                    <div class="avatar bg-secondary bg-opacity-10 text-secondary rounded-3 p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-warehouse fs-5"></i>
+                    </div>
                 </div>
-                <div class="kpi-card-icon-container">
-                    <i class="fa-solid fa-warehouse"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Card 7: Customer Master -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="premium-kpi-card card-orange-tint">
-            <div class="kpi-card-body">
-                <div class="kpi-card-details">
-                    <span class="kpi-title">Total Customers</span>
-                    <h3 class="kpi-value">@Model.CustomerCount</h3>
-                    <span class="kpi-trend"><i class="fa-solid fa-user-tag me-1"></i>Active accounts</span>
-                </div>
-                <div class="kpi-card-icon-container">
-                    <i class="fa-solid fa-users"></i>
+                <h3 class="fw-bold text-dark m-0 mb-2 fs-3">₹@Model.AvailableStockValue.ToString("N0")</h3>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill fs-8 fw-semibold px-2 py-1">
+                        <i class="fa-solid fa-boxes-stacked me-1"></i>Inventory Value
+                    </span>
+                    <span class="text-muted fs-8">Catalog items</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Card 8: Supplier Master -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="premium-kpi-card card-red-tint">
-            <div class="kpi-card-body">
-                <div class="kpi-card-details">
-                    <span class="kpi-title">Total Suppliers</span>
-                    <h3 class="kpi-value">@Model.SupplierCount</h3>
-                    <span class="kpi-trend"><i class="fa-solid fa-truck-field me-1"></i>Active vendors</span>
+    <!-- Card 6: Customer Count -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden position-relative hover-lift transition-all">
+            <div class="card-body p-3.5">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase tracking-wider">Total Customers</span>
+                    <div class="avatar bg-info bg-opacity-10 text-info rounded-3 p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-users fs-5"></i>
+                    </div>
                 </div>
-                <div class="kpi-card-icon-container">
-                    <i class="fa-solid fa-truck-moving"></i>
+                <h3 class="fw-bold text-dark m-0 mb-2 fs-3">@Model.CustomerCount</h3>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill fs-8 fw-semibold px-2 py-1">
+                        <i class="fa-solid fa-user-check me-1"></i>Active Accounts
+                    </span>
+                    <a href="/Masters/Customer" class="text-primary text-decoration-none fs-8 fw-semibold">View All <i class="fa-solid fa-arrow-right fs-9"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 7: Supplier Count -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden position-relative hover-lift transition-all">
+            <div class="card-body p-3.5">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase tracking-wider">Total Suppliers</span>
+                    <div class="avatar bg-primary bg-opacity-10 text-primary rounded-3 p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-truck-moving fs-5"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold text-dark m-0 mb-2 fs-3">@Model.SupplierCount</h3>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill fs-8 fw-semibold px-2 py-1">
+                        <i class="fa-solid fa-truck-field me-1"></i>Active Vendors
+                    </span>
+                    <a href="/Masters/Supplier" class="text-primary text-decoration-none fs-8 fw-semibold">View All <i class="fa-solid fa-arrow-right fs-9"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 8: Product Count -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden position-relative hover-lift transition-all">
+            <div class="card-body p-3.5">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase tracking-wider">Catalog Products</span>
+                    <div class="avatar bg-success bg-opacity-10 text-success rounded-3 p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-boxes-packing fs-5"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold text-dark m-0 mb-2 fs-3">@Model.ProductCount</h3>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill fs-8 fw-semibold px-2 py-1">
+                        <i class="fa-solid fa-tag me-1"></i>SKUs Managed
+                    </span>
+                    <a href="/Masters/Product" class="text-primary text-decoration-none fs-8 fw-semibold">Manage <i class="fa-solid fa-arrow-right fs-9"></i></a>
                 </div>
             </div>
         </div>
@@ -127,15 +216,25 @@
 </div>
 
 <!-- Charts Section Row 1 -->
-<div class="row mb-4">
+<div class="row g-3 mb-4">
     <!-- Area Chart: Sales & Purchase Trend -->
-    <div class="col-lg-7 mb-4">
-        <div class="premium-chart-card card h-100">
-            <div class="card-header-clean">
-                <span class="chart-card-title">Sales & Purchase Trend</span>
+    <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow-sm h-100 rounded-3">
+            <div class="card-header bg-white border-bottom p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="m-0 fw-bold text-dark"><i class="fa-solid fa-chart-area text-primary me-2"></i>Sales & Purchase Trend</h6>
+                    <span class="text-muted fs-8">Monthly comparative performance analysis</span>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown">This Year</button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li><a class="dropdown-item active" href="#">This Year</a></li>
+                        <li><a class="dropdown-item" href="#">Last Year</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="chart-container-large">
+            <div class="card-body p-4">
+                <div style="position: relative; width: 100%; height: 320px;">
                     <canvas id="salesTrendLineChart"></canvas>
                 </div>
             </div>
@@ -143,39 +242,48 @@
     </div>
 
     <!-- Donut Chart: Revenue vs Expense Analysis -->
-    <div class="col-lg-5 mb-4">
-        <div class="premium-chart-card card h-100">
-            <div class="card-header-clean">
-                <span class="chart-card-title">Revenue vs Expense Analysis</span>
+    <div class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm h-100 rounded-3">
+            <div class="card-header bg-white border-bottom p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="m-0 fw-bold text-dark"><i class="fa-solid fa-chart-pie text-success me-2"></i>Financial Breakdown</h6>
+                    <span class="text-muted fs-8">Revenue, expense & margin distribution</span>
+                </div>
             </div>
-            <div class="card-body d-flex align-items-center">
-                <div class="row w-100 align-items-center">
-                    <div class="col-sm-7 position-relative d-flex justify-content-center">
-                        <div class="donut-chart-wrapper">
+            <div class="card-body p-4 d-flex align-items-center justify-content-center">
+                <div class="row w-100 align-items-center g-3">
+                    <div class="col-12 col-sm-6 position-relative d-flex justify-content-center">
+                        <div class="donut-chart-wrapper" style="position: relative; width: 180px; height: 180px;">
                             <canvas id="revenuePieChart"></canvas>
-                            <div class="donut-center-label">
-                                <span class="donut-number">40</span>
-                                <span class="donut-unit">%</span>
+                            <div class="donut-center-label text-center position-absolute top-50 start-50 translate-middle pointer-events-none">
+                                <span class="fw-bold fs-3 text-dark d-block leading-none">65%</span>
+                                <span class="text-muted fs-8 fw-semibold">Net Margin</span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-5 mt-3 mt-sm-0">
-                        <ul class="donut-legend-list">
-                            <li>
-                                <span class="legend-color-dot color-active"></span>
-                                <span class="legend-label">Revenue</span>
-                                <span class="legend-val">75%</span>
-                            </li>
-                            <li>
-                                <span class="legend-color-dot color-expired"></span>
-                                <span class="legend-label">Expenses</span>
-                                <span class="legend-val">45%</span>
-                            </li>
-                            <li>
-                                <span class="legend-color-dot color-trial"></span>
-                                <span class="legend-label">Net Profit</span>
-                                <span class="legend-val">30%</span>
-                            </li>
+                    <div class="col-12 col-sm-6">
+                        <ul class="list-unstyled m-0 d-flex flex-column gap-3">
+                            <div class="d-flex align-items-center justify-content-between p-2 rounded-2 bg-light">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="rounded-circle d-inline-block" style="width: 10px; height: 10px; background-color: #3b82f6;"></span>
+                                    <span class="fs-8 fw-semibold text-dark">Revenue</span>
+                                </div>
+                                <span class="fw-bold fs-8 text-primary">₹@Model.TodaySales.ToString("N0")</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between p-2 rounded-2 bg-light">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="rounded-circle d-inline-block" style="width: 10px; height: 10px; background-color: #ef4444;"></span>
+                                    <span class="fs-8 fw-semibold text-dark">Expenses</span>
+                                </div>
+                                <span class="fw-bold fs-8 text-danger">₹@Model.TodayPurchases.ToString("N0")</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between p-2 rounded-2 bg-light">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="rounded-circle d-inline-block" style="width: 10px; height: 10px; background-color: #10b981;"></span>
+                                    <span class="fs-8 fw-semibold text-dark">Net Margin</span>
+                                </div>
+                                <span class="fw-bold fs-8 text-success">₹@((Model.TodaySales - Model.TodayPurchases).ToString("N0"))</span>
+                            </div>
                         </ul>
                     </div>
                 </div>
@@ -184,99 +292,69 @@
     </div>
 </div>
 
-<!-- Charts Section Row 2 -->
-<div class="row mb-4">
+<!-- Charts Section Row 2 & Quick Actions Grid -->
+<div class="row g-3 mb-4">
     <!-- Bar Chart: Weekly Transaction Activity -->
-    <div class="col-lg-7 mb-4">
-        <div class="premium-chart-card card h-100">
-            <div class="card-header-clean">
-                <span class="chart-card-title">Weekly Transaction Volume</span>
+    <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow-sm h-100 rounded-3">
+            <div class="card-header bg-white border-bottom p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="m-0 fw-bold text-dark"><i class="fa-solid fa-chart-column text-info me-2"></i>Weekly Activity Volume</h6>
+                    <span class="text-muted fs-8">Daily transaction count distribution</span>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="chart-container-large">
+            <div class="card-body p-4">
+                <div style="position: relative; width: 100%; height: 280px;">
                     <canvas id="weeklyTransactionsBarChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Progress Bars: Module Usage Summary -->
-    <div class="col-lg-5 mb-4">
-        <div class="premium-chart-card card h-100">
-            <div class="card-header-clean">
-                <span class="chart-card-title">Module Activity Summary</span>
+    <!-- Quick Action Cards Grid -->
+    <div class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm h-100 rounded-3">
+            <div class="card-header bg-white border-bottom p-3.5">
+                <h6 class="m-0 fw-bold text-dark"><i class="fa-solid fa-bolt text-warning me-2"></i>Quick Actions</h6>
+                <span class="text-muted fs-8">Shortcut tools to create common business entries</span>
             </div>
-            <div class="card-body py-4">
-                <div class="progress-bar-stack">
-                    <!-- Progress Item 1 -->
-                    <div class="progress-item mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="progress-label">Billing & Invoices</span>
-                            <span class="progress-val">89%</span>
-                        </div>
-                        <div class="progress progress-sm">
-                            <div class="progress-bar bg-blue" role="progressbar" style="width: 89%" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
+            <div class="card-body p-3.5">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <a href="/Sales/Invoice" class="card text-decoration-none border shadow-none hover-shadow hover-lift p-3 rounded-3 text-center bg-body-tertiary transition-all d-block h-100">
+                            <div class="avatar bg-primary text-white rounded-3 p-3 mx-auto mb-2.5 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="fa-solid fa-file-invoice-dollar fs-5"></i>
+                            </div>
+                            <span class="fw-bold text-dark d-block fs-8 mb-1">Sales Invoice</span>
+                            <span class="text-muted fs-9">Create bill</span>
+                        </a>
                     </div>
-                    <!-- Progress Item 2 -->
-                    <div class="progress-item mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="progress-label">Inventory & Stock Control</span>
-                            <span class="progress-val">76%</span>
-                        </div>
-                        <div class="progress progress-sm">
-                            <div class="progress-bar bg-blue-dark" role="progressbar" style="width: 76%" aria-valuenow="76" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
+                    <div class="col-6">
+                        <a href="/Purchase/Invoice" class="card text-decoration-none border shadow-none hover-shadow hover-lift p-3 rounded-3 text-center bg-body-tertiary transition-all d-block h-100">
+                            <div class="avatar bg-success text-white rounded-3 p-3 mx-auto mb-2.5 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="fa-solid fa-cart-flatbed fs-5"></i>
+                            </div>
+                            <span class="fw-bold text-dark d-block fs-8 mb-1">Purchase Invoice</span>
+                            <span class="text-muted fs-9">Record GRN</span>
+                        </a>
                     </div>
-                    <!-- Progress Item 3 -->
-                    <div class="progress-item mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="progress-label">Accounts Ledger</span>
-                            <span class="progress-val">72%</span>
-                        </div>
-                        <div class="progress progress-sm">
-                            <div class="progress-bar bg-teal" role="progressbar" style="width: 72%" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
+                    <div class="col-6">
+                        <a href="/Masters/Customer" class="card text-decoration-none border shadow-none hover-shadow hover-lift p-3 rounded-3 text-center bg-body-tertiary transition-all d-block h-100">
+                            <div class="avatar bg-info text-white rounded-3 p-3 mx-auto mb-2.5 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="fa-solid fa-user-plus fs-5"></i>
+                            </div>
+                            <span class="fw-bold text-dark d-block fs-8 mb-1">Add Customer</span>
+                            <span class="text-muted fs-9">New Account</span>
+                        </a>
                     </div>
-                    <!-- Progress Item 4 -->
-                    <div class="progress-item mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="progress-label">CRM Leads</span>
-                            <span class="progress-val">65%</span>
-                        </div>
-                        <div class="progress progress-sm">
-                            <div class="progress-bar bg-green" role="progressbar" style="width: 65%" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                    <!-- Progress Item 5 -->
-                    <div class="progress-item mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="progress-label">Reports & Analytics</span>
-                            <span class="progress-val">58%</span>
-                        </div>
-                        <div class="progress progress-sm">
-                            <div class="progress-bar bg-green-light" role="progressbar" style="width: 58%" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                    <!-- Progress Item 6 -->
-                    <div class="progress-item mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="progress-label">Purchases & Goods Entry</span>
-                            <span class="progress-val">54%</span>
-                        </div>
-                        <div class="progress progress-sm">
-                            <div class="progress-bar bg-purple" role="progressbar" style="width: 54%" aria-valuenow="54" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                    <!-- Progress Item 7 -->
-                    <div class="progress-item mb-2">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="progress-label">System Config Setup</span>
-                            <span class="progress-val">42%</span>
-                        </div>
-                        <div class="progress progress-sm">
-                            <div class="progress-bar bg-purple-light" role="progressbar" style="width: 42%" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
+                    <div class="col-6">
+                        <a href="/Masters/Product" class="card text-decoration-none border shadow-none hover-shadow hover-lift p-3 rounded-3 text-center bg-body-tertiary transition-all d-block h-100">
+                            <div class="avatar bg-warning text-white rounded-3 p-3 mx-auto mb-2.5 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="fa-solid fa-boxes-packing fs-5"></i>
+                            </div>
+                            <span class="fw-bold text-dark d-block fs-8 mb-1">Add Product</span>
+                            <span class="text-muted fs-9">New SKU</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -284,88 +362,44 @@
     </div>
 </div>
 
-<!-- Grid Actions & System Alerts -->
-<div class="row">
-    <!-- Quick Actions -->
-    <div class="col-lg-6 mb-4">
-        <div class="premium-chart-card card h-100">
-            <div class="card-header-clean">
-                <span class="chart-card-title">Quick Actions</span>
-            </div>
-            <div class="card-body">
-                <div class="row g-3 quick-actions-grid">
-                    <!-- Action 1: Create Sales Invoice -->
-                    <div class="col-6">
-                        <a href="/Sales/Invoice" class="quick-action-button action-orange">
-                            <div class="action-icon-circle">
-                                <i class="fa-solid fa-file-invoice-dollar"></i>
-                            </div>
-                            <span class="action-text">Sales Invoice</span>
-                        </a>
-                    </div>
-                    <!-- Action 2: Record Purchase Invoice -->
-                    <div class="col-6">
-                        <a href="/Purchase/Invoice" class="quick-action-button action-purple">
-                            <div class="action-icon-circle">
-                                <i class="fa-solid fa-cart-flatbed"></i>
-                            </div>
-                            <span class="action-text">Purchase Invoice</span>
-                        </a>
-                    </div>
-                    <!-- Action 3: Add Customer Master -->
-                    <div class="col-6">
-                        <a href="/Masters/Customer" class="quick-action-button action-pink">
-                            <div class="action-icon-circle">
-                                <i class="fa-solid fa-user-plus"></i>
-                            </div>
-                            <span class="action-text">Add Customer</span>
-                        </a>
-                    </div>
-                    <!-- Action 4: Register Product -->
-                    <div class="col-6">
-                        <a href="/Masters/Product" class="quick-action-button action-green">
-                            <div class="action-icon-circle">
-                                <i class="fa-solid fa-boxes-packing"></i>
-                            </div>
-                            <span class="action-text">Add Product</span>
-                        </a>
-                    </div>
+<!-- System Notifications / Low Stock Alerts -->
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white border-bottom p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="m-0 fw-bold text-dark"><i class="fa-solid fa-bell text-danger me-2"></i>System Notifications & Low Stock Alerts</h6>
+                    <span class="text-muted fs-8">Real-time alerts requiring immediate action</span>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- System Alerts -->
-    <div class="col-lg-6 mb-4">
-        <div class="premium-chart-card card h-100">
-            <div class="card-header-clean">
-                <span class="chart-card-title">System Notifications</span>
+                <span class="badge bg-danger rounded-pill px-2.5 py-1 fw-bold fs-8">@(Model.SystemAlerts?.Count ?? 0) Alerts</span>
             </div>
             <div class="card-body p-0">
                 @if (Model.SystemAlerts == null || !Model.SystemAlerts.Any())
                 {
-                    <div class="p-5 text-center text-muted">
-                        <i class="fa-solid fa-bell-slash fa-2x mb-3 text-secondary" style="opacity: 0.4;"></i>
-                        <p class="m-0 fs-7">All clear! No pending notifications.</p>
+                    <div class="p-4 text-center text-muted">
+                        <i class="fa-solid fa-circle-check fa-2x mb-2 text-success" style="opacity: 0.8;"></i>
+                        <p class="m-0 fs-7 fw-semibold">All clear! No pending inventory or system notifications.</p>
                     </div>
                 }
                 else
                 {
-                    <div class="alerts-list">
+                    <div class="list-group list-group-flush">
                         @foreach (var alert in Model.SystemAlerts)
                         {
                             var isWarning = alert.NotificationType == "LowStock" || alert.NotificationType == "ApprovalPending";
-                            <div class="alert-item">
-                                <div class="alert-icon-container @(isWarning ? "bg-alert-orange" : "bg-alert-red")">
-                                    <i class="fa-solid @(alert.NotificationType == "LowStock" ? "fa-triangle-exclamation" : alert.NotificationType == "ApprovalPending" ? "fa-clock" : "fa-bell")"></i>
-                                </div>
-                                <div class="alert-content">
-                                    <span class="alert-item-title">@alert.NotificationType</span>
-                                    <span class="alert-item-desc">@alert.Message</span>
+                            <div class="list-group-item p-3.5 d-flex align-items-center justify-content-between flex-wrap gap-2 border-bottom-0">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar rounded-3 p-2.5 d-flex align-items-center justify-content-center @(isWarning ? "bg-warning bg-opacity-10 text-warning" : "bg-danger bg-opacity-10 text-danger")" style="width: 42px; height: 42px;">
+                                        <i class="fa-solid @(alert.NotificationType == "LowStock" ? "fa-triangle-exclamation" : alert.NotificationType == "ApprovalPending" ? "fa-clock" : "fa-bell") fs-6"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold text-dark d-block fs-8">@alert.NotificationType</span>
+                                        <span class="text-muted fs-8">@alert.Message</span>
+                                    </div>
                                 </div>
                                 @if (!string.IsNullOrEmpty(alert.LinkUrl))
                                 {
-                                    <a href="@alert.LinkUrl" class="btn btn-dark-alert">Resolve</a>
+                                    <a href="@alert.LinkUrl" class="btn btn-sm btn-outline-primary px-3 rounded-pill fw-semibold">Resolve <i class="fa-solid fa-arrow-right ms-1 fs-9"></i></a>
                                 }
                             </div>
                         }
@@ -385,7 +419,7 @@
                 var ctx = ctxArea.getContext('2d');
                 if (ctx) {
                     var salesGradient = ctx.createLinearGradient(0, 0, 0, 300);
-                    salesGradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+                    salesGradient.addColorStop(0, 'rgba(59, 130, 246, 0.25)');
                     salesGradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
 
                     new Chart(ctxArea, {
@@ -393,10 +427,10 @@
                         data: {
                             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                             datasets: [{
-                                label: 'Sales',
-                                data: [12000, 19000, 3000, 5000, 20000, 30000, 45000, 35000, 40000, 38000, 42000, 50000],
+                                label: 'Sales (₹)',
+                                data: [12000, 19000, 15000, 25000, 22000, 30000, 45000, 35000, 40000, 38000, 42000, 50000],
                                 borderColor: '#3b82f6',
-                                borderWidth: 2.5,
+                                borderWidth: 3,
                                 backgroundColor: salesGradient,
                                 tension: 0.35,
                                 fill: true,
@@ -406,15 +440,16 @@
                                 pointHoverRadius: 6,
                                 pointRadius: 4
                             }, {
-                                label: 'Purchases',
-                                data: [8000, 15000, 2000, 4000, 18000, 22000, 38000, 30000, 32000, 35000, 33000, 41000],
-                                borderColor: '#f97316',
+                                label: 'Purchases (₹)',
+                                data: [8000, 15000, 10000, 18000, 18000, 22000, 38000, 30000, 32000, 35000, 33000, 41000],
+                                borderColor: '#ef4444',
                                 borderWidth: 2,
+                                borderDash: [4, 4],
                                 backgroundColor: 'transparent',
                                 tension: 0.35,
                                 pointBackgroundColor: '#ffffff',
-                                pointBorderColor: '#f97316',
-                                pointBorderWidth: 1.5,
+                                pointBorderColor: '#ef4444',
+                                pointBorderWidth: 2,
                                 pointHoverRadius: 5,
                                 pointRadius: 3
                             }]
@@ -451,10 +486,10 @@
                 new Chart(ctxPie, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Revenue', 'Expenses', 'Net Profit'],
+                        labels: ['Revenue', 'Expenses', 'Net Margin'],
                         datasets: [{
                             data: [75, 45, 30],
-                            backgroundColor: ['#22c55e', '#ef4444', '#a855f7'],
+                            backgroundColor: ['#3b82f6', '#ef4444', '#10b981'],
                             borderWidth: 3,
                             borderColor: '#ffffff',
                             hoverOffset: 4

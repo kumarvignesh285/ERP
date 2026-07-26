@@ -187,7 +187,7 @@ public class SalesService : ISalesService
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            invoice.Customer = await _context.Customers.FindAsync(invoice.CustomerId)
+            var customer = await _context.Customers.FindAsync(invoice.CustomerId)
                 ?? throw new InvalidOperationException("Selected customer was not found.");
 
             foreach (var item in invoice.Items)
@@ -196,6 +196,8 @@ public class SalesService : ISalesService
                     ?? throw new InvalidOperationException("One or more selected products were not found.");
 
                 item.ProductName = string.IsNullOrWhiteSpace(item.ProductName) ? product.ProductName : item.ProductName;
+                item.Product = null;
+                item.SalesInvoice = null;
                 if (!invoice.WithGST)
                 {
                     item.TaxPercentage = 0;
@@ -221,6 +223,8 @@ public class SalesService : ISalesService
             invoice.TaxAmount = !invoice.WithGST ? 0 : (invoice.TaxAmount == 0 ? invoice.Items.Sum(i => i.TaxAmount) : invoice.TaxAmount);
             invoice.GrandTotal = invoice.SubTotal + invoice.TaxAmount - invoice.DiscountAmount + invoice.RoundOff;
             invoice.BalanceAmount = invoice.GrandTotal - invoice.PaidAmount;
+
+            invoice.Customer = null;
 
             if (invoice.Id == 0)
             {
@@ -280,14 +284,14 @@ public class SalesService : ISalesService
             }
 
             // Generate Accounting Voucher (Sales Account Cr, Customer Account Dr)
-            var customerLedger = await _context.Ledgers.FirstOrDefaultAsync(l => l.LedgerName.Contains(invoice.Customer!.CustomerName) || l.LedgerCode == invoice.Customer.CustomerCode);
+            var customerLedger = await _context.Ledgers.FirstOrDefaultAsync(l => l.LedgerName.Contains(customer.CustomerName) || (!string.IsNullOrEmpty(customer.CustomerCode) && l.LedgerCode == customer.CustomerCode));
             if (customerLedger == null)
             {
                 // Auto create customer ledger if not exist
                 customerLedger = new Ledger
                 {
-                    LedgerCode = invoice.Customer.CustomerCode,
-                    LedgerName = invoice.Customer.CustomerName,
+                    LedgerCode = !string.IsNullOrWhiteSpace(customer.CustomerCode) ? customer.CustomerCode : $"CUST-{customer.Id}",
+                    LedgerName = customer.CustomerName,
                     AccountGroupId = (await _context.AccountGroups.FirstOrDefaultAsync(g => g.GroupName == "Sundry Debtors"))?.Id ?? 1,
                     OpeningBalance = 0,
                     BalanceType = "Dr"
@@ -316,20 +320,30 @@ public class SalesService : ISalesService
             if (existingVoucher != null)
             {
                 _context.Vouchers.Remove(existingVoucher);
+                await _context.SaveChangesAsync();
             }
+
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('VoucherItems', RESEED);");
+                await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Vouchers', RESEED);");
+            }
+            catch { }
 
             var voucher = new Voucher
             {
+                Id = 0,
                 VoucherNumber = "JV-" + invoice.InvoiceNumber,
                 VoucherDate = invoice.InvoiceDate,
                 VoucherType = "Journal",
                 ReferenceNumber = invoice.InvoiceNumber,
-                Narration = $"Sales invoice {invoice.InvoiceNumber} generated for customer {invoice.Customer.CustomerName}",
+                Narration = $"Sales invoice {invoice.InvoiceNumber} generated for customer {customer.CustomerName}",
                 TotalAmount = invoice.GrandTotal
             };
 
             voucher.Items.Add(new VoucherItem
             {
+                Id = 0,
                 LedgerId = customerLedger.Id,
                 DebitAmount = invoice.GrandTotal,
                 CreditAmount = 0,
@@ -339,6 +353,7 @@ public class SalesService : ISalesService
 
             voucher.Items.Add(new VoucherItem
             {
+                Id = 0,
                 LedgerId = salesLedger.Id,
                 DebitAmount = 0,
                 CreditAmount = invoice.GrandTotal,

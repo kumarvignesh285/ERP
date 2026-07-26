@@ -264,6 +264,20 @@ public class MastersController : Controller
         }
     }
 
+    [HttpPost("ClearAllProductData")]
+    public async Task<IActionResult> ClearAllProductData()
+    {
+        try
+        {
+            await _masterService.ClearAllProductDataAsync();
+            return Json(new { success = true, message = "All product related data has been cleared successfully." });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "An error occurred: " + ex.Message });
+        }
+    }
+
     [HttpPost("PreviewImport")]
     public async Task<IActionResult> PreviewImport(IFormFile file)
     {

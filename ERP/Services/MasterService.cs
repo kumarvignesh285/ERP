@@ -255,6 +255,48 @@ public class MasterService : IMasterService
         }
     }
 
+    public async Task ClearAllProductDataAsync()
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // Remove line items and transactions
+            _context.SalesQuotationItems.RemoveRange(_context.SalesQuotationItems);
+            _context.SalesOrderItems.RemoveRange(_context.SalesOrderItems);
+            _context.DeliveryChallanItems.RemoveRange(_context.DeliveryChallanItems);
+            _context.SalesInvoiceItems.RemoveRange(_context.SalesInvoiceItems);
+            _context.SalesReturnItems.RemoveRange(_context.SalesReturnItems);
+
+            _context.PurchaseOrderItems.RemoveRange(_context.PurchaseOrderItems);
+            _context.GoodsReceiptNoteItems.RemoveRange(_context.GoodsReceiptNoteItems);
+            _context.PurchaseInvoiceItems.RemoveRange(_context.PurchaseInvoiceItems);
+            _context.PurchaseReturnItems.RemoveRange(_context.PurchaseReturnItems);
+
+            _context.StockTransferItems.RemoveRange(_context.StockTransferItems);
+            _context.StockAdjustmentItems.RemoveRange(_context.StockAdjustmentItems);
+            _context.PhysicalStockVerificationItems.RemoveRange(_context.PhysicalStockVerificationItems);
+            _context.StockTransactions.RemoveRange(_context.StockTransactions);
+
+            await _context.SaveChangesAsync();
+
+            // Remove Products
+            _context.Products.RemoveRange(_context.Products);
+            await _context.SaveChangesAsync();
+
+            // Remove Categories & Brands
+            _context.Categories.RemoveRange(_context.Categories);
+            _context.Brands.RemoveRange(_context.Brands);
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
     // Category
     public async Task<List<Category>> GetCategoriesAsync()
     {

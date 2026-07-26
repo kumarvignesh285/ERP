@@ -19,7 +19,7 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-user-shield me-2"></i> User Permissions Configuration</h4>
+    <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-user-shield me-2"></i> User Permissions Configuration</h4>
     <div>
         <a href="/Settings/Users" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-users me-1"></i> User Management</a>
         <a href="/Settings/Roles" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-users-gear me-1"></i> Roles List</a>
@@ -90,8 +90,8 @@
                             var collapseClass = $"group-{groupName.Replace(" ", "")}";
 
                             <!-- Module Group Header Row -->
-                            <tr class="table-light font-weight-bold" style="cursor: pointer; background-color: #f1f3f7;" data-bs-toggle="collapse" data-bs-target=".@collapseClass">
-                                <td colspan="4" class="ps-3 py-2 font-weight-bold text-dark border-bottom">
+                            <tr class="table-light fw-bold" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target=".@collapseClass">
+                                <td colspan="4" class="ps-3 py-2 fw-bold text-dark border-bottom">
                                     <i class="fa-solid @groupIcon me-2"></i> @groupName Module
                                     <span class="badge bg-secondary ms-2 text-white" style="font-size: 0.75rem;">@pages.Length Pages</span>
                                     <i class="fa-solid fa-chevron-down float-end fs-7 mt-1 me-3 text-muted"></i>

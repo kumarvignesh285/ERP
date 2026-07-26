@@ -1,74 +1,140 @@
 @model IEnumerable<ERP.Models.SalesInvoice>
 @{
     ViewData["Title"] = "Sales Reports";
+    var totalInvoices = Model?.Count() ?? 0;
+    var totalRevenue = Model?.Sum(x => x.GrandTotal) ?? 0m;
+    var paidInvoices = Model?.Count(x => x.Status == "Paid" || x.Status == "Completed") ?? 0;
 }
 
-<!-- Filters Row -->
-<div class="card mb-3 no-print">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-chart-line me-2"></i> Sales Reports & Analytics</h4>
+        <p class="text-muted small m-0 mt-1">Track revenue, sales invoice history, and customer performance</p>
+    </div>
+    <div class="d-flex gap-2 no-print">
+        <button class="btn btn-outline-secondary shadow-sm" onclick="window.print()"><i class="fa-solid fa-print me-1.5"></i> Print Report</button>
+        <button class="btn btn-outline-success shadow-sm" onclick="alert('Exporting to Excel...')"><i class="fa-solid fa-file-excel me-1.5"></i> Export Excel</button>
+    </div>
+</div>
+
+<!-- Summary KPI Cards -->
+<div class="row g-3 mb-4 no-print">
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="card border-0 shadow-sm bg-primary bg-opacity-10 h-100">
+            <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold text-uppercase">Total Invoices</span>
+                    <h3 class="m-0 fw-bold text-primary mt-1">@totalInvoices</h3>
+                </div>
+                <div class="avatar bg-primary text-white rounded-3 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="fa-solid fa-file-invoice fs-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="card border-0 shadow-sm bg-success bg-opacity-10 h-100">
+            <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold text-uppercase">Total Revenue</span>
+                    <h3 class="m-0 fw-bold text-success mt-1">₹@totalRevenue.ToString("N2")</h3>
+                </div>
+                <div class="avatar bg-success text-white rounded-3 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="fa-solid fa-indian-rupee-sign fs-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+        <div class="card border-0 shadow-sm bg-info bg-opacity-10 h-100">
+            <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold text-uppercase">Completed Sales</span>
+                    <h3 class="m-0 fw-bold text-info mt-1">@paidInvoices</h3>
+                </div>
+                <div class="avatar bg-info text-white rounded-3 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="fa-solid fa-circle-check fs-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Panel -->
+<div class="card mb-4 no-print shadow-sm border-0">
     <div class="card-body p-3">
-        <div class="row g-2 align-items-center">
-            <div class="col-md-3">
-                <label class="form-label font-weight-semibold mb-1 small text-muted">From Date</label>
-                <input type="date" id="filterFromDate" class="form-control form-control-sm" />
+        <div class="row g-3 align-items-center">
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label fw-semibold mb-1 small text-muted">From Date</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-calendar text-muted"></i></span>
+                    <input type="date" id="filterFromDate" class="form-control border-start-0" />
+                </div>
             </div>
-            <div class="col-md-3">
-                <label class="form-label font-weight-semibold mb-1 small text-muted">To Date</label>
-                <input type="date" id="filterToDate" class="form-control form-control-sm" />
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label fw-semibold mb-1 small text-muted">To Date</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-calendar text-muted"></i></span>
+                    <input type="date" id="filterToDate" class="form-control border-start-0" />
+                </div>
             </div>
-            <div class="col-md-3">
-                <label class="form-label font-weight-semibold mb-1 small text-muted">Status</label>
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label fw-semibold mb-1 small text-muted">Invoice Status</label>
                 <select id="filterStatus" class="form-select form-select-sm">
                     <option value="">All Statuses</option>
-                    @foreach (var s in Model.Where(p => !string.IsNullOrEmpty(p.Status)).Select(p => p.Status).Distinct())
+                    @if (Model != null)
                     {
-                        <option value="@s">@s</option>
+                        foreach (var s in Model.Where(p => !string.IsNullOrEmpty(p.Status)).Select(p => p.Status).Distinct())
+                        {
+                            <option value="@s">@s</option>
+                        }
                     }
                 </select>
             </div>
-            <div class="col-md-3 d-flex gap-2 align-self-end">
-                <button class="btn btn-sm btn-primary w-100" onclick="applyFilters()"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+            <div class="col-12 col-sm-6 col-md-3 d-flex gap-2 align-self-end">
+                <button class="btn btn-sm btn-primary w-100 shadow-sm" onclick="applyFilters()"><i class="fa-solid fa-filter me-1"></i> Filter</button>
                 <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetFilters()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h5 class="m-0"><i class="fa-solid fa-chart-bar me-2"></i> Sales Reports</h5>
-        <button class="btn btn-light btn-sm" onclick="window.print()"><i class="fa-solid fa-print me-1"></i> Print</button>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover datatable align-middle">
-                <thead>
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 600px;">
+            <table class="table table-hover datatable align-middle mb-0">
+                <thead class="table-light text-uppercase fs-8 fw-bold text-muted sticky-top">
                     <tr>
-                        <th>Invoice No</th>
+                        <th class="ps-4">Invoice No</th>
                         <th>Date</th>
-                        <th>Customer</th>
+                        <th>Customer Name</th>
                         <th>Status</th>
-                        <th class="text-end">Total Amount</th>
+                        <th class="text-end pe-4">Total Amount</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if(Model != null)
+                    @if (Model != null)
                     {
-                        foreach(var item in Model)
+                        foreach (var item in Model)
                         {
                             <tr>
-                                <td class="font-weight-bold">@item.InvoiceNumber</td>
+                                <td class="ps-4 fw-bold text-primary">@item.InvoiceNumber</td>
                                 <td>@item.InvoiceDate.ToString("dd-MM-yyyy")</td>
-                                <td>@(item.Customer?.CustomerName ?? "Cash Customer")</td>
-                                <td><span class="badge bg-success">@item.Status</span></td>
-                                <td class="text-end font-weight-semibold">₹@item.GrandTotal.ToString("N2")</td>
+                                <td class="fw-semibold text-dark">@(item.Customer?.CustomerName ?? "Cash Customer")</td>
+                                <td>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold">
+                                        <i class="fa-solid fa-circle-check me-1"></i>@item.Status
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4 fw-bold text-dark">₹@item.GrandTotal.ToString("N2")</td>
                             </tr>
                         }
                     }
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="4" class="text-end font-weight-bold">Grand Total:</th>
-                        <th class="text-end font-weight-bold text-primary">₹@(Model?.Sum(x => x.GrandTotal).ToString("N2") ?? "0.00")</th>
+                <tfoot class="table-light border-top">
+                    <tr class="fw-bold fs-7">
+                        <td colspan="4" class="text-end ps-4">Grand Total:</td>
+                        <td class="text-end pe-4 text-primary fs-6">₹@(Model?.Sum(x => x.GrandTotal).ToString("N2") ?? "0.00")</td>
                     </tr>
                 </tfoot>
             </table>

@@ -4,18 +4,18 @@
     var otp = TempData["ResetOtp"] as string;
 }
 
-<section class="py-5 bg-light d-flex align-items-center" style="min-height: 80vh;">
-    <div class="container">
+<section class="py-12 bg-brand-black min-h-screen d-flex align-items-center">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-5">
-                <div class="card border-0 shadow-sm p-4 p-md-5 bg-white" style="border-radius: 16px;">
+                <div class="glass-panel-custom p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <i class="fa-solid fa-shield-halved text-warning display-4 mb-3"></i>
-                        <h2 class="font-weight-bold">OTP Verification</h2>
-                        <p class="text-muted">A 6-digit OTP verification code has been dispatched to <strong>@email</strong>.</p>
+                        <i class="fa-solid fa-shield-halved text-brand-orange display-4 mb-3" style="filter: drop-shadow(0 0 10px rgba(255,92,0,0.3));"></i>
+                        <h2 class="font-weight-bold font-syne text-white">OTP Verification</h2>
+                        <p class="text-zinc-500 fs-7 mt-2">A 6-digit OTP verification code has been dispatched to <strong>@email</strong>.</p>
                         
                         <!-- Visual indicator that the code is logged in terminal -->
-                        <div class="alert alert-warning border-0 p-2 fs-8 text-start mt-3">
+                        <div class="alert bg-yellow-500/10 border border-yellow-500/20 p-2 fs-8 text-start mt-3 text-yellow-500" style="border-radius: 4px;">
                             <i class="fa-solid fa-terminal me-1"></i> <strong>Simulation mode:</strong> Check terminal console output or enter <strong>123456</strong> to bypass.
                         </div>
                     </div>
@@ -25,15 +25,15 @@
                         <div asp-validation-summary="All" class="text-danger small font-weight-bold mb-3"></div>
 
                         <div class="mb-4">
-                            <label class="form-label font-weight-semibold text-muted uppercase tracking-wider fs-8">6-Digit Verification Code</label>
-                            <input type="text" name="otpCode" class="form-control py-2 text-center font-weight-bold tracking-widest fs-5" required placeholder="XXXXXX" maxlength="6">
+                            <label class="form-label font-weight-semibold text-zinc-400 uppercase tracking-wider fs-8">6-Digit Verification Code</label>
+                            <input type="text" name="otpCode" class="form-control form-control-dark py-2 text-center font-weight-bold tracking-widest fs-5" required placeholder="XXXXXX" maxlength="6" style="background-color: #050505; color: #ffffff;">
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 py-2 fs-6">Verify and Proceed</button>
+                        <button type="submit" class="btn-magnetic btn btn-primary w-100 py-2 fs-6 bg-brand-orange border-brand-orange font-syne font-bold uppercase tracking-wider" style="border-radius: 4px !important; color: #ffffff;">Verify and Proceed</button>
                     </form>
 
                     <div class="text-center mt-4">
-                        <a asp-action="ForgotPassword" class="text-decoration-none fs-7"><i class="fa-solid fa-rotate-left me-1"></i> Resend Code</a>
+                        <a asp-action="ForgotPassword" class="text-decoration-none text-brand-orange fs-7"><i class="fa-solid fa-rotate-left me-1"></i> Resend Code</a>
                     </div>
                 </div>
             </div>

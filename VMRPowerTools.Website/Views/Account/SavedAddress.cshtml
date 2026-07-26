@@ -3,36 +3,36 @@
     ViewData["Title"] = "Saved Addresses";
 }
 
-<section class="py-5 bg-white border-bottom">
-    <div class="container">
-        <h1>Saved Addresses</h1>
-        <p class="text-muted mb-0">Manage delivery locations and warehouse pick-up codes to accelerate checkouts.</p>
+<section class="py-5 bg-brand-black border-b border-white/5">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
+        <h1 class="text-3xl md:text-5xl font-syne font-extrabold uppercase tracking-luxury text-white">Saved Addresses</h1>
+        <p class="text-zinc-500 font-inter text-sm mt-2">Manage delivery locations and warehouse pick-up codes to accelerate checkouts.</p>
     </div>
 </section>
 
-<section class="py-5">
-    <div class="container">
+<section class="py-12 bg-brand-black">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
         @if (TempData["SuccessMessage"] != null)
         {
-            <div class="alert alert-success border-0 mb-4">@TempData["SuccessMessage"]</div>
+            <div class="alert bg-green-950/20 border border-green-900/30 p-3 mb-4 rounded text-green-400">@TempData["SuccessMessage"]</div>
         }
 
         <div class="row g-4">
             <!-- Sidebar Navigation Links -->
             <div class="col-lg-3">
-                <div class="list-group shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
-                    <a asp-action="Profile" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-gears me-2"></i> Account Dashboard</a>
-                    <a asp-action="MyOrders" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-clock-rotate-left me-2"></i> My Orders</a>
-                    <a asp-action="Invoices" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-receipt me-2"></i> My Invoices</a>
-                    <a asp-action="Wishlist" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-heart me-2"></i> Wishlist</a>
-                    <a asp-action="SavedAddress" class="list-group-item list-group-item-action border-0 py-3 active"><i class="fa-solid fa-map-location-dot me-2"></i> Saved Addresses</a>
+                <div class="glass-panel-custom p-2 mb-4" style="border-radius: 8px;">
+                    <a asp-action="Profile" class="list-group-item list-group-item-action border-0 py-3 px-3 text-zinc-400 hover:text-white transition-all font-syne text-[11px] font-bold uppercase tracking-widest bg-transparent"><i class="fa-solid fa-gears me-2"></i> Account Dashboard</a>
+                    <a asp-action="MyOrders" class="list-group-item list-group-item-action border-0 py-3 px-3 text-zinc-400 hover:text-white transition-all font-syne text-[11px] font-bold uppercase tracking-widest bg-transparent"><i class="fa-solid fa-clock-rotate-left me-2"></i> My Orders</a>
+                    <a asp-action="Invoices" class="list-group-item list-group-item-action border-0 py-3 px-3 text-zinc-400 hover:text-white transition-all font-syne text-[11px] font-bold uppercase tracking-widest bg-transparent"><i class="fa-solid fa-receipt me-2"></i> My Invoices</a>
+                    <a asp-action="Wishlist" class="list-group-item list-group-item-action border-0 py-3 px-3 text-zinc-400 hover:text-white transition-all font-syne text-[11px] font-bold uppercase tracking-widest bg-transparent"><i class="fa-solid fa-heart me-2"></i> Wishlist</a>
+                    <a asp-action="SavedAddress" class="list-group-item list-group-item-action border-0 py-3 px-3 text-white transition-all font-syne text-[11px] font-bold uppercase tracking-widest bg-brand-orange/10 border-l-2 border-brand-orange" style="background: rgba(255, 92, 0, 0.05);"><i class="fa-solid fa-map-location-dot me-2 text-brand-orange"></i> Saved Addresses</a>
                 </div>
             </div>
 
             <!-- Saved Addresses Grid and Add Address -->
             <div class="col-lg-9">
-                <div class="card border-0 shadow-sm p-4 bg-white mb-4" style="border-radius: 12px;">
-                    <h5 class="mb-4 font-weight-bold">Saved Delivery Locations</h5>
+                <div class="glass-panel-custom p-4 mb-4">
+                    <h5 class="mb-4 font-weight-bold font-syne text-white">Saved Delivery Locations</h5>
                     
                     <div class="row g-3 mb-5">
                         @if (Model != null && Model.Any())
@@ -40,12 +40,12 @@
                             foreach (var addr in Model)
                             {
                                 <div class="col-md-6" id="address-card-@addr.Tag">
-                                    <div class="card p-3 border-2 h-100" style="border-radius: 10px; border-color: #e2e8f0 !important;">
+                                    <div class="payment-card-custom p-3 h-100">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="badge bg-primary text-uppercase font-weight-bold px-2 py-1" style="font-size: 0.65rem;">@addr.Tag</span>
+                                            <span class="badge bg-brand-orange/10 border border-brand-orange/20 text-brand-orange text-uppercase font-weight-bold px-2 py-1" style="font-size: 0.65rem; border-radius: 4px;">@addr.Tag</span>
                                             <button class="btn btn-link text-danger p-0" onclick="deleteAddress('@addr.Tag')" title="Delete"><i class="fa-regular fa-trash-can"></i></button>
                                         </div>
-                                        <p class="text-dark fs-7 mb-0">
+                                        <p class="text-zinc-300 fs-7 mb-0">
                                             @addr.AddressLine<br>
                                             @addr.City, @addr.State - @addr.Pincode
                                         </p>
@@ -56,31 +56,31 @@
                         else
                         {
                             <div class="col-12">
-                                <p class="text-muted italic py-3 text-center border rounded">No saved shipping addresses. Fill the form below to save one!</p>
+                                <p class="text-zinc-500 italic py-3 text-center border border-white/5 rounded">No saved shipping addresses. Fill the form below to save one!</p>
                             </div>
                         }
                     </div>
 
                     <!-- Add Address Form -->
-                    <h5 class="mb-3 border-top pt-4 font-weight-bold">Add New Location</h5>
+                    <h5 class="mb-3 border-t border-white/5 pt-4 font-weight-bold font-syne text-white">Add New Location</h5>
                     <form asp-action="AddAddress" method="post" class="fs-7">
                         @Html.AntiForgeryToken()
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label font-weight-semibold">Address Tag (e.g. Home, Office, Site A)</label>
-                                <input type="text" name="tag" class="form-control" required placeholder="Home">
+                                <label class="form-label font-weight-semibold text-zinc-400">Address Tag (e.g. Home, Office, Site A)</label>
+                                <input type="text" name="tag" class="form-control form-control-dark" required placeholder="Home">
                             </div>
                             <div class="col-md-8">
-                                <label class="form-label font-weight-semibold">Street Address</label>
-                                <input type="text" name="address" class="form-control" required placeholder="Flat / House / Lane details">
+                                <label class="form-label font-weight-semibold text-zinc-400">Street Address</label>
+                                <input type="text" name="address" class="form-control form-control-dark" required placeholder="Flat / House / Lane details">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label font-weight-semibold">City</label>
-                                <input type="text" name="city" class="form-control" required placeholder="Guindy">
+                                <label class="form-label font-weight-semibold text-zinc-400">City</label>
+                                <input type="text" name="city" class="form-control form-control-dark" required placeholder="Guindy">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label font-weight-semibold">State</label>
-                                <select name="state" class="form-select" required>
+                                <label class="form-label font-weight-semibold text-zinc-400">State</label>
+                                <select name="state" class="form-select form-control-dark" required>
                                     <option value="Tamil Nadu">Tamil Nadu</option>
                                     <option value="Karnataka">Karnataka</option>
                                     <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -90,11 +90,11 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label font-weight-semibold">Pincode</label>
-                                <input type="text" name="pincode" class="form-control" required placeholder="600032">
+                                <label class="form-label font-weight-semibold text-zinc-400">Pincode</label>
+                                <input type="text" name="pincode" class="form-control form-control-dark" required placeholder="600032">
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-4 py-2"><i class="fa-solid fa-floppy-disk me-2"></i> Save Address</button>
+                        <button type="submit" class="btn-magnetic btn btn-primary mt-4 py-2 px-4 bg-brand-orange border-brand-orange font-syne font-bold uppercase tracking-wider" style="border-radius: 4px !important; color: #ffffff;"><i class="fa-solid fa-floppy-disk me-2"></i> Save Address</button>
                     </form>
                 </div>
             </div>

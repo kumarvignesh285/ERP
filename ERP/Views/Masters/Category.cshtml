@@ -3,32 +3,39 @@
     ViewData["Title"] = "Category Master";
 }
 
+<!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-list me-2"></i> Categories List</h4>
-    <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Category</button>
+    <div>
+        <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-layer-group me-2"></i> Category Master</h4>
+        <p class="text-muted small m-0 mt-1">Classify products into distinct inventory categories and product lines</p>
+    </div>
+    <button class="btn btn-primary shadow-sm" onclick="openModal()">
+        <i class="fa-solid fa-plus me-1.5"></i> Add New Category
+    </button>
 </div>
 
-<div class="card">
+<!-- Datatable Card -->
+<div class="card shadow-sm border-0">
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover datatable align-middle">
-                <thead>
+                <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                     <tr>
-                        <th>ID</th>
+                        <th style="width: 80px;">ID</th>
                         <th>Category Name</th>
-                        <th class="text-center no-print">Actions</th>
+                        <th class="text-center no-print" style="width: 120px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var c in Model)
                     {
                         <tr id="row-@c.Id">
-                            <td>@c.Id</td>
-                            <td class="font-weight-semibold">@c.CategoryName</td>
+                            <td class="fw-bold text-muted">#@c.Id</td>
+                            <td class="fw-bold text-dark">@c.CategoryName</td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { c.Id, c.CategoryName })" onclick="editCategory(this)"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(@c.Id)"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { c.Id, c.CategoryName })" onclick="editCategory(this)" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(@c.Id)" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </td>
                         </tr>
@@ -40,24 +47,27 @@
 </div>
 
 <!-- Modal Dialog -->
-<div class="modal fade" id="categoryModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="modalTitle">Add Category</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-layer-group me-2"></i> Add Category</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form asp-action="SaveCategory" method="post" id="categoryForm">
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <input type="hidden" id="Id" name="Id" value="0" />
                     <div class="mb-3">
-                        <label class="form-label font-weight-semibold">Category Name *</label>
-                        <input type="text" id="CategoryName" name="CategoryName" class="form-control" required />
+                        <label class="form-label fw-semibold text-dark">Category Name <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
+                            <input type="text" id="CategoryName" name="CategoryName" class="form-control border-start-0" placeholder="e.g. Power Tools, Fasteners..." required />
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
+                <div class="modal-footer bg-light border-top py-2 px-4">
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm" id="submitBtn">Save Category</button>
                 </div>
             </form>
         </div>
@@ -74,8 +84,8 @@
         function openModal() {
             document.getElementById('categoryForm').reset();
             document.getElementById('Id').value = "0";
-            document.getElementById('modalTitle').innerText = "Add Category";
-            document.getElementById('submitBtn').innerText = "Save";
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-layer-group me-2"></i> Add Category';
+            document.getElementById('submitBtn').innerText = "Save Category";
             bootstrapModal.show();
         }
 
@@ -83,7 +93,7 @@
             var c = $(btn).data('item');
             document.getElementById('Id').value = window.getVal(c, 'id');
             document.getElementById('CategoryName').value = window.getVal(c, 'categoryName');
-            document.getElementById('modalTitle').innerText = "Edit Category";
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square me-2"></i> Edit Category';
             document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();
         }

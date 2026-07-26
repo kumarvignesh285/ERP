@@ -1,0 +1,46 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "Home";
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
+    var pageTitle = ViewData["Title"]?.ToString() ?? controller;
+
+    var controllerIcon = controller switch
+    {
+        "Home" => "fa-gauge",
+        "Sales" => "fa-cart-shopping",
+        "Purchase" => "fa-bag-shopping",
+        "Inventory" => "fa-warehouse",
+        "Accounts" => "fa-calculator",
+        "Masters" => "fa-folder-open",
+        "CRM" => "fa-users-rectangle",
+        "Reports" => "fa-chart-line",
+        "Settings" => "fa-gears",
+        "Account" => "fa-user-lock",
+        _ => "fa-folder-tree"
+    };
+}
+
+@if (controller != "Home" || action != "Index")
+{
+    <nav aria-label="breadcrumb" class="erp-breadcrumb-container no-print mb-3">
+        <ol class="breadcrumb m-0 align-items-center">
+            <li class="breadcrumb-item">
+                <a href="/" class="d-inline-flex align-items-center gap-1 text-decoration-none text-muted hover-primary">
+                    <i class="fa-solid fa-house fs-7"></i>
+                    <span>Home</span>
+                </a>
+            </li>
+            @if (controller != "Home")
+            {
+                <li class="breadcrumb-item text-muted">
+                    <span class="d-inline-flex align-items-center gap-1">
+                        <i class="fa-solid @controllerIcon fs-7 text-primary"></i>
+                        <span>@controller</span>
+                    </span>
+                </li>
+            }
+            <li class="breadcrumb-item active fw-semibold text-primary" aria-current="page">
+                @pageTitle
+            </li>
+        </ol>
+    </nav>
+}

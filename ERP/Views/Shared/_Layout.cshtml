@@ -12,6 +12,10 @@
         (function() {
             var savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
+            var sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (sidebarCollapsed && window.innerWidth >= 992) {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
         })();
     </script>
 
@@ -42,60 +46,104 @@
         <partial name="_Sidebar" />
         
         <div class="erp-wrapper">
+            <!-- Glassmorphism Navbar -->
             <header class="erp-header no-print">
                 <div class="header-left d-flex align-items-center gap-3">
                     <button class="btn btn-light icon-btn sidebar-toggle d-lg-none" type="button" aria-label="Open navigation" data-sidebar-toggle>
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <h5 class="m-0 font-weight-bold text-primary">@ViewData["Title"]</h5>
+                    
+                    <!-- Global Search Bar Trigger -->
+                    <div class="header-search-box d-none d-md-flex align-items-center" onclick="window.focusGlobalSearch()">
+                        <i class="fa-solid fa-magnifying-glass search-icon text-muted"></i>
+                        <input type="text" id="globalHeaderSearch" class="form-control header-search-input" placeholder="Search invoices, products, customers..." />
+                        <span class="search-kbd-badge">Ctrl K</span>
+                    </div>
                 </div>
-                <div class="header-right d-flex align-items-center gap-3">
-                    <!-- Theme Dropdown Switcher -->
-                    <div class="dropdown">
-                        <button class="btn btn-link text-secondary p-1" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Switch Theme">
-                            <i class="fa-solid fa-palette fs-5"></i>
+
+                <div class="header-right d-flex align-items-center gap-2 gap-sm-3">
+                    <!-- Quick Action Add Button -->
+                    <div class="dropdown d-none d-sm-block">
+                        <button class="btn btn-primary btn-sm d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" type="button" id="quickAddDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-plus"></i>
+                            <span class="fw-semibold">Create</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" aria-labelledby="themeDropdown" style="min-width: 180px;">
-                            <li><h6 class="dropdown-header">Select Theme</h6></li>
-                            <li><hr class="dropdown-divider m-1"></li>
-                            <li><button class="dropdown-item py-2 d-flex align-items-center gap-2" data-theme-value="light"><span style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #2563eb;"></span> Light</button></li>
-                            <li><button class="dropdown-item py-2 d-flex align-items-center gap-2" data-theme-value="dark"><span style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #60a5fa;"></span> Dark</button></li>
-                            <li><button class="dropdown-item py-2 d-flex align-items-center gap-2" data-theme-value="emerald"><span style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #059669;"></span> Emerald Glass</button></li>
-                            <li><button class="dropdown-item py-2 d-flex align-items-center gap-2" data-theme-value="indigo"><span style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #6366f1;"></span> Indigo Premium</button></li>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" aria-labelledby="quickAddDropdown">
+                            <li><h6 class="dropdown-header">Quick Actions</h6></li>
+                            <li><a class="dropdown-item rounded py-1.5" href="/Sales/Invoice"><i class="fa-solid fa-file-invoice-dollar me-2 text-primary"></i> New Sales Invoice</a></li>
+                            <li><a class="dropdown-item rounded py-1.5" href="/Purchase/Order"><i class="fa-solid fa-cart-shopping me-2 text-success"></i> New Purchase Order</a></li>
+                            <li><a class="dropdown-item rounded py-1.5" href="/Masters/Customer"><i class="fa-solid fa-user-plus me-2 text-info"></i> Add Customer</a></li>
+                            <li><a class="dropdown-item rounded py-1.5" href="/Masters/Product"><i class="fa-solid fa-box-open me-2 text-warning"></i> Add Product</a></li>
                         </ul>
                     </div>
 
-                    <!-- Notifications -->
+                    <!-- Theme Switcher Palette -->
                     <div class="dropdown">
-                        <button class="btn btn-link text-secondary position-relative p-1" type="button" data-bs-toggle="dropdown">
-                            <i class="fa-regular fa-bell fs-5"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" id="notif-count" style="display:none">0</span>
+                        <button class="btn btn-light icon-btn position-relative" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Switch Theme">
+                            <i class="fa-solid fa-palette"></i>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="width: 300px;" id="notif-list">
-                            <li><h6 class="dropdown-header">Alerts & Notifications</h6></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-center text-muted" href="#">No new alerts</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2 theme-picker-dropdown" aria-labelledby="themeDropdown">
+                            <li><h6 class="dropdown-header">Design Theme</h6></li>
+                            <li><hr class="dropdown-divider m-1"></li>
+                            <li><button class="dropdown-item py-2 d-flex align-items-center justify-content-between rounded" data-theme-value="light"><span>Light Minimal</span><span class="theme-swatch swatch-light"></span></button></li>
+                            <li><button class="dropdown-item py-2 d-flex align-items-center justify-content-between rounded" data-theme-value="dark"><span>Dark Obsidian</span><span class="theme-swatch swatch-dark"></span></button></li>
+                            <li><button class="dropdown-item py-2 d-flex align-items-center justify-content-between rounded" data-theme-value="emerald"><span>Emerald Glass</span><span class="theme-swatch swatch-emerald"></span></button></li>
+                            <li><button class="dropdown-item py-2 d-flex align-items-center justify-content-between rounded" data-theme-value="indigo"><span>Indigo Premium</span><span class="theme-swatch swatch-indigo"></span></button></li>
                         </ul>
                     </div>
-                    
-                    <!-- User Account -->
+
+                    <!-- Notifications Dropdown -->
                     <div class="dropdown">
-                        <button class="btn btn-link d-flex align-items-center gap-2 text-decoration-none text-dark p-0" type="button" data-bs-toggle="dropdown">
-                            <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-weight:600;">
-                                @User.Identity?.Name?[..1].ToUpper()
-                            </div>
-                            <div class="user-meta text-start d-none d-sm-block">
-                                <p class="m-0 lh-1 fs-7 font-weight-semibold">@User.Identity?.Name</p>
-                                <span class="text-muted fs-8">@roleLabel</span>
-                            </div>
+                        <button class="btn btn-light icon-btn position-relative" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                            <i class="fa-regular fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle notif-badge-pulse" id="notif-count" style="display:none">
+                                <span class="visually-hidden">New alerts</span>
+                            </span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                            <li><a class="dropdown-item" href="/Settings/CompanySettings"><i class="fa-solid fa-building me-2"></i> Company Setup</a></li>
-                            <li><a class="dropdown-item" href="/Settings/Users"><i class="fa-solid fa-user-gear me-2"></i> User Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
+                        <div class="dropdown-menu dropdown-menu-end shadow border-0 p-0 notif-popover-menu" aria-labelledby="notifDropdown">
+                            <div class="notif-header p-3 border-bottom d-flex justify-content-between align-items-center">
+                                <h6 class="m-0 fw-bold">Notifications</h6>
+                                <span class="badge bg-primary-light text-primary fw-semibold fs-8" id="notif-badge-label">Live Sync</span>
+                            </div>
+                            <ul class="list-group list-group-flush notif-list-container" id="notif-list">
+                                <li class="list-group-item text-center text-muted py-4">
+                                    <i class="fa-solid fa-bell-slash fa-2x mb-2 opacity-40"></i>
+                                    <p class="m-0 fs-7">No new alerts</p>
+                                </li>
+                            </ul>
+                            <div class="notif-footer p-2 text-center border-top">
+                                <a href="/Help" class="fs-8 text-decoration-none text-primary fw-semibold">View System Logs</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Account Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-link d-flex align-items-center gap-2 text-decoration-none text-dark p-0" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="user-avatar-wrapper position-relative">
+                                <div class="avatar-circle bg-primary text-white shadow-sm">
+                                    @User.Identity?.Name?[..1].ToUpper()
+                                </div>
+                                <span class="user-online-dot"></span>
+                            </div>
+                            <div class="user-meta text-start d-none d-md-block">
+                                <p class="m-0 lh-1 fs-7 fw-bold text-dark">@User.Identity?.Name</p>
+                                <span class="text-muted fs-8 fw-medium">@roleLabel</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-muted fs-8 d-none d-md-inline ms-1"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2 user-menu-dropdown" aria-labelledby="userMenuDropdown">
+                            <li class="px-2 py-1.5 border-bottom mb-1">
+                                <span class="d-block fw-bold fs-7">@User.Identity?.Name</span>
+                                <span class="badge bg-light text-primary border border-primary-subtle fs-8 font-monospace mt-1">@roleLabel</span>
+                            </li>
+                            <li><a class="dropdown-item rounded py-2" href="/Settings/CompanySettings"><i class="fa-solid fa-building me-2 text-primary"></i> Company Setup</a></li>
+                            <li><a class="dropdown-item rounded py-2" href="/Settings/Users"><i class="fa-solid fa-user-gear me-2 text-info"></i> Profile Settings</a></li>
+                            <li><a class="dropdown-item rounded py-2" href="/Help"><i class="fa-solid fa-circle-question me-2 text-warning"></i> System Help</a></li>
+                            <li><hr class="dropdown-divider my-1"></li>
                             <li>
-                                <form class="form-inline" action="/Account/Logout" method="post">
-                                    <button type="submit" class="dropdown-item text-danger"><i class="fa-solid fa-right-from-bracket me-2"></i> Logout</button>
+                                <form class="form-inline m-0" action="/Account/Logout" method="post">
+                                    <button type="submit" class="dropdown-item rounded py-2 text-danger"><i class="fa-solid fa-right-from-bracket me-2"></i> Sign Out</button>
                                 </form>
                             </li>
                         </ul>
@@ -103,9 +151,17 @@
                 </div>
             </header>
 
+            <!-- Main Content View -->
             <main role="main" class="erp-content">
+                <!-- Dynamic Breadcrumb Navigation -->
+                <partial name="_Breadcrumb" />
+                
+                <!-- Page View Content -->
                 @RenderBody()
             </main>
+
+            <!-- Shared Footer Partial -->
+            <partial name="_Footer" />
         </div>
     }
     else
@@ -144,17 +200,23 @@
                 
                 // 1. Add "S.No." column header
                 $table.find('thead tr').each(function() {
-                    $(this).prepend('<th style="width: 60px;" class="text-center">S.No.</th>');
+                    if ($(this).find('th:first').text() !== 'S.No.') {
+                        $(this).prepend('<th style="width: 60px;" class="text-center">S.No.</th>');
+                    }
                 });
                 
                 // 2. Add empty cell in body rows so DataTables has a column to write into
                 $table.find('tbody tr').each(function() {
-                    $(this).prepend('<td class="text-center font-weight-semibold"></td>');
+                    if (!$(this).find('td:first').hasClass('sno-cell')) {
+                        $(this).prepend('<td class="text-center fw-semibold sno-cell"></td>');
+                    }
                 });
 
                 // 3. Add empty cell in footer rows if any
                 $table.find('tfoot tr').each(function() {
-                    $(this).prepend('<th></th>');
+                    if ($(this).find('th:first').text() !== '') {
+                        $(this).prepend('<th></th>');
+                    }
                 });
 
                 // Initialize DataTable on this specific table element
@@ -213,7 +275,7 @@
                             targets: 0
                         }
                     ],
-                    order: [[1, 'asc']] // order by the second column initially so S.No isn't sorted initially
+                    order: [[1, 'asc']]
                 });
 
                 // Keep the S.No column populated sequentially on draw
@@ -226,18 +288,21 @@
             });
 
             // Initialize select2 elements
-            window.initializeSelect2('.select2');
+            if (window.initializeSelect2) {
+                window.initializeSelect2('.select2');
+            }
 
             // Load Notifications list via AJAX
             $.getJSON('/api/erp/notifications', function(data) {
                 if (data && data.length > 0) {
-                    $('#notif-count').text(data.length).show();
+                    $('#notif-count').show();
                     var list = $('#notif-list');
-                    list.find('.text-center').parent().remove();
+                    list.empty();
                     $.each(data, function(i, item) {
-                        list.append('<li><a class="dropdown-item py-2 border-bottom" href="' + (item.linkUrl || '#') + '">' +
+                        list.append('<li class="list-group-item p-3 hover-light">' +
+                            '<a class="text-decoration-none text-dark" href="' + (item.linkUrl || '#') + '">' +
                             '<div class="d-flex justify-content-between align-items-center mb-1">' +
-                            '<span class="badge bg-light text-primary font-weight-medium">' + item.notificationType + '</span>' +
+                            '<span class="badge bg-light text-primary fw-medium">' + item.notificationType + '</span>' +
                             '<span class="text-muted fs-8">' + new Date(item.createdAt).toLocaleDateString() + '</span>' +
                             '</div>' +
                             '<p class="m-0 fs-7 text-wrap text-dark">' + item.message + '</p>' +

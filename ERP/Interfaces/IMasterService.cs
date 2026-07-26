@@ -32,6 +32,7 @@ public interface IMasterService
     Task<Product> SaveProductAsync(Product product);
     Task DeleteProductAsync(int id);
     Task<(int successCount, List<string> errors)> BulkUploadProductsAsync(System.IO.Stream fileStream);
+    Task ClearAllProductDataAsync();
 
     // Category
     Task<List<Category>> GetCategoriesAsync();

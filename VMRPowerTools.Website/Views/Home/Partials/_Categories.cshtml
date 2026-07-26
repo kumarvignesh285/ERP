@@ -1,117 +1,131 @@
-@inject VMRPowerTools.Application.Interfaces.IProductService ProductService
-@{
-    IEnumerable<Category> categories = null;
-    try
-    {
-        categories = await ProductService.GetActiveCategoriesAsync();
-    }
-    catch (Exception)
-    {
-        // Fallback to null, which triggers static defaults below
-    }
-}
-
-<section class="py-24 bg-brand-black border-b border-white/5 no-print" id="categories-section">
+<section class="py-24 bg-brand-black border-b border-white/5 no-print" id="applications-section">
     <div class="container mx-auto px-4 md:px-8 max-w-7xl">
         <!-- Editorial Section Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
             <div class="max-w-xl">
-                <span class="text-brand-orange font-syne font-extrabold text-xs tracking-widest uppercase block mb-3">LINE OF CLASSIFICATION</span>
+                <span class="text-brand-orange font-syne font-extrabold text-xs tracking-widest uppercase block mb-3">SECTOR APPLICATION SUITES</span>
                 <h2 class="text-4xl md:text-6xl font-syne font-extrabold uppercase leading-none text-white tracking-luxury">
-                    INDUSTRIAL<br><span class="text-zinc-600">DIVISIONS</span>
+                    INDUSTRIAL<br><span class="text-zinc-600">APPLICATIONS</span>
                 </h2>
             </div>
-            <p class="text-zinc-500 font-inter text-sm max-w-sm leading-relaxed">
-                Machinery categorized by operational capability. Each series features distinct powertrain tolerances designed for specialized worksite applications.
+            <p class="text-zinc-400 font-inter text-xs max-w-sm leading-relaxed">
+                VMR heavy duty equipment is engineered for specialized operational environments across forestry, agriculture, construction, industrial plants, and landscaping.
             </p>
         </div>
 
-        <!-- Asymmetrical Grid Cards -->
+        <!-- 5 Key Sector Application Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            @if (categories != null && categories.Any())
-            {
-                int index = 0;
-                foreach (var cat in categories)
-                {
-                    index++;
-                    // Map categories to high-end Unsplash images
-                    var (imageSrc, iconClass) = cat.CategoryName.ToLower() switch
-                    {
-                        var c when c.Contains("drill") => ("https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&q=80&w=600", "fa-solid fa-screwdriver-wrench"),
-                        var c when c.Contains("grinder") => ("https://images.unsplash.com/photo-1530124560676-ac671c6d3bc8?auto=format&fit=crop&q=80&w=600", "fa-solid fa-dharmachakra"),
-                        var c when c.Contains("hammer") => ("https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600", "fa-solid fa-hammer"),
-                        var c when c.Contains("saw") => ("https://images.unsplash.com/photo-1540103711724-ebf833bde8d1?auto=format&fit=crop&q=80&w=600", "fa-solid fa-circle-notch"),
-                        var c when c.Contains("welding") => ("https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=600", "fa-solid fa-burst"),
-                        var c when c.Contains("safety") => ("https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=600", "fa-solid fa-helmet-safety"),
-                        _ => ("https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=600", "fa-solid fa-toolbox")
-                    };
+            
+            <!-- 1. Forestry & Logging -->
+            <div class="relative overflow-hidden group h-[380px] rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800" alt="Forestry" class="absolute inset-0 w-full h-full object-cover filter brightness-75 group-hover:scale-110 group-hover:brightness-90 transition-all duration-700 ease-out" loading="lazy">
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent z-10"></div>
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-orange to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
 
-                    // Asymmetrical height classes
-                    var heightClass = index % 3 == 0 ? "h-[450px] lg:col-span-2" : "h-[350px]";
-
-                    <div class="relative overflow-hidden group cursor-none @heightClass border border-white/5 bg-brand-card-bg">
-                        <img src="@imageSrc" alt="@cat.CategoryName" class="absolute inset-0 w-full h-full object-cover grayscale opacity-45 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700 ease-out" loading="lazy">
-                        
-                        <!-- Ambient bottom shadow gradient -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent z-10"></div>
-                        
-                        <!-- Interactive Orange Corner Line -->
-                        <div class="absolute top-0 right-0 w-0 h-[2px] bg-brand-orange group-hover:w-full transition-all duration-500 z-20"></div>
-                        <div class="absolute top-0 right-0 w-[2px] h-0 bg-brand-orange group-hover:h-full transition-all duration-500 z-20"></div>
-
-                        <!-- Card Content -->
-                        <div class="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
-                            <span class="text-zinc-600 font-syne text-[10px] tracking-widest uppercase mb-1 block">SERIES 0@(index)</span>
-                            <div class="flex items-center gap-3">
-                                <i class="@iconClass text-brand-orange text-lg group-hover:scale-110 transition-transform duration-300"></i>
-                                <h3 class="text-2xl font-syne font-extrabold uppercase text-white">@cat.CategoryName</h3>
-                            </div>
-                            
-                            <a asp-controller="Product" asp-action="Index" asp-route-categoryId="@cat.Id" class="mt-4 flex items-center gap-2 text-xs font-syne font-bold uppercase tracking-widest text-brand-orange opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                View Catalog <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                            </a>
-                        </div>
+                <div class="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-2xl">🪵</span>
+                        <span class="text-brand-orange font-syne font-extrabold text-[10px] tracking-widest uppercase">SECTOR 01</span>
                     </div>
-                }
-            }
-            else
-            {
-                // Static premium fallbacks
-                var defaultCats = new[] {
-                    new { Name = "Rotary Hammers", Image = "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&q=80&w=600", Icon = "fa-solid fa-hammer", Span = "" },
-                    new { Name = "Angle Grinders", Image = "https://images.unsplash.com/photo-1530124560676-ac671c6d3bc8?auto=format&fit=crop&q=80&w=600", Icon = "fa-solid fa-dharmachakra", Span = "" },
-                    new { Name = "Circular Saws", Image = "https://images.unsplash.com/photo-1540103711724-ebf833bde8d1?auto=format&fit=crop&q=80&w=600", Icon = "fa-solid fa-circle-notch", Span = "lg:col-span-2 h-[450px]" },
-                    new { Name = "Welding Core", Image = "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=600", Icon = "fa-solid fa-burst", Span = "" },
-                    new { Name = "High-Torque Drills", Image = "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=600", Icon = "fa-solid fa-screwdriver-wrench", Span = "" }
-                };
+                    <h3 class="text-2xl font-syne font-extrabold uppercase text-white mb-2">FORESTRY & LOGGING</h3>
+                    <p class="text-zinc-300 font-inter text-xs leading-relaxed mb-4 line-clamp-2">
+                        High torque chainsaws and timber processing tools engineered for dense forest operations.
+                    </p>
+                    <a asp-controller="Product" asp-action="Index" asp-route-search="Chainsaw" class="inline-flex items-center gap-2 text-xs font-syne font-bold uppercase tracking-widest text-brand-orange hover:text-white transition-colors">
+                        Explore Forestry Tools <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
 
-                int index = 0;
-                foreach (var cat in defaultCats)
-                {
-                    index++;
-                    var heightClass = string.IsNullOrEmpty(cat.Span) ? "h-[350px]" : cat.Span;
-                    
-                    <div class="relative overflow-hidden group cursor-none @heightClass border border-white/5 bg-brand-card-bg">
-                        <img src="@cat.Image" alt="@cat.Name" class="absolute inset-0 w-full h-full object-cover grayscale opacity-45 group-hover:opacity-85 group-hover:scale-105 transition-all duration-700 ease-out" loading="lazy">
-                        
-                        <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent z-10"></div>
-                        <div class="absolute top-0 right-0 w-0 h-[2px] bg-brand-orange group-hover:w-full transition-all duration-500 z-20"></div>
-                        <div class="absolute top-0 right-0 w-[2px] h-0 bg-brand-orange group-hover:h-full transition-all duration-500 z-20"></div>
+            <!-- 2. Agriculture -->
+            <div class="relative overflow-hidden group h-[380px] rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800" alt="Agriculture" class="absolute inset-0 w-full h-full object-cover filter brightness-75 group-hover:scale-110 group-hover:brightness-90 transition-all duration-700 ease-out" loading="lazy">
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent z-10"></div>
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-orange to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
 
-                        <div class="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
-                            <span class="text-zinc-600 font-syne text-[10px] tracking-widest uppercase mb-1 block">SERIES 0@(index)</span>
-                            <div class="flex items-center gap-3">
-                                <i class="@cat.Icon text-brand-orange text-lg group-hover:scale-110 transition-transform duration-300"></i>
-                                <h3 class="text-2xl font-syne font-extrabold uppercase text-white">@cat.Name</h3>
-                            </div>
-                            
-                            <a asp-controller="Product" asp-action="Index" class="mt-4 flex items-center gap-2 text-xs font-syne font-bold uppercase tracking-widest text-brand-orange opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                View Catalog <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                            </a>
-                        </div>
+                <div class="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-2xl">🌾</span>
+                        <span class="text-brand-orange font-syne font-extrabold text-[10px] tracking-widest uppercase">SECTOR 02</span>
                     </div>
-                }
-            }
+                    <h3 class="text-2xl font-syne font-extrabold uppercase text-white mb-2">AGRICULTURE & IRRIGATION</h3>
+                    <p class="text-zinc-300 font-inter text-xs leading-relaxed mb-4 line-clamp-2">
+                        Heavy-duty water pumps, earth augers, and land clearing machinery for crop farms.
+                    </p>
+                    <a asp-controller="Product" asp-action="Index" asp-route-search="Water Pump" class="inline-flex items-center gap-2 text-xs font-syne font-bold uppercase tracking-widest text-brand-orange hover:text-white transition-colors">
+                        Explore Agri Machinery <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 3. Construction -->
+            <div class="relative overflow-hidden group h-[380px] rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=800" alt="Construction" class="absolute inset-0 w-full h-full object-cover filter brightness-75 group-hover:scale-110 group-hover:brightness-90 transition-all duration-700 ease-out" loading="lazy">
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent z-10"></div>
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-orange to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+
+                <div class="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-2xl">🏗️</span>
+                        <span class="text-brand-orange font-syne font-extrabold text-[10px] tracking-widest uppercase">SECTOR 03</span>
+                    </div>
+                    <h3 class="text-2xl font-syne font-extrabold uppercase text-white mb-2">HEAVY CONSTRUCTION</h3>
+                    <p class="text-zinc-300 font-inter text-xs leading-relaxed mb-4 line-clamp-2">
+                        Demolition hammers, concrete cutters, and high-impact rotary drills for construction sites.
+                    </p>
+                    <a asp-controller="Product" asp-action="Index" asp-route-search="Hammer" class="inline-flex items-center gap-2 text-xs font-syne font-bold uppercase tracking-widest text-brand-orange hover:text-white transition-colors">
+                        Explore Construction Tools <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 4. Industrial Plants -->
+            <div class="relative overflow-hidden group h-[380px] rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl lg:col-span-2">
+                <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200" alt="Industrial" class="absolute inset-0 w-full h-full object-cover filter brightness-75 group-hover:scale-110 group-hover:brightness-90 transition-all duration-700 ease-out" loading="lazy">
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent z-10"></div>
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-orange to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+
+                <div class="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-2xl">🏭</span>
+                        <span class="text-brand-orange font-syne font-extrabold text-[10px] tracking-widest uppercase">SECTOR 04</span>
+                    </div>
+                    <h3 class="text-2xl font-syne font-extrabold uppercase text-white mb-2">INDUSTRIAL PLANTS & GENERATORS</h3>
+                    <p class="text-zinc-300 font-inter text-xs leading-relaxed mb-4 max-w-xl">
+                        Heavy duty silent backup power generators and high pressure washers engineered for continuous factory plant operations.
+                    </p>
+                    <a asp-controller="Product" asp-action="Index" asp-route-search="Generator" class="inline-flex items-center gap-2 text-xs font-syne font-bold uppercase tracking-widest text-brand-orange hover:text-white transition-colors">
+                        Explore Industrial Generators <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 5. Gardening & Landscaping -->
+            <div class="relative overflow-hidden group h-[380px] rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&q=80&w=800" alt="Gardening" class="absolute inset-0 w-full h-full object-cover filter brightness-75 group-hover:scale-110 group-hover:brightness-90 transition-all duration-700 ease-out" loading="lazy">
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent z-10"></div>
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-orange to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+
+                <div class="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-2xl">🌳</span>
+                        <span class="text-brand-orange font-syne font-extrabold text-[10px] tracking-widest uppercase">SECTOR 05</span>
+                    </div>
+                    <h3 class="text-2xl font-syne font-extrabold uppercase text-white mb-2">GARDENING & LANDSCAPING</h3>
+                    <p class="text-zinc-300 font-inter text-xs leading-relaxed mb-4 line-clamp-2">
+                        Precision brush cutters, hedge trimmers, and lawn maintenance tools for commercial landscapers.
+                    </p>
+                    <a asp-controller="Product" asp-action="Index" asp-route-search="Brush Cutter" class="inline-flex items-center gap-2 text-xs font-syne font-bold uppercase tracking-widest text-brand-orange hover:text-white transition-colors">
+                        Explore Gardening Tools <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>

@@ -217,7 +217,8 @@ public class SalesController : Controller
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return Json(new { success = false, message });
             }
         }
 

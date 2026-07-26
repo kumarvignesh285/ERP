@@ -4,7 +4,7 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-boxes-stacked me-2"></i> Stock Opening Setup</h4>
+    <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-boxes-stacked me-2"></i> Stock Opening Setup</h4>
 </div>
 
 @if (TempData["Success"] != null)
@@ -24,22 +24,22 @@
                         <th>Unit</th>
                         <th>Current Stock</th>
                         <th>Opening Stock</th>
-                        <th class="text-center no-print" style="width:200px">Action</th>
+                        <th class="w-200px text-center no-print">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var p in Model)
                     {
                         <tr>
-                            <td class="font-weight-bold">@p.ProductCode</td>
-                            <td class="font-weight-semibold">@p.ProductName</td>
+                            <td class="fw-bold">@p.ProductCode</td>
+                            <td class="fw-semibold">@p.ProductName</td>
                             <td>@p.Warehouse?.WarehouseName</td>
                             <td>@p.Unit?.UnitSymbol</td>
                             <td>@p.CurrentStock</td>
                             <td>
                                 <form asp-action="SaveStockOpening" method="post" class="d-flex align-items-center gap-2 m-0">
                                     <input type="hidden" name="productId" value="@p.Id" />
-                                    <input type="number" name="quantity" class="form-control form-control-sm" value="@p.OpeningStock" step="0.01" style="width:100px" required />
+                                    <input type="number" name="quantity" class="form-control form-control-sm w-100px" value="@p.OpeningStock" step="0.01" required />
                                     <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-save"></i></button>
                                 </form>
                             </td>

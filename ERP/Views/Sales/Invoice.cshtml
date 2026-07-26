@@ -6,24 +6,27 @@
 <!-- List View -->
 <div id="listView">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Sales Invoices</h4>
-        <button class="btn btn-primary" onclick="showForm()"><i class="fa-solid fa-plus me-1"></i> New Sales Invoice</button>
+        <div>
+            <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Sales Invoices</h4>
+            <p class="text-muted small m-0 mt-1">Manage billing invoices, track payments, print receipts, and monitor outstanding balances</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" onclick="showForm()"><i class="fa-solid fa-plus me-1.5"></i> New Sales Invoice</button>
     </div>
 
     <!-- Filters Row -->
-    <div class="card mb-3 no-print">
+    <div class="card mb-3 no-print shadow-sm border-0">
         <div class="card-body p-3">
-            <div class="row g-2 align-items-center">
-                <div class="col-md-3">
-                    <label class="form-label font-weight-semibold mb-1 small text-muted">From Date</label>
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-sm-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1 small text-muted">From Date</label>
                     <input type="date" id="filterFromDate" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label font-weight-semibold mb-1 small text-muted">To Date</label>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1 small text-muted">To Date</label>
                     <input type="date" id="filterToDate" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label font-weight-semibold mb-1 small text-muted">Status</label>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1 small text-muted">Status</label>
                     <select id="filterStatus" class="form-select form-select-sm">
                         <option value="">All Statuses</option>
                         <option value="Draft">Draft</option>
@@ -32,7 +35,7 @@
                         <option value="Cancelled">Cancelled</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex gap-2 align-self-end">
+                <div class="col-12 col-sm-6 col-md-3 d-flex gap-2 align-self-end">
                     <button class="btn btn-sm btn-primary w-100" onclick="applyFilters()"><i class="fa-solid fa-filter me-1"></i> Filter</button>
                     <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetFilters()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
                 </div>
@@ -40,11 +43,12 @@
         </div>
     </div>
 
-    <div class="card">
+    <!-- Datatable Card -->
+    <div class="card shadow-sm border-0">
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover datatable align-middle">
-                    <thead>
+                    <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                         <tr>
                             <th>Invoice No</th>
                             <th>Date</th>
@@ -60,12 +64,12 @@
                         @foreach (var inv in Model.Items)
                         {
                             <tr id="row-@inv.Id">
-                                <td class="font-weight-bold">@inv.InvoiceNumber</td>
+                                <td class="fw-bold text-primary">@inv.InvoiceNumber</td>
                                 <td>@inv.InvoiceDate.ToString("dd-MM-yyyy")</td>
-                                <td>@inv.Customer?.CustomerName</td>
-                                <td class="font-weight-semibold text-dark">₹@inv.GrandTotal.ToString("N2")</td>
+                                <td class="fw-semibold text-dark">@inv.Customer?.CustomerName</td>
+                                <td class="fw-bold text-dark">₹@inv.GrandTotal.ToString("N2")</td>
                                 <td>₹@inv.PaidAmount.ToString("N2")</td>
-                                <td class="text-danger font-weight-semibold">₹@inv.BalanceAmount.ToString("N2")</td>
+                                <td class="text-danger fw-bold">₹@inv.BalanceAmount.ToString("N2")</td>
                                 @{
                                     var statusBadgeClass = inv.Status switch
                                     {
@@ -89,7 +93,7 @@
                                             <button class="btn btn-sm btn-outline-primary" onclick="editInvoice(@inv.Id)" title="Edit"><i class="fa-solid fa-pen"></i></button>
                                         }
                                         <button class="btn btn-sm btn-outline-secondary" onclick="ErpPrint.printBillById('salesInvoice', @inv.Id)" title="Print"><i class="fa-solid fa-print"></i></button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice(@inv.Id)" @(isLocked ? "disabled" : "")><i class="fa-solid fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice(@inv.Id)" @(isLocked ? "disabled" : "") title="Delete"><i class="fa-solid fa-trash"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -104,27 +108,32 @@
 <!-- Entry Form View (hidden initially) -->
 <div id="formView" style="display:none">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="m-0 font-weight-bold text-primary" id="formTitle"><i class="fa-solid fa-plus me-2"></i> Create Sales Invoice</h4>
-        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</button>
+        <h4 class="m-0 fw-bold text-primary" id="formTitle"><i class="fa-solid fa-plus me-2"></i> Create Sales Invoice</h4>
+        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1.5"></i> Back to List</button>
     </div>
 
-    <div class="card">
-        <div class="card-body">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
             <form id="invoiceForm">
                 <input type="hidden" id="Id" name="Id" value="0" />
                 
-                <div class="row">
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label font-weight-semibold">Invoice Number *</label>
-                        <input type="text" id="InvoiceNumber" class="form-control" required readonly />
-                        <small class="text-muted">Auto from company settings</small>
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-sm-6 col-md-2">
+                        <label class="form-label fw-semibold text-dark">Invoice Number <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-hashtag text-muted"></i></span>
+                            <input type="text" id="InvoiceNumber" class="form-control border-start-0 fw-bold" required readonly />
+                        </div>
                     </div>
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label font-weight-semibold">Invoice Date *</label>
-                        <input type="date" id="InvoiceDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <div class="col-12 col-sm-6 col-md-2">
+                        <label class="form-label fw-semibold text-dark">Invoice Date <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-calendar text-muted"></i></span>
+                            <input type="date" id="InvoiceDate" class="form-control border-start-0" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Customer *</label>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <label class="form-label fw-semibold text-dark">Customer <span class="text-danger">*</span></label>
                         <select id="CustomerId" class="form-select select2" required>
                             <option value="">Select Customer</option>
                             @foreach (var c in Model.Customers)
@@ -133,12 +142,12 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-1 mb-3">
-                        <label class="form-label font-weight-semibold">Terms (Days)</label>
-                        <input type="number" id="CreditDays" class="form-control" value="0" />
+                    <div class="col-12 col-sm-6 col-md-2">
+                        <label class="form-label fw-semibold text-dark">Terms (Days)</label>
+                        <input type="number" id="CreditDays" class="form-control" value="0" placeholder="0" />
                     </div>
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label font-weight-semibold">Status *</label>
+                    <div class="col-12 col-sm-6 col-md-2">
+                        <label class="form-label fw-semibold text-dark">Status <span class="text-danger">*</span></label>
                         <select id="Status" class="form-select" required>
                             <option value="Draft">Draft</option>
                             <option value="Issued">Issued</option>
@@ -147,65 +156,68 @@
                             <option value="Cancelled">Cancelled</option>
                         </select>
                     </div>
-                    <div class="col-md-2 mb-3 align-self-end">
-                        <div class="form-check mb-2">
+                    <div class="col-12 col-sm-6 col-md-1 d-flex align-items-center pt-md-4">
+                        <div class="form-check form-switch m-0">
                             <input class="form-check-input" type="checkbox" id="WithGST" name="WithGST" onchange="toggleGST(this)" />
-                            <label class="form-check-label font-weight-bold" for="WithGST">
-                                With GST
+                            <label class="form-check-label fw-bold text-dark" for="WithGST">
+                                GST
                             </label>
                         </div>
                     </div>
                 </div>
 
-                <hr />
+                <hr class="my-4" />
 
-                <h5>Line Items</h5>
-                <div class="table-responsive mb-3">
-                    <table class="table table-bordered align-middle" id="itemsTable">
-                        <thead class="table-light">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="m-0 fw-bold text-dark"><i class="fa-solid fa-list-check me-2 text-primary"></i> Line Items</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Item Row</button>
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle shadow-sm" id="itemsTable">
+                        <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                             <tr>
-                                <th style="width: 20%">Category</th>
-                                <th style="width: 20%">Product *</th>
-                                <th style="width: 12%">Quantity *</th>
-                                <th style="width: 15%">Rate *</th>
-                                <th style="width: 10%" class="gst-column">GST %</th>
-                                <th style="width: 15%">Total</th>
-                                <th style="width: 8%" class="text-center">Action</th>
+                                <th style="width: 200px;">Category</th>
+                                <th>Product *</th>
+                                <th class="w-100px">Quantity *</th>
+                                <th class="w-150px">Rate *</th>
+                                <th class="w-100px gst-column">GST %</th>
+                                <th class="w-150px">Total</th>
+                                <th class="w-60px text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Dynamic rows will be inserted here -->
+                            <!-- Dynamic rows inserted via JS -->
                         </tbody>
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-between mb-4">
-                    <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
+                <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
+                    <div class="flex-grow-1" style="max-width: 500px;">
+                        <label class="form-label fw-semibold text-dark">Notes / Terms & Conditions</label>
+                        <textarea id="Remarks" class="form-control" rows="3" placeholder="Additional instructions or payment terms..."></textarea>
+                    </div>
                     
-                    <div class="text-end" style="width: 300px;">
+                    <div class="summary-calc-card text-end ms-auto shadow-sm">
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Sub Total:</span>
-                            <span id="lblSubTotal" class="font-weight-semibold">₹0.00</span>
+                            <span class="text-muted">Sub Total:</span>
+                            <span id="lblSubTotal" class="fw-bold text-dark">₹0.00</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Total GST:</span>
-                            <span id="lblTotalGST" class="font-weight-semibold">₹0.00</span>
+                            <span class="text-muted">Total GST:</span>
+                            <span id="lblTotalGST" class="fw-bold text-dark">₹0.00</span>
                         </div>
-                        <div class="d-flex justify-content-between border-top pt-2">
-                            <span class="font-weight-bold">Grand Total:</span>
-                            <span id="lblGrandTotal" class="font-weight-bold text-primary fs-5">₹0.00</span>
+                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                            <span class="fw-bold text-dark">Grand Total:</span>
+                            <span id="lblGrandTotal" class="fw-bold text-primary fs-5">₹0.00</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label font-weight-semibold">Remarks / Terms</label>
-                    <textarea id="Remarks" class="form-control" rows="2"></textarea>
-                </div>
-
-                <div class="text-end">
-                    <button type="button" class="btn btn-secondary me-2" onclick="hideForm()">Cancel</button>
-                    <button type="button" class="btn btn-primary px-4" onclick="saveInvoice()">Save Invoice</button>
+                <!-- Sticky Bottom Actions Bar -->
+                <div class="d-flex justify-content-end gap-2 border-top pt-3 sticky-bottom bg-white">
+                    <button type="button" class="btn btn-secondary px-3" onclick="hideForm()">Cancel</button>
+                    <button type="button" class="btn btn-primary px-4 shadow-sm" onclick="saveInvoice()"><i class="fa-solid fa-floppy-disk me-1.5"></i> Save Sales Invoice</button>
                 </div>
             </form>
         </div>
@@ -338,16 +350,16 @@
                         </select>
                     </td>
                     <td>
-                        <input type="number" class="form-control qty-input" value="1" min="1" oninput="calculateRow(this)" required />
+                        <input type="number" class="form-control qty-input fw-semibold" value="1" min="1" oninput="calculateRow(this)" required />
                     </td>
                     <td>
-                        <input type="number" class="form-control rate-input" value="0.00" step="0.01" oninput="calculateRow(this)" required />
+                        <input type="number" class="form-control rate-input fw-semibold" value="0.00" step="0.01" oninput="calculateRow(this)" required />
                     </td>
                     <td class="gst-column">
                         <input type="number" class="form-control gst-input" value="18" oninput="calculateRow(this)" required />
                     </td>
                     <td>
-                        <input type="text" class="form-control total-input" value="0.00" readonly />
+                        <input type="text" class="form-control total-input fw-bold text-dark" value="0.00" readonly />
                     </td>
                     <td class="text-center">
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
@@ -554,4 +566,3 @@
         }
     </script>
 }
-

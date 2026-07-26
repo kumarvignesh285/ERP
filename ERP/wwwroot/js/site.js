@@ -1,6 +1,8 @@
 $(function () {
     const body = $('body');
+    const html = $('html');
 
+    // Mobile Sidebar Drawer Toggle
     $('[data-sidebar-toggle]').on('click', function () {
         body.toggleClass('sidebar-open');
     });
@@ -9,8 +11,27 @@ $(function () {
         body.removeClass('sidebar-open');
     });
 
-    $(document).on('keyup', function (event) {
-        if (event.key === 'Escape') {
+    // Desktop Sidebar Width Collapse Toggle
+    $('#sidebarCollapseBtn').on('click', function (e) {
+        e.preventDefault();
+        html.toggleClass('sidebar-collapsed');
+        var isCollapsed = html.hasClass('sidebar-collapsed');
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+    });
+
+    // Global Keyboard Shortcut (Ctrl + K) for Quick Search
+    window.focusGlobalSearch = function() {
+        var input = $('#globalHeaderSearch');
+        if (input.length) {
+            input.focus().select();
+        }
+    };
+
+    $(document).on('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            window.focusGlobalSearch();
+        } else if (e.key === 'Escape') {
             body.removeClass('sidebar-open');
         }
     });

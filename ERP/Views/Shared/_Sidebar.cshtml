@@ -1,12 +1,7 @@
 @inject ERP.Interfaces.IPermissionService PermissionService
 @functions {
-    private sealed record MenuLink(string Text, string Url);
+    private sealed record MenuLink(string Text, string Url, string? BadgeText = null);
     private sealed record MenuSection(string Text, string Icon, string Url, string[] Roles, MenuLink[] Children);
-
-    private bool CanAccess(string[] roles)
-    {
-        return roles.Length == 0 || roles.Any(User.IsInRole);
-    }
 
     private bool IsActive(string url)
     {
@@ -40,7 +35,7 @@
             new MenuLink("Quotation", "/Sales/Quotation"),
             new MenuLink("Sales Order", "/Sales/Order"),
             new MenuLink("Delivery Challan", "/Sales/Challan"),
-            new MenuLink("Sales Invoice", "/Sales/Invoice"),
+            new MenuLink("Sales Invoice", "/Sales/Invoice", "HOT"),
             new MenuLink("Sales Return", "/Sales/Return")
         }),
         new MenuSection("Purchase", "fa-bag-shopping", "/Purchase", new[] { "Super Admin", "Admin", "Manager", "Purchase User" }, new[]
@@ -55,7 +50,7 @@
             new MenuLink("Stock Opening", "/Inventory/StockOpening"),
             new MenuLink("Stock Transfer", "/Inventory/StockTransfer"),
             new MenuLink("Stock Adjustment", "/Inventory/StockAdjustment"),
-            new MenuLink("Physical Stock", "/Inventory/PhysicalVerification")
+            new MenuLink("Physical Verification", "/Inventory/PhysicalVerification")
         }),
         new MenuSection("Accounts", "fa-calculator", "/Accounts", new[] { "Super Admin", "Admin", "Manager", "Accountant" }, new[]
         {
@@ -89,6 +84,7 @@
         new MenuSection("Settings", "fa-gears", "/Settings", new[] { "Super Admin", "Admin" }, new[]
         {
             new MenuLink("User Management", "/Settings/Users"),
+            new MenuLink("User Permissions", "/Settings/Permissions"),
             new MenuLink("Role Configuration", "/Settings/Roles"),
             new MenuLink("Company Setup", "/Settings/CompanySettings"),
             new MenuLink("System Settings", "/Settings/SystemConfig")
@@ -97,22 +93,36 @@
 }
 
 <aside class="erp-sidebar" id="erpSidebar">
+    <!-- Sidebar Brand Header -->
     <div class="erp-brand">
-        <div class="brand-sidebar-icon">
-            <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" />
-                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-        </div>
-        <span>SMART ERP</span>
+        <a href="/" class="brand-link text-decoration-none">
+            <div class="brand-sidebar-icon">
+                <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" />
+                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="brand-text-container">
+                <span class="brand-title">SMART ERP</span>
+                <span class="brand-version-badge">v2.4</span>
+            </div>
+        </a>
+        <button class="btn icon-btn sidebar-collapse-toggle d-none d-lg-flex" type="button" id="sidebarCollapseBtn" title="Toggle Sidebar Width">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
     </div>
+
+    <!-- Navigation Menu -->
     <ul class="sidebar-menu" id="sidebarMenu">
         <li class="menu-item @(IsActive("/") ? "active" : "")">
-            <a href="/"><i class="fa-solid fa-gauge"></i> <span>Dashboard</span></a>
+            <a href="/" title="Dashboard">
+                <i class="fa-solid fa-gauge"></i>
+                <span class="menu-label">Dashboard</span>
+            </a>
         </li>
 
-        <li class="menu-header">Modules</li>
+        <li class="menu-header"><span>Modules</span></li>
 
         @foreach (var menu in moduleSections)
         {
@@ -130,20 +140,32 @@
                 var collapseId = $"{menu.Text.Replace(" ", "")}Submenu";
                 var active = IsActive(menu.Url);
                 <li class="menu-item @(active ? "active open" : "")">
-                    <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())">
-                        <i class="fa-solid @menu.Icon"></i> <span>@menu.Text</span> <i class="fa-solid fa-chevron-down ms-auto fs-7"></i>
+                    <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())" title="@menu.Text">
+                        <i class="fa-solid @menu.Icon"></i>
+                        <span class="menu-label">@menu.Text</span>
+                        <i class="fa-solid fa-chevron-down submenu-arrow ms-auto"></i>
                     </a>
-                    <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId" data-bs-parent="#sidebarMenu">
+                    <ul class="collapse list-unstyled submenu-list @(active ? "show" : "")" id="@collapseId" data-bs-parent="#sidebarMenu">
                         @foreach (var child in accessibleChildren)
                         {
-                            <li class="@(IsActive(child.Url) ? "active" : "")"><a href="@child.Url">@child.Text</a></li>
+                            var childActive = IsActive(child.Url);
+                            <li class="submenu-item @(childActive ? "active" : "")">
+                                <a href="@child.Url">
+                                    <span class="submenu-dot"></span>
+                                    <span>@child.Text</span>
+                                    @if (!string.IsNullOrEmpty(child.BadgeText))
+                                    {
+                                        <span class="badge bg-danger text-white ms-auto fs-8 px-1.5 py-0.5 rounded-pill">@child.BadgeText</span>
+                                    }
+                                </a>
+                            </li>
                         }
                     </ul>
                 </li>
             }
         }
 
-        <li class="menu-header">Reports & Settings</li>
+        <li class="menu-header"><span>Reports & Settings</span></li>
 
         @foreach (var menu in adminSections)
         {
@@ -161,13 +183,21 @@
                 var collapseId = $"{menu.Text.Replace(" ", "")}Submenu";
                 var active = IsActive(menu.Url);
                 <li class="menu-item @(active ? "active open" : "")">
-                    <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())">
-                        <i class="fa-solid @menu.Icon"></i> <span>@menu.Text</span> <i class="fa-solid fa-chevron-down ms-auto fs-7"></i>
+                    <a href="#@collapseId" data-bs-toggle="collapse" class="@(active ? "" : "collapsed")" aria-expanded="@(active.ToString().ToLowerInvariant())" title="@menu.Text">
+                        <i class="fa-solid @menu.Icon"></i>
+                        <span class="menu-label">@menu.Text</span>
+                        <i class="fa-solid fa-chevron-down submenu-arrow ms-auto"></i>
                     </a>
-                    <ul class="collapse list-unstyled ps-4 @(active ? "show" : "")" id="@collapseId" data-bs-parent="#sidebarMenu">
+                    <ul class="collapse list-unstyled submenu-list @(active ? "show" : "")" id="@collapseId" data-bs-parent="#sidebarMenu">
                         @foreach (var child in accessibleChildren)
                         {
-                            <li class="@(IsActive(child.Url) ? "active" : "")"><a href="@child.Url">@child.Text</a></li>
+                            var childActive = IsActive(child.Url);
+                            <li class="submenu-item @(childActive ? "active" : "")">
+                                <a href="@child.Url">
+                                    <span class="submenu-dot"></span>
+                                    <span>@child.Text</span>
+                                </a>
+                            </li>
                         }
                     </ul>
                 </li>
@@ -175,15 +205,30 @@
         }
 
         <li class="menu-item @(IsActive("/Help") ? "active" : "")">
-            <a href="/Help"><i class="fa-solid fa-circle-question text-info"></i> <span>Help & Guide</span></a>
+            <a href="/Help" title="Help & Guide">
+                <i class="fa-solid fa-circle-question text-info"></i>
+                <span class="menu-label">Help & Guide</span>
+            </a>
         </li>
 
         <li class="menu-item mt-4">
-            <form method="post" action="/Account/Logout" id="logoutForm" class="d-none"></form>
-            <a href="javascript:document.getElementById('logoutForm').submit();" class="text-danger">
-                <i class="fa-solid fa-right-from-bracket text-danger"></i> <span>Logout</span>
+            <form method="post" action="/Account/Logout" id="sidebarLogoutForm" class="d-none"></form>
+            <a href="javascript:document.getElementById('sidebarLogoutForm').submit();" class="text-danger logout-menu-link" title="Logout">
+                <i class="fa-solid fa-right-from-bracket text-danger"></i>
+                <span class="menu-label">Logout</span>
             </a>
         </li>
     </ul>
+
+    <!-- Bottom Status Widget Card -->
+    <div class="sidebar-status-card">
+        <div class="d-flex align-items-center gap-2">
+            <div class="status-pulse-dot"></div>
+            <div class="status-widget-text">
+                <span class="d-block fw-semibold text-dark fs-8">Cloud Sync: Active</span>
+                <span class="text-muted fs-8">All nodes updated</span>
+            </div>
+        </div>
+    </div>
 </aside>
 <div class="sidebar-backdrop" data-sidebar-close></div>

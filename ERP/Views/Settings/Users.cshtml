@@ -5,35 +5,48 @@
     var userRoles = Model.UserRoles;
 }
 
+<!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-users-gear me-2"></i> User Management</h4>
     <div>
-        <a href="/Settings/Permissions" class="btn btn-outline-primary me-2"><i class="fa-solid fa-user-shield me-1"></i> Role Permissions</a>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal"><i class="fa-solid fa-plus me-1"></i> Add User</button>
+        <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-users-gear me-2"></i> User Management</h4>
+        <p class="text-muted small m-0 mt-1">Manage system operators, assign access roles, and update credentials</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/Settings/Roles" class="btn btn-outline-primary"><i class="fa-solid fa-user-shield me-1.5"></i> Role Permissions</a>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#userModal"><i class="fa-solid fa-user-plus me-1.5"></i> Add New User</button>
     </div>
 </div>
 
-<div class="card">
+<!-- Datatable Card -->
+<div class="card shadow-sm border-0">
     <div class="card-body">
         @if (TempData["Success"] != null)
         {
-            <div class="alert alert-success">@TempData["Success"]</div>
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="fa-solid fa-circle-check fs-5"></i>
+                <div>@TempData["Success"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         }
         @if (TempData["Error"] != null)
         {
-            <div class="alert alert-danger">@TempData["Error"]</div>
+            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="fa-solid fa-triangle-exclamation fs-5"></i>
+                <div>@TempData["Error"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         }
         <div class="table-responsive">
             <table class="table table-hover datatable align-middle">
-                <thead>
+                <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                     <tr>
                         <th>Full Name</th>
-                        <th>Email</th>
+                        <th>Email (Username)</th>
                         <th>Mobile</th>
                         <th>Password</th>
                         <th>Role</th>
                         <th>Status</th>
-                        <th class="text-center">Actions</th>
+                        <th class="text-center no-print" style="width: 120px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -43,22 +56,22 @@
                         {
                             var assignedRoles = userRoles.TryGetValue(item.Id, out var currentRoles) ? string.Join(", ", currentRoles) : "Not assigned";
                             <tr id="user-row-@item.Email.Replace("@", "_").Replace(".", "_")">
-                                <td class="font-weight-bold">@item.FullName</td>
-                                <td>@item.Email</td>
-                                <td>@item.Mobile</td>
-                                <td><code class="text-dark">@item.ClearTextPassword</code></td>
-                                <td><span class="badge bg-light text-primary border">@assignedRoles</span></td>
+                                <td class="fw-bold text-dark">@item.FullName</td>
+                                <td><i class="fa-regular fa-envelope me-1 text-muted fs-8"></i>@item.Email</td>
+                                <td><i class="fa-solid fa-phone me-1 text-muted fs-8"></i>@item.Mobile</td>
+                                <td><code class="text-dark bg-light px-2 py-0.5 rounded border">@item.ClearTextPassword</code></td>
+                                <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold px-2 py-1">@assignedRoles</span></td>
                                 <td>
                                     @if (item.IsActive)
                                     {
-                                        <span class="badge bg-success">Active</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold">Active</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">Inactive</span>
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fw-medium">Inactive</span>
                                     }
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center no-print">
                                     <div class="btn-group">
                                         <button class="btn btn-sm btn-outline-primary edit-user"
                                                 data-bs-toggle="modal"
@@ -68,10 +81,11 @@
                                                 data-mobile="@item.Mobile"
                                                 data-password="@item.ClearTextPassword"
                                                 data-role="@assignedRoles"
-                                                data-active="@item.IsActive.ToString().ToLowerInvariant()">
-                                            <i class="fa-solid fa-edit"></i>
+                                                data-active="@item.IsActive.ToString().ToLowerInvariant()"
+                                                title="Edit User">
+                                            <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-danger delete-user" data-email="@item.Email">
+                                        <button class="btn btn-sm btn-outline-danger delete-user" data-email="@item.Email" title="Delete User">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </div>
@@ -85,51 +99,67 @@
     </div>
 </div>
 
+<!-- User Modal -->
 <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Add/Edit User</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-gear me-2"></i> Add User</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form asp-action="SaveUser" method="post">
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label">Full Name *</label>
-                        <input type="text" name="FullName" class="form-control" required />
+                        <label class="form-label fw-semibold text-dark">Full Name <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
+                            <input type="text" name="FullName" class="form-control border-start-0" placeholder="Full name of user" required />
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Email (Username) *</label>
-                        <input type="email" name="Email" class="form-control" required />
+                        <label class="form-label fw-semibold text-dark">Email (Username) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-envelope text-muted"></i></span>
+                            <input type="email" name="Email" class="form-control border-start-0" placeholder="user@company.com" required />
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Mobile</label>
-                        <input type="text" name="Mobile" class="form-control" />
+                        <label class="form-label fw-semibold text-dark">Mobile Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-phone text-muted"></i></span>
+                            <input type="text" name="Mobile" class="form-control border-start-0" placeholder="+91 98765 43210" />
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Password *</label>
-                        <input type="password" name="Password" class="form-control" required />
-                        <div class="form-text">Required for new users. Existing users keep their current password.</div>
+                        <label class="form-label fw-semibold text-dark">Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-key text-muted"></i></span>
+                            <input type="password" name="Password" class="form-control border-start-0" required placeholder="Login password" />
+                        </div>
+                        <div class="form-text fs-8 text-muted mt-1">Required for new users. Leave unchanged if editing existing users.</div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Role *</label>
-                        <select name="Role" class="form-select" required>
-                            <option value="">Select role</option>
-                            @foreach (var role in roles)
-                            {
-                                <option value="@role">@role</option>
-                            }
-                        </select>
+                        <label class="form-label fw-semibold text-dark">System Role <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user-shield text-muted"></i></span>
+                            <select name="Role" class="form-select border-start-0" required>
+                                <option value="">Select role</option>
+                                @foreach (var role in roles)
+                                {
+                                    <option value="@role">@role</option>
+                                }
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-check form-switch">
+                    <div class="form-check form-switch pt-2">
                         <input class="form-check-input" type="checkbox" name="IsActive" value="true" checked />
                         <input type="hidden" name="IsActive" value="false" />
-                        <label class="form-check-label">Active user</label>
+                        <label class="form-check-label fw-medium text-dark">Active User Account</label>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save User</button>
+                <div class="modal-footer bg-light border-top py-2 px-4">
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save User</button>
                 </div>
             </form>
         </div>
@@ -142,7 +172,7 @@
             const modal = $('#userModal');
 
             $('[data-bs-target="#userModal"]:not(.edit-user)').on('click', function () {
-                modal.find('.modal-title').text('Add User');
+                modal.find('.modal-title').html('<i class="fa-solid fa-user-plus me-2"></i> Add User');
                 modal.find('input[name="FullName"]').val('');
                 modal.find('input[name="Email"]').val('').prop('readonly', false);
                 modal.find('input[name="Mobile"]').val('');
@@ -153,7 +183,7 @@
 
             $('.edit-user').on('click', function () {
                 const button = $(this);
-                modal.find('.modal-title').text('Edit User');
+                modal.find('.modal-title').html('<i class="fa-solid fa-pen-to-square me-2"></i> Edit User');
                 modal.find('input[name="FullName"]').val(button.data('full-name'));
                 modal.find('input[name="Email"]').val(button.data('email')).prop('readonly', true);
                 modal.find('input[name="Mobile"]').val(button.data('mobile'));
@@ -193,5 +223,3 @@
         });
     </script>
 }
-
-

@@ -4,31 +4,31 @@
 }
 
 <!-- Premium Header Section -->
-<section class="py-5 text-white border-bottom bg-industrial-dark animate-fade-up">
-    <div class="container py-3">
-        <span class="badge bg-primary px-3.5 py-2 mb-3 text-uppercase font-weight-bold" style="border-radius: 50px; font-size: 0.75rem;">Inquiry & Support Desk</span>
-        <h1 class="display-5 font-weight-extrabold text-white">Contact VMR Support</h1>
-        <p class="text-light mb-0 opacity-75 fs-6" style="max-width: 700px;">Submit wholesale quotation inquiries, reach our Chennai sales desk, or request technical support.</p>
+<section class="py-5 text-white border-b border-white/5 bg-brand-black animate-fade-up">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl py-3">
+        <span class="badge bg-brand-orange/10 border border-brand-orange/20 text-brand-orange px-3.5 py-2 mb-3 text-uppercase font-weight-bold" style="border-radius: 4px; font-size: 0.75rem;">Inquiry & Support Desk</span>
+        <h1 class="display-5 font-weight-extrabold text-white font-syne">Contact VMR Support</h1>
+        <p class="text-zinc-400 mb-0 fs-6 mt-2" style="max-width: 700px;">Submit wholesale quotation inquiries, reach our Chennai sales desk, or request technical support.</p>
     </div>
 </section>
 
 <!-- Content Section -->
-<section class="py-5 bg-light">
-    <div class="container py-2">
+<section class="py-12 bg-brand-black">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl py-2">
         @if (TempData["Success"] != null)
         {
-            <div class="alert alert-success border-0 mb-4 p-4 shadow-sm" style="border-radius: 16px; background-color: #d1e7dd; color: #0f5132;">
+            <div class="alert bg-green-950/20 border border-green-900/30 p-4 mb-4 fs-7 rounded text-green-400">
                 <div class="d-flex align-items-center gap-3">
-                    <i class="fa-solid fa-circle-check fs-4 text-success"></i>
+                    <i class="fa-solid fa-circle-check fs-4 text-green-400"></i>
                     <span class="font-weight-semibold">@TempData["Success"]</span>
                 </div>
             </div>
         }
         @if (TempData["Error"] != null)
         {
-            <div class="alert alert-danger border-0 mb-4 p-4 shadow-sm" style="border-radius: 16px; background-color: #f8d7da; color: #842029;">
+            <div class="alert bg-red-950/20 border border-red-900/30 p-4 mb-4 fs-7 rounded text-red-400">
                 <div class="d-flex align-items-center gap-3">
-                    <i class="fa-solid fa-triangle-exclamation fs-4 text-danger"></i>
+                    <i class="fa-solid fa-triangle-exclamation fs-4 text-red-400"></i>
                     <span class="font-weight-semibold">@TempData["Error"]</span>
                 </div>
             </div>
@@ -37,17 +37,17 @@
         <div class="row g-5">
             <!-- Left: Contact Details Cards -->
             <div class="col-lg-5 animate-fade-right">
-                <div class="card border-0 shadow-sm p-4 bg-white h-100" style="border-radius: 24px; border: 1px solid var(--grey-border) !important;">
-                    <h4 class="font-weight-bold mb-3 text-dark">Support Channels</h4>
-                    <p class="text-muted fs-8 mb-4">Reach out via any of our communications lines below. For urgent dispatches, please call our hotline directly.</p>
+                <div class="glass-panel-custom p-4 h-100">
+                    <h4 class="font-weight-bold mb-3 text-white font-syne">Support Channels</h4>
+                    <p class="text-zinc-500 fs-8 mb-4">Reach out via any of our communications lines below. For urgent dispatches, please call our hotline directly.</p>
                     
                     <div class="d-flex gap-3 align-items-start mb-4">
-                        <div class="bg-primary-subtle text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background-color: rgba(255, 107, 0, 0.1); flex-shrink: 0;">
+                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background-color: rgba(255, 92, 0, 0.1); color: var(--brand-orange); flex-shrink: 0;">
                             <i class="fa-solid fa-location-dot fs-5"></i>
                         </div>
                         <div>
-                            <h6 class="font-weight-bold mb-1 text-dark">Corporate Headquarters</h6>
-                            <p class="text-muted fs-8 mb-0" style="line-height: 1.5;">
+                            <h6 class="font-weight-bold mb-1 text-white font-syne">Corporate Headquarters</h6>
+                            <p class="text-zinc-400 fs-8 mb-0" style="line-height: 1.5;">
                                 Guindy Industrial Estate,<br>
                                 Chennai, Tamil Nadu - 600032
                             </p>
@@ -55,39 +55,39 @@
                     </div>
 
                     <div class="d-flex gap-3 align-items-start mb-4">
-                        <div class="bg-primary-subtle text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background-color: rgba(255, 107, 0, 0.1); flex-shrink: 0;">
+                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background-color: rgba(255, 92, 0, 0.1); color: var(--brand-orange); flex-shrink: 0;">
                             <i class="fa-solid fa-phone fs-5"></i>
                         </div>
                         <div>
-                            <h6 class="font-weight-bold mb-1 text-dark">Call Sales Desk</h6>
-                            <p class="text-muted fs-8 mb-0" style="line-height: 1.5;">
-                                <a href="tel:+914498765432" class="text-decoration-none text-muted">+91 (44) 9876 5432</a><br>
-                                <a href="tel:+919876543210" class="text-decoration-none text-muted">+91 98765 43210</a>
+                            <h6 class="font-weight-bold mb-1 text-white font-syne">Call Sales Desk</h6>
+                            <p class="text-zinc-400 fs-8 mb-0" style="line-height: 1.5;">
+                                <a href="tel:+914498765432" class="text-decoration-none text-zinc-400 hover:text-white transition-colors">+91 (44) 9876 5432</a><br>
+                                <a href="tel:+919876543210" class="text-decoration-none text-zinc-400 hover:text-white transition-colors">+91 98765 43210</a>
                             </p>
                         </div>
                     </div>
 
                     <div class="d-flex gap-3 align-items-start mb-4">
-                        <div class="bg-primary-subtle text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background-color: rgba(255, 107, 0, 0.1); flex-shrink: 0;">
+                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background-color: rgba(255, 92, 0, 0.1); color: var(--brand-orange); flex-shrink: 0;">
                             <i class="fa-solid fa-envelope fs-5"></i>
                         </div>
                         <div>
-                            <h6 class="font-weight-bold mb-1 text-dark">Email Inquiries</h6>
-                            <p class="text-muted fs-8 mb-0" style="line-height: 1.5;">
-                                <a href="mailto:sales@@vmrpowertools.com" class="text-decoration-none text-muted">sales@@vmrpowertools.com</a><br>
-                                <a href="mailto:support@@vmrpowertools.com" class="text-decoration-none text-muted">support@@vmrpowertools.com</a>
+                            <h6 class="font-weight-bold mb-1 text-white font-syne">Email Inquiries</h6>
+                            <p class="text-zinc-400 fs-8 mb-0" style="line-height: 1.5;">
+                                <a href="mailto:sales@@vmrpowertools.com" class="text-decoration-none text-zinc-400 hover:text-white transition-colors">sales@@vmrpowertools.com</a><br>
+                                <a href="mailto:support@@vmrpowertools.com" class="text-decoration-none text-zinc-400 hover:text-white transition-colors">support@@vmrpowertools.com</a>
                             </p>
                         </div>
                     </div>
 
                     <div class="d-flex gap-3 align-items-start mb-0">
-                        <div class="bg-success-subtle text-success rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background-color: rgba(37, 211, 102, 0.1); flex-shrink: 0;">
+                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background-color: rgba(37, 211, 102, 0.1); flex-shrink: 0;">
                             <i class="fa-brands fa-whatsapp fs-4" style="color: #25D366;"></i>
                         </div>
                         <div>
-                            <h6 class="font-weight-bold mb-1 text-dark">Instant WhatsApp Help</h6>
-                            <p class="text-muted fs-8 mb-2">Directly sync with our technical sales engineers for price quotes.</p>
-                            <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success py-2 px-3 text-white fs-8"><i class="fa-solid fa-comments me-1"></i> Chat on WhatsApp</a>
+                            <h6 class="font-weight-bold mb-1 text-white font-syne">Instant WhatsApp Help</h6>
+                            <p class="text-zinc-500 fs-8 mb-2">Directly sync with our technical sales engineers for price quotes.</p>
+                            <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" class="btn-magnetic btn btn-sm btn-success py-2 px-3 text-white fs-8" style="border-radius: 4px !important; background-color: #25D366; border-color: #25D366;"><i class="fa-solid fa-comments me-1"></i> Chat on WhatsApp</a>
                         </div>
                     </div>
                 </div>
@@ -95,33 +95,33 @@
 
             <!-- Right: Contact Form -->
             <div class="col-lg-7 animate-fade-left">
-                <div class="card border-0 shadow-sm p-4 p-md-5 bg-white" style="border-radius: 24px; border: 1px solid var(--grey-border) !important;">
-                    <h4 class="font-weight-bold mb-4 text-dark">Send a Message</h4>
+                <div class="glass-panel-custom p-4 p-md-5">
+                    <h4 class="font-weight-bold mb-4 text-white font-syne">Send a Message</h4>
                     <form asp-action="SubmitInquiry" method="post" class="fs-7">
                         @Html.AntiForgeryToken()
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label font-weight-semibold text-dark">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" name="name" class="form-control py-2" required placeholder="John Doe">
+                                <label class="form-label font-weight-semibold text-zinc-400">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control form-control-dark py-2" required placeholder="John Doe">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label font-weight-semibold text-dark">Company Name (Optional)</label>
-                                <input type="text" name="companyName" class="form-control py-2" placeholder="VMR Engineering Ltd.">
+                                <label class="form-label font-weight-semibold text-zinc-400">Company Name (Optional)</label>
+                                <input type="text" name="companyName" class="form-control form-control-dark py-2" placeholder="VMR Engineering Ltd.">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label font-weight-semibold text-dark">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" name="email" class="form-control py-2" required placeholder="name@@example.com">
+                                <label class="form-label font-weight-semibold text-zinc-400">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" name="email" class="form-control form-control-dark py-2" required placeholder="name@@example.com">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label font-weight-semibold text-dark">Phone Number</label>
-                                <input type="tel" name="phone" class="form-control py-2" placeholder="+91 XXXXX XXXXX">
+                                <label class="form-label font-weight-semibold text-zinc-400">Phone Number</label>
+                                <input type="tel" name="phone" class="form-control form-control-dark py-2" placeholder="+91 XXXXX XXXXX">
                             </div>
                             <div class="col-12">
-                                <label class="form-label font-weight-semibold text-dark">Inquiry Details <span class="text-danger">*</span></label>
-                                <textarea name="message" class="form-control" rows="5" required placeholder="Please outline the tool models, spares required, or warranty questions...">@queryMessage</textarea>
+                                <label class="form-label font-weight-semibold text-zinc-400">Inquiry Details <span class="text-danger">*</span></label>
+                                <textarea name="message" class="form-control form-control-dark" rows="5" required placeholder="Please outline the tool models, spares required, or warranty questions...">@queryMessage</textarea>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-4 py-2.5 px-4"><i class="fa-solid fa-paper-plane me-2"></i> Submit Inquiry</button>
+                        <button type="submit" class="btn-magnetic btn btn-primary mt-4 py-2.5 px-4 bg-brand-orange border-brand-orange font-syne font-bold uppercase tracking-wider" style="border-radius: 4px !important; color: #ffffff;"><i class="fa-solid fa-paper-plane me-2"></i> Submit Inquiry</button>
                     </form>
                 </div>
             </div>
@@ -130,13 +130,13 @@
 </section>
 
 <!-- Full-Width Map Section with Elegant Border -->
-<section class="no-print bg-light border-top">
-    <div class="w-100 animate-zoom" style="height: 400px; border-top: 1px solid var(--grey-border);">
+<section class="no-print bg-brand-black border-t border-white/5">
+    <div class="w-100 animate-zoom" style="height: 400px;">
         <iframe 
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.3503117498336!2d80.21099857507567!3d13.010531587303036!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a52678c1873111f%3A0x6b445582736136e0!2sGuindy%20Industrial%20Estate%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1726240000000!5m2!1sen!2sin" 
             width="100%" 
             height="100%" 
-            style="border:0; filter: grayscale(15%) contrast(1.1);" 
+            style="border:0; filter: grayscale(100%) invert(90%) contrast(1.2);" 
             allowfullscreen="" 
             loading="lazy" 
             referrerpolicy="no-referrer-when-downgrade">

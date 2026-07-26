@@ -3,77 +3,112 @@
     ViewData["Title"] = "Company Profile";
 }
 
-<div class="card">
-    <div class="card-header bg-primary text-white">
-        <i class="fa-solid fa-building me-2"></i> Company Profile Setup
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-building me-2"></i> Company Profile</h4>
+        <p class="text-muted small m-0 mt-1">Manage master business identity, tax credentials, and contact details</p>
     </div>
-    <div class="card-body">
+    <a href="/Settings/CompanySettings" class="btn btn-outline-primary">
+        <i class="fa-solid fa-gears me-1.5"></i> Advanced Bill Settings
+    </a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent border-bottom py-3">
+        <h6 class="m-0 fw-bold text-dark"><i class="fa-solid fa-id-card me-2 text-primary"></i> Master Business Profile Setup</h6>
+    </div>
+    <div class="card-body p-4">
         @if (TempData["Success"] != null)
         {
-            <div class="alert alert-success">@TempData["Success"]</div>
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="fa-solid fa-circle-check fs-5"></i>
+                <div>@TempData["Success"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         }
         
-        <form asp-action="Company" method="post">
+        <form asp-action="Company" method="post" class="needs-validation">
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="CreatedBy" />
             <input type="hidden" asp-for="CreatedAt" />
             
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="CompanyName" class="form-label font-weight-semibold">Company Name *</label>
-                    <input asp-for="CompanyName" class="form-control" required />
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6">
+                    <label asp-for="CompanyName" class="form-label fw-semibold text-dark">Company Name <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-building text-muted"></i></span>
+                        <input asp-for="CompanyName" class="form-control border-start-0" placeholder="e.g. SmartERP Solutions Pvt Ltd" required />
+                    </div>
+                    <span asp-validation-for="CompanyName" class="text-danger small"></span>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="CompanyCode" class="form-label font-weight-semibold">Company Code *</label>
-                    <input asp-for="CompanyCode" class="form-control" required />
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="GSTNumber" class="form-label font-weight-semibold">GSTIN</label>
-                    <input asp-for="GSTNumber" class="form-control" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="PANNumber" class="form-label font-weight-semibold">PAN Number</label>
-                    <input asp-for="PANNumber" class="form-control" />
+                <div class="col-12 col-md-6">
+                    <label asp-for="CompanyCode" class="form-label fw-semibold text-dark">Company Code <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-barcode text-muted"></i></span>
+                        <input asp-for="CompanyCode" class="form-control border-start-0" placeholder="e.g. CMP-001" required />
+                    </div>
+                    <span asp-validation-for="CompanyCode" class="text-danger small"></span>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="Email" class="form-label font-weight-semibold">Email</label>
-                    <input asp-for="Email" type="email" class="form-control" />
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6">
+                    <label asp-for="GSTNumber" class="form-label fw-semibold text-dark">GSTIN Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-file-invoice text-muted"></i></span>
+                        <input asp-for="GSTNumber" class="form-control border-start-0 text-uppercase" placeholder="33AAAAA0000A1Z5" />
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="Phone" class="form-label font-weight-semibold">Phone Number</label>
-                    <input asp-for="Phone" class="form-control" />
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Address" class="form-label font-weight-semibold">Address</label>
-                <textarea asp-for="Address" class="form-control" rows="2"></textarea>
-            </div>
-
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label asp-for="City" class="form-label font-weight-semibold">City</label>
-                    <input asp-for="City" class="form-control" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="State" class="form-label font-weight-semibold">State</label>
-                    <input asp-for="State" class="form-control" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="Country" class="form-label font-weight-semibold">Country</label>
-                    <input asp-for="Country" class="form-control" />
+                <div class="col-12 col-md-6">
+                    <label asp-for="PANNumber" class="form-label fw-semibold text-dark">PAN Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-id-card text-muted"></i></span>
+                        <input asp-for="PANNumber" class="form-control border-start-0 text-uppercase" placeholder="ABCDE1234F" />
+                    </div>
                 </div>
             </div>
 
-            <div class="text-end">
-                <button type="submit" class="btn btn-primary px-4">
-                    <i class="fa-solid fa-save me-2"></i> Save Profile
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6">
+                    <label asp-for="Email" class="form-label fw-semibold text-dark">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-envelope text-muted"></i></span>
+                        <input asp-for="Email" type="email" class="form-control border-start-0" placeholder="contact@company.com" />
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label asp-for="Phone" class="form-label fw-semibold text-dark">Phone Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-phone text-muted"></i></span>
+                        <input asp-for="Phone" class="form-control border-start-0" placeholder="+91 98765 43210" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Address" class="form-label fw-semibold text-dark">Registered Address</label>
+                <textarea asp-for="Address" class="form-control" rows="3" placeholder="Building, Street, Industrial Area..."></textarea>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-sm-4">
+                    <label asp-for="City" class="form-label fw-semibold text-dark">City</label>
+                    <input asp-for="City" class="form-control" placeholder="Chennai" />
+                </div>
+                <div class="col-12 col-sm-4">
+                    <label asp-for="State" class="form-label fw-semibold text-dark">State</label>
+                    <input asp-for="State" class="form-control" placeholder="Tamil Nadu" />
+                </div>
+                <div class="col-12 col-sm-4">
+                    <label asp-for="Country" class="form-label fw-semibold text-dark">Country</label>
+                    <input asp-for="Country" class="form-control" placeholder="India" />
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Save Profile Details
                 </button>
             </div>
         </form>

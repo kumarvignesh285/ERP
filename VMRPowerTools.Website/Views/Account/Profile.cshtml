@@ -19,33 +19,33 @@
     }
 }
 
-<section class="py-5 bg-white border-bottom">
-    <div class="container">
-        <h1>Account Dashboard</h1>
-        <p class="text-muted mb-0">Manage profile specifications, watch saved items, and review transaction ledgers.</p>
+<section class="py-5 bg-brand-black border-b border-white/5">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
+        <h1 class="text-3xl md:text-5xl font-syne font-extrabold uppercase tracking-luxury text-white">Account Dashboard</h1>
+        <p class="text-zinc-500 font-inter text-sm mt-2">Manage profile specifications, watch saved items, and review transaction ledgers.</p>
     </div>
 </section>
 
-<section class="py-5">
-    <div class="container">
+<section class="py-12 bg-brand-black">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
         @if (TempData["SuccessMessage"] != null)
         {
-            <div class="alert alert-success border-0 mb-4">@TempData["SuccessMessage"]</div>
+            <div class="alert bg-green-950/20 border border-green-900/30 p-3 mb-4 rounded text-green-400">@TempData["SuccessMessage"]</div>
         }
         @if (TempData["ErrorMessage"] != null)
         {
-            <div class="alert alert-danger border-0 mb-4">@TempData["ErrorMessage"]</div>
+            <div class="alert bg-red-950/20 border border-red-900/30 p-3 mb-4 rounded text-red-400">@TempData["ErrorMessage"]</div>
         }
 
         <div class="row g-4">
             <!-- Sidebar Navigation Links -->
             <div class="col-lg-3">
-                <div class="list-group shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
-                    <a asp-action="Profile" class="list-group-item list-group-item-action border-0 py-3 active"><i class="fa-solid fa-gears me-2"></i> Account Dashboard</a>
-                    <a asp-action="MyOrders" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-clock-rotate-left me-2"></i> My Orders</a>
-                    <a asp-action="Invoices" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-receipt me-2"></i> My Invoices</a>
-                    <a asp-action="Wishlist" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-heart me-2"></i> Wishlist</a>
-                    <a asp-action="SavedAddress" class="list-group-item list-group-item-action border-0 py-3"><i class="fa-solid fa-map-location-dot me-2"></i> Saved Addresses</a>
+                <div class="glass-panel-custom p-2 mb-4" style="border-radius: 8px;">
+                    <a asp-action="Profile" class="list-group-item list-group-item-action border-0 py-3 px-3 text-white transition-all font-syne text-[11px] font-bold uppercase tracking-widest bg-brand-orange/10 border-l-2 border-brand-orange" style="background: rgba(255, 92, 0, 0.05);"><i class="fa-solid fa-gears me-2 text-brand-orange"></i> Account Dashboard</a>
+                    <a asp-action="MyOrders" class="list-group-item list-group-item-action border-0 py-3 px-3 text-zinc-400 hover:text-white transition-all font-syne text-[11px] font-bold uppercase tracking-widest bg-transparent"><i class="fa-solid fa-clock-rotate-left me-2"></i> My Orders</a>
+                    <a asp-action="Invoices" class="list-group-item list-group-item-action border-0 py-3 px-3 text-zinc-400 hover:text-white transition-all font-syne text-[11px] font-bold uppercase tracking-widest bg-transparent"><i class="fa-solid fa-receipt me-2"></i> My Invoices</a>
+                    <a asp-action="Wishlist" class="list-group-item list-group-item-action border-0 py-3 px-3 text-zinc-400 hover:text-white transition-all font-syne text-[11px] font-bold uppercase tracking-widest bg-transparent"><i class="fa-solid fa-heart me-2"></i> Wishlist</a>
+                    <a asp-action="SavedAddress" class="list-group-item list-group-item-action border-0 py-3 px-3 text-zinc-400 hover:text-white transition-all font-syne text-[11px] font-bold uppercase tracking-widest bg-transparent"><i class="fa-solid fa-map-location-dot me-2"></i> Saved Addresses</a>
                 </div>
             </div>
 
@@ -54,69 +54,69 @@
                 <!-- Summary Stats Cards (WOW factor) -->
                 <div class="row g-3 mb-4">
                     <div class="col-sm-4">
-                        <div class="card border-0 shadow-sm p-3 text-center bg-white" style="border-radius: 10px;">
-                            <span class="text-muted fs-8 font-weight-bold uppercase tracking-wider">Orders Count</span>
-                            <h2 class="font-weight-bold text-primary mb-0 mt-1">@orders.Count()</h2>
+                        <div class="glass-panel-custom p-3 text-center">
+                            <span class="text-zinc-500 fs-8 font-weight-bold uppercase tracking-wider font-syne">Orders Count</span>
+                            <h2 class="font-weight-bold text-white mb-0 mt-1 font-montserrat">@orders.Count()</h2>
                         </div>
                     </div>
                     <div class="col-sm-4">
-                        <div class="card border-0 shadow-sm p-3 text-center bg-white" style="border-radius: 10px;">
-                            <span class="text-muted fs-8 font-weight-bold uppercase tracking-wider">Wishlist Items</span>
-                            <h2 class="font-weight-bold text-secondary mb-0 mt-1">@wishlistCount</h2>
+                        <div class="glass-panel-custom p-3 text-center">
+                            <span class="text-zinc-500 fs-8 font-weight-bold uppercase tracking-wider font-syne">Wishlist Items</span>
+                            <h2 class="font-weight-bold text-white mb-0 mt-1 font-montserrat">@wishlistCount</h2>
                         </div>
                     </div>
                     <div class="col-sm-4">
-                        <div class="card border-0 shadow-sm p-3 text-center bg-white" style="border-radius: 10px;">
-                            <span class="text-muted fs-8 font-weight-bold uppercase tracking-wider">Outstanding</span>
-                            <h2 class="font-weight-bold text-danger mb-0 mt-1">₹@outstandingBalance.ToString("N2")</h2>
+                        <div class="glass-panel-custom p-3 text-center">
+                            <span class="text-zinc-500 fs-8 font-weight-bold uppercase tracking-wider font-syne">Outstanding</span>
+                            <h2 class="font-weight-bold text-brand-orange mb-0 mt-1 font-montserrat">₹@outstandingBalance.ToString("N2")</h2>
                         </div>
                     </div>
                 </div>
 
                 <!-- Profile Update Section -->
-                <div class="card border-0 shadow-sm p-4 bg-white mb-4" style="border-radius: 12px;">
-                    <h5 class="mb-4 font-weight-bold"><i class="fa-regular fa-id-card text-primary me-2"></i> Personal Information</h5>
+                <div class="glass-panel-custom p-4 mb-4">
+                    <h5 class="mb-4 font-weight-bold font-syne text-white"><i class="fa-regular fa-id-card text-brand-orange me-2"></i> Personal Information</h5>
                     <form asp-action="UpdateProfile" method="post" class="fs-7">
                         @Html.AntiForgeryToken()
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label class="form-label font-weight-semibold">Full Name</label>
-                                <input type="text" name="fullName" class="form-control" value="@Model.FullName" required>
+                                <label class="form-label font-weight-semibold text-zinc-400">Full Name</label>
+                                <input type="text" name="fullName" class="form-control form-control-dark" value="@Model.FullName" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label font-weight-semibold">Phone Number</label>
-                                <input type="text" name="phoneNumber" class="form-control" value="@Model.PhoneNumber" placeholder="e.g. +91 XXXXX XXXXX">
+                                <label class="form-label font-weight-semibold text-zinc-400">Phone Number</label>
+                                <input type="text" name="phoneNumber" class="form-control form-control-dark" value="@Model.PhoneNumber" placeholder="e.g. +91 XXXXX XXXXX">
                             </div>
                             <div class="col-md-12">
-                                <label class="form-label font-weight-semibold">Email Address (Registered Account)</label>
-                                <input type="email" class="form-control" value="@Model.Email" readonly disabled>
-                                <span class="fs-8 text-muted mt-1 d-block">Account emails cannot be altered for secure ERP synchronization integrity.</span>
+                                <label class="form-label font-weight-semibold text-zinc-400">Email Address (Registered Account)</label>
+                                <input type="email" class="form-control form-control-dark" value="@Model.Email" readonly disabled style="opacity: 0.5;">
+                                <span class="fs-8 text-zinc-500 mt-1 d-block">Account emails cannot be altered for secure ERP synchronization integrity.</span>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-2"></i> Save Profile Details</button>
+                        <button type="submit" class="btn-magnetic btn btn-primary bg-brand-orange border-brand-orange font-syne font-bold uppercase tracking-wider px-4 py-2" style="border-radius: 4px !important; color: #ffffff;"><i class="fa-solid fa-floppy-disk me-2"></i> Save Profile Details</button>
                     </form>
                 </div>
 
                 <!-- Password Changing Section -->
-                <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
-                    <h5 class="mb-4 font-weight-bold"><i class="fa-solid fa-key text-secondary me-2"></i> Change Password</h5>
+                <div class="glass-panel-custom p-4">
+                    <h5 class="mb-4 font-weight-bold font-syne text-white"><i class="fa-solid fa-key text-zinc-400 me-2"></i> Change Password</h5>
                     <form asp-action="ChangePassword" method="post" class="fs-7">
                         @Html.AntiForgeryToken()
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
-                                <label class="form-label font-weight-semibold">Current Password</label>
-                                <input type="password" name="currentPassword" class="form-control" required placeholder="Enter current password">
+                                <label class="form-label font-weight-semibold text-zinc-400">Current Password</label>
+                                <input type="password" name="currentPassword" class="form-control form-control-dark" required placeholder="Enter current password">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label font-weight-semibold">New Password</label>
-                                <input type="password" name="newPassword" class="form-control" required placeholder="Minimum 6 characters">
+                                <label class="form-label font-weight-semibold text-zinc-400">New Password</label>
+                                <input type="password" name="newPassword" class="form-control form-control-dark" required placeholder="Minimum 6 characters">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label font-weight-semibold">Confirm Password</label>
-                                <input type="password" name="confirmPassword" class="form-control" required placeholder="Repeat password">
+                                <label class="form-label font-weight-semibold text-zinc-400">Confirm Password</label>
+                                <input type="password" name="confirmPassword" class="form-control form-control-dark" required placeholder="Repeat password">
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-lock me-2"></i> Update Password</button>
+                        <button type="submit" class="btn-magnetic btn btn-secondary border border-zinc-800 hover:border-zinc-500 bg-transparent text-white font-syne font-bold uppercase tracking-wider px-4 py-2" style="border-radius: 4px !important;"><i class="fa-solid fa-lock me-2"></i> Update Password</button>
                     </form>
                 </div>
             </div>

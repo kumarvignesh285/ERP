@@ -139,7 +139,7 @@ public class PurchaseService : IPurchaseService
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            invoice.Supplier = await _context.Suppliers.FindAsync(invoice.SupplierId)
+            var supplier = await _context.Suppliers.FindAsync(invoice.SupplierId)
                 ?? throw new InvalidOperationException("Selected supplier was not found.");
 
             foreach (var item in invoice.Items)
@@ -148,6 +148,8 @@ public class PurchaseService : IPurchaseService
                     ?? throw new InvalidOperationException("One or more selected products were not found.");
 
                 item.ProductName = string.IsNullOrWhiteSpace(item.ProductName) ? product.ProductName : item.ProductName;
+                item.Product = null;
+                item.PurchaseInvoice = null;
                 if (!invoice.WithGST)
                 {
                     item.TaxPercentage = 0;
@@ -173,6 +175,8 @@ public class PurchaseService : IPurchaseService
             invoice.TaxAmount = !invoice.WithGST ? 0 : (invoice.TaxAmount == 0 ? invoice.Items.Sum(i => i.TaxAmount) : invoice.TaxAmount);
             invoice.GrandTotal = invoice.SubTotal + invoice.TaxAmount - invoice.DiscountAmount + invoice.RoundOff;
             invoice.BalanceAmount = invoice.GrandTotal - invoice.PaidAmount;
+
+            invoice.Supplier = null;
 
             if (invoice.Id == 0)
             {
@@ -232,13 +236,13 @@ public class PurchaseService : IPurchaseService
             }
 
             // Generate Accounting Voucher (Purchase Account Dr, Supplier Account Cr)
-            var supplierLedger = await _context.Ledgers.FirstOrDefaultAsync(l => l.LedgerName.Contains(invoice.Supplier!.SupplierName) || l.LedgerCode == invoice.Supplier.SupplierCode);
+            var supplierLedger = await _context.Ledgers.FirstOrDefaultAsync(l => l.LedgerName.Contains(supplier.SupplierName) || (!string.IsNullOrEmpty(supplier.SupplierCode) && l.LedgerCode == supplier.SupplierCode));
             if (supplierLedger == null)
             {
                 supplierLedger = new Ledger
                 {
-                    LedgerCode = invoice.Supplier.SupplierCode,
-                    LedgerName = invoice.Supplier.SupplierName,
+                    LedgerCode = !string.IsNullOrWhiteSpace(supplier.SupplierCode) ? supplier.SupplierCode : $"SUPP-{supplier.Id}",
+                    LedgerName = supplier.SupplierName,
                     AccountGroupId = (await _context.AccountGroups.FirstOrDefaultAsync(g => g.GroupName == "Sundry Creditors"))?.Id ?? 1,
                     OpeningBalance = 0,
                     BalanceType = "Cr"
@@ -262,24 +266,34 @@ public class PurchaseService : IPurchaseService
                 await _context.SaveChangesAsync();
             }
 
-            var existingVoucher = await _context.Vouchers.Include(v => v.Items).FirstOrDefaultAsync(v => v.ReferenceNumber == invoice.InvoiceNumber && v.VoucherType == "Purchase");
+            var existingVoucher = await _context.Vouchers.Include(v => v.Items).FirstOrDefaultAsync(v => v.ReferenceNumber == invoice.InvoiceNumber && v.VoucherType == "Journal");
             if (existingVoucher != null)
             {
                 _context.Vouchers.Remove(existingVoucher);
+                await _context.SaveChangesAsync();
             }
+
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('VoucherItems', RESEED);");
+                await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Vouchers', RESEED);");
+            }
+            catch { }
 
             var voucher = new Voucher
             {
+                Id = 0,
                 VoucherNumber = "JV-" + invoice.InvoiceNumber,
                 VoucherDate = invoice.InvoiceDate,
                 VoucherType = "Journal",
                 ReferenceNumber = invoice.InvoiceNumber,
-                Narration = $"Purchase invoice {invoice.InvoiceNumber} generated from supplier {invoice.Supplier.SupplierName}",
+                Narration = $"Purchase invoice {invoice.InvoiceNumber} generated from supplier {supplier.SupplierName}",
                 TotalAmount = invoice.GrandTotal
             };
 
             voucher.Items.Add(new VoucherItem
             {
+                Id = 0,
                 LedgerId = purchaseLedger.Id,
                 DebitAmount = invoice.GrandTotal,
                 CreditAmount = 0,
@@ -289,6 +303,7 @@ public class PurchaseService : IPurchaseService
 
             voucher.Items.Add(new VoucherItem
             {
+                Id = 0,
                 LedgerId = supplierLedger.Id,
                 DebitAmount = 0,
                 CreditAmount = invoice.GrandTotal,
