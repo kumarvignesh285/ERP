@@ -620,6 +620,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 .table {
+    width: 100% !important;
     margin-bottom: 0;
     background-color: var(--surface);
     color: var(--text-primary);
@@ -1637,7 +1638,11 @@ body.sidebar-open .sidebar-backdrop {
         justify-content: center;
     }
 
-    html.sidebar-collapsed .sidebar-collapse-toggle {
+    html.sidebar-collapsed .brand-link {
+        justify-content: center;
+    }
+
+    .sidebar-collapse-toggle {
         display: none !important;
     }
 

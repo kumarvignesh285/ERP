@@ -11,12 +11,26 @@ $(function () {
         body.removeClass('sidebar-open');
     });
 
-    // Desktop Sidebar Width Collapse Toggle
-    $('#sidebarCollapseBtn').on('click', function (e) {
-        e.preventDefault();
-        html.toggleClass('sidebar-collapsed');
-        var isCollapsed = html.hasClass('sidebar-collapsed');
-        localStorage.setItem('sidebarCollapsed', isCollapsed);
+    // Desktop Sidebar Width Collapse Toggle via Brand Logo Icon
+    $('.brand-link').on('click', function (e) {
+        if (window.innerWidth >= 992) {
+            e.preventDefault();
+            html.toggleClass('sidebar-collapsed');
+            var isCollapsed = html.hasClass('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+            
+            // Adjust DataTables responsive layout after sidebar CSS transition completes
+            setTimeout(function() {
+                $(window).trigger('resize');
+                if ($.fn.dataTable) {
+                    $('.datatable').each(function() {
+                        if ($.fn.DataTable.isDataTable(this)) {
+                            $(this).DataTable().columns.adjust().responsive.recalc();
+                        }
+                    });
+                }
+            }, 300);
+        }
     });
 
     // Global Keyboard Shortcut (Ctrl + K) for Quick Search
