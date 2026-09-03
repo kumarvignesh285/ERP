@@ -3,114 +3,164 @@
     ViewData["Title"] = "Company Settings";
 }
 
-<div class="card max-width-900 mx-auto">
-    <div class="card-header bg-primary text-white">
-        <i class="fa-solid fa-building me-2"></i> Company Setup & Bill Customization
+<!-- Page Title -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-sliders me-2"></i> Company Settings & Bill Setup</h4>
+        <p class="text-muted small m-0 mt-1">Configure company identity, print invoice layout, bill numbering, and branding logo</p>
     </div>
-    <div class="card-body">
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent border-bottom p-0">
+        <ul class="nav nav-tabs card-header-tabs m-0 px-3 pt-2 border-0" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active fw-semibold py-3 px-4" data-bs-toggle="tab" data-bs-target="#tabCompany" type="button">
+                    <i class="fa-solid fa-building me-2 text-primary"></i> Company Details
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-semibold py-3 px-4" data-bs-toggle="tab" data-bs-target="#tabBill" type="button">
+                    <i class="fa-solid fa-receipt me-2 text-success"></i> Bill Customization & Logo
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-semibold py-3 px-4" data-bs-toggle="tab" data-bs-target="#tabNumbers" type="button">
+                    <i class="fa-solid fa-hashtag me-2 text-info"></i> Bill Numbering Series
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body p-4">
         @if (TempData["Success"] != null)
         {
-            <div class="alert alert-success">@TempData["Success"]</div>
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="fa-solid fa-circle-check fs-5"></i>
+                <div>@TempData["Success"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         }
         @if (TempData["Error"] != null)
         {
-            <div class="alert alert-danger">@TempData["Error"]</div>
+            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="fa-solid fa-triangle-exclamation fs-5"></i>
+                <div>@TempData["Error"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         }
 
-        <ul class="nav nav-tabs mb-4" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabCompany" type="button">Company Details</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabBill" type="button">Bill Type & Logo</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabNumbers" type="button">Bill Number Settings</button>
-            </li>
-        </ul>
-
-        <form asp-action="CompanySettings" method="post" enctype="multipart/form-data">
+        <form asp-action="CompanySettings" method="post" enctype="multipart/form-data" id="companySettingsForm">
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="CreatedBy" />
             <input type="hidden" asp-for="CreatedAt" />
             <input type="hidden" asp-for="Logo" />
 
             <div class="tab-content">
+                <!-- Tab 1: Company Profile -->
                 <div class="tab-pane fade show active" id="tabCompany">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="CompanyName" class="form-label font-weight-semibold">Company Name *</label>
-                            <input asp-for="CompanyName" class="form-control" required />
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="CompanyName" class="form-label fw-semibold text-dark">Company Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-building text-muted"></i></span>
+                                <input asp-for="CompanyName" class="form-control border-start-0" required />
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="CompanyCode" class="form-label font-weight-semibold">Company Code *</label>
-                            <input asp-for="CompanyCode" class="form-control" required />
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="GSTNumber" class="form-label font-weight-semibold">GSTIN</label>
-                            <input asp-for="GSTNumber" class="form-control" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="PANNumber" class="form-label font-weight-semibold">PAN Number</label>
-                            <input asp-for="PANNumber" class="form-control" />
+                        <div class="col-12 col-md-6">
+                            <label asp-for="CompanyCode" class="form-label fw-semibold text-dark">Company Code <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-barcode text-muted"></i></span>
+                                <input asp-for="CompanyCode" class="form-control border-start-0" required />
+                            </div>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Email" class="form-label font-weight-semibold">Email</label>
-                            <input asp-for="Email" type="email" class="form-control" />
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="GSTNumber" class="form-label fw-semibold text-dark">GSTIN</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-file-invoice text-muted"></i></span>
+                                <input asp-for="GSTNumber" class="form-control border-start-0 text-uppercase" placeholder="33AAAAA0000A1Z5" />
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Phone" class="form-label font-weight-semibold">Phone Number</label>
-                            <input asp-for="Phone" class="form-control" />
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Website" class="form-label font-weight-semibold">Website</label>
-                            <input asp-for="Website" class="form-control" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="CINNumber" class="form-label font-weight-semibold">CIN Number</label>
-                            <input asp-for="CINNumber" class="form-control" />
+                        <div class="col-12 col-md-6">
+                            <label asp-for="PANNumber" class="form-label fw-semibold text-dark">PAN Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-id-card text-muted"></i></span>
+                                <input asp-for="PANNumber" class="form-control border-start-0 text-uppercase" placeholder="ABCDE1234F" />
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="Address" class="form-label font-weight-semibold">Billing Address (shown on all bills)</label>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold text-dark">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-envelope text-muted"></i></span>
+                                <input asp-for="Email" type="email" class="form-control border-start-0" placeholder="contact@company.com" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Phone" class="form-label fw-semibold text-dark">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-phone text-muted"></i></span>
+                                <input asp-for="Phone" class="form-control border-start-0" placeholder="+91 98765 43210" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Website" class="form-label fw-semibold text-dark">Website URL</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-globe text-muted"></i></span>
+                                <input asp-for="Website" class="form-control border-start-0" placeholder="https://www.company.com" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="CINNumber" class="form-label fw-semibold text-dark">CIN Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-shield text-muted"></i></span>
+                                <input asp-for="CINNumber" class="form-control border-start-0 text-uppercase" placeholder="U12345TN2020PTC123456" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Address" class="form-label fw-semibold text-dark">Billing Address (shown on all printed bills)</label>
                         <textarea asp-for="Address" class="form-control" rows="3" placeholder="Street, Area, Landmark"></textarea>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label asp-for="City" class="form-label font-weight-semibold">City</label>
-                            <input asp-for="City" class="form-control" />
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-sm-3">
+                            <label asp-for="City" class="form-label fw-semibold text-dark">City</label>
+                            <input asp-for="City" class="form-control" placeholder="Chennai" />
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label asp-for="State" class="form-label font-weight-semibold">State</label>
-                            <input asp-for="State" class="form-control" />
+                        <div class="col-12 col-sm-3">
+                            <label asp-for="State" class="form-label fw-semibold text-dark">State</label>
+                            <input asp-for="State" class="form-control" placeholder="Tamil Nadu" />
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label asp-for="Country" class="form-label font-weight-semibold">Country</label>
-                            <input asp-for="Country" class="form-control" />
+                        <div class="col-12 col-sm-3">
+                            <label asp-for="Pincode" class="form-label fw-semibold text-dark">Pincode</label>
+                            <input asp-for="Pincode" class="form-control" placeholder="600001" />
+                        </div>
+                        <div class="col-12 col-sm-3">
+                            <label asp-for="Country" class="form-label fw-semibold text-dark">Country</label>
+                            <input asp-for="Country" class="form-control" placeholder="India" />
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="BankDetails" class="form-label font-weight-semibold">Bank Details (shown on bills)</label>
-                        <textarea asp-for="BankDetails" class="form-control" rows="2" placeholder="Bank Name, A/C No, IFSC"></textarea>
+                        <label asp-for="BankDetails" class="form-label fw-semibold text-dark">Bank Payment Details (printed on invoices)</label>
+                        <textarea asp-for="BankDetails" class="form-control" rows="2" placeholder="Bank Name, A/C No, IFSC Code, Branch"></textarea>
                     </div>
                 </div>
 
+                <!-- Tab 2: Bill Customization & Logo -->
                 <div class="tab-pane fade" id="tabBill">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="BillType" class="form-label font-weight-semibold">Default Bill Type *</label>
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="BillType" class="form-label fw-semibold text-dark">Default Invoice Format <span class="text-danger">*</span></label>
                             <select asp-for="BillType" class="form-select" required>
                                 <option value="Tax Invoice">Tax Invoice</option>
                                 <option value="Retail Invoice">Retail Invoice</option>
@@ -118,86 +168,112 @@
                                 <option value="Bill of Supply">Bill of Supply</option>
                                 <option value="Delivery Challan">Delivery Challan</option>
                             </select>
-                            <small class="text-muted">This title appears on printed sales & purchase bills.</small>
+                            <small class="text-muted d-block mt-1">This title appears prominently on printed sales & purchase bills.</small>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Company Logo</label>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Company Branding Logo</label>
                             <input type="file" name="logoFile" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp" />
-                            <small class="text-muted">PNG/JPG/GIF/WEBP up to 2 MB. Shown on all printed bills.</small>
+                            <small class="text-muted d-block mt-1">Supported formats: PNG, JPG, WEBP (Max 2 MB). Rendered on top header of PDF/Print bills.</small>
                         </div>
                     </div>
 
                     @if (!string.IsNullOrEmpty(Model.Logo))
                     {
-                        <div class="mb-3">
-                            <label class="form-label font-weight-semibold">Current Logo Preview</label>
-                            <div class="border rounded p-3 bg-light d-inline-block">
-                                <img src="@Model.Logo" alt="Company Logo" style="max-height: 100px; max-width: 250px;" />
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-dark">Current Logo Preview</label>
+                            <div class="border rounded-3 p-3 bg-light d-inline-block shadow-sm">
+                                <img src="@Model.Logo" alt="Company Logo" style="max-height: 90px; max-width: 240px; object-fit: contain;" />
                             </div>
                         </div>
                     }
 
                     <div class="mb-3">
-                        <label asp-for="BillFooterNote" class="form-label font-weight-semibold">Bill Footer Note</label>
-                        <textarea asp-for="BillFooterNote" class="form-control" rows="2" placeholder="Terms & conditions or thank you note on bills"></textarea>
+                        <label asp-for="BillFooterNote" class="form-label fw-semibold text-dark">Invoice Terms & Footer Note</label>
+                        <textarea asp-for="BillFooterNote" class="form-control" rows="3" placeholder="Terms & conditions, interest policies, or thank you notes printed at bottom of bills"></textarea>
                     </div>
                 </div>
 
+                <!-- Tab 3: Bill Number Settings -->
                 <div class="tab-pane fade" id="tabNumbers">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="font-weight-bold text-primary mb-3"><i class="fa-solid fa-file-invoice-dollar me-1"></i> Sales Bill Numbers</h6>
-                            <div class="mb-3">
-                                <label asp-for="SalesBillPrefix" class="form-label font-weight-semibold">Sales Prefix</label>
-                                <input asp-for="SalesBillPrefix" class="form-control" maxlength="20" />
-                            </div>
-                            <div class="mb-3">
-                                <label asp-for="SalesBillStartNumber" class="form-label font-weight-semibold">Sales Start Number</label>
-                                <input asp-for="SalesBillStartNumber" type="number" min="1" class="form-control" />
-                                <small class="text-muted">Use Reset Sales Counter below to apply this start number.</small>
-                            </div>
-                            <div class="mb-3">
-                                <label asp-for="SalesBillNextNumber" class="form-label font-weight-semibold">Next Sales Number</label>
-                                <input asp-for="SalesBillNextNumber" type="number" min="1" class="form-control" />
-                            </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" name="resetSalesCounter" id="resetSalesCounter" value="true" />
-                                <label class="form-check-label" for="resetSalesCounter">Reset sales counter to start number on save</label>
+                    <div class="row g-4 mb-4">
+                        <!-- Sales Numbering -->
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-file-invoice-dollar me-1.5"></i> Sales Bill Series</h6>
+                                <div class="mb-3">
+                                    <label asp-for="SalesBillPrefix" class="form-label fw-semibold">Sales Invoice Prefix</label>
+                                    <input asp-for="SalesBillPrefix" class="form-control" maxlength="20" placeholder="INV-" />
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="SalesBillStartNumber" class="form-label fw-semibold">Start Number</label>
+                                    <input asp-for="SalesBillStartNumber" type="number" min="1" class="form-control" />
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="SalesBillNextNumber" class="form-label fw-semibold">Next Sequence Number</label>
+                                    <input asp-for="SalesBillNextNumber" type="number" min="1" class="form-control" />
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="resetSalesCounter" id="resetSalesCounter" value="true" />
+                                    <label class="form-check-label fw-medium text-dark" for="resetSalesCounter">Reset sales sequence counter on save</label>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <h6 class="font-weight-bold text-primary mb-3"><i class="fa-solid fa-file-invoice me-1"></i> Purchase Bill Numbers</h6>
-                            <div class="mb-3">
-                                <label asp-for="PurchaseBillPrefix" class="form-label font-weight-semibold">Purchase Prefix</label>
-                                <input asp-for="PurchaseBillPrefix" class="form-control" maxlength="20" />
-                            </div>
-                            <div class="mb-3">
-                                <label asp-for="PurchaseBillStartNumber" class="form-label font-weight-semibold">Purchase Start Number</label>
-                                <input asp-for="PurchaseBillStartNumber" type="number" min="1" class="form-control" />
-                            </div>
-                            <div class="mb-3">
-                                <label asp-for="PurchaseBillNextNumber" class="form-label font-weight-semibold">Next Purchase Number</label>
-                                <input asp-for="PurchaseBillNextNumber" type="number" min="1" class="form-control" />
-                            </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" name="resetPurchaseCounter" id="resetPurchaseCounter" value="true" />
-                                <label class="form-check-label" for="resetPurchaseCounter">Reset purchase counter to start number on save</label>
+
+                        <!-- Purchase Numbering -->
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-cart-shopping me-1.5"></i> Purchase Order Series</h6>
+                                <div class="mb-3">
+                                    <label asp-for="PurchaseBillPrefix" class="form-label fw-semibold">Purchase Order Prefix</label>
+                                    <input asp-for="PurchaseBillPrefix" class="form-control" maxlength="20" placeholder="PO-" />
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="PurchaseBillStartNumber" class="form-label fw-semibold">Start Number</label>
+                                    <input asp-for="PurchaseBillStartNumber" type="number" min="1" class="form-control" />
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="PurchaseBillNextNumber" class="form-label fw-semibold">Next Sequence Number</label>
+                                    <input asp-for="PurchaseBillNextNumber" type="number" min="1" class="form-control" />
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="resetPurchaseCounter" id="resetPurchaseCounter" value="true" />
+                                    <label class="form-check-label fw-medium text-dark" for="resetPurchaseCounter">Reset purchase sequence counter on save</label>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="alert alert-info mb-0">
-                        <i class="fa-solid fa-circle-info me-1"></i>
-                        New sales invoices use prefix + 6-digit number (e.g. @(Model.SalesBillPrefix)@Model.SalesBillNextNumber.ToString("D6")).
-                        Purchase bills use @(Model.PurchaseBillPrefix)@Model.PurchaseBillNextNumber.ToString("D6").
+
+                    <div class="alert alert-info border-info-subtle d-flex align-items-center gap-2 mb-0">
+                        <i class="fa-solid fa-circle-info fs-5"></i>
+                        <div>
+                            Sample Auto Numbering: 
+                            <strong>Sales:</strong> <code>@(Model.SalesBillPrefix)@Model.SalesBillNextNumber.ToString("D6")</code> | 
+                            <strong>Purchase:</strong> <code>@(Model.PurchaseBillPrefix)@Model.PurchaseBillNextNumber.ToString("D6")</code>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="text-end mt-4">
-                <button type="submit" class="btn btn-primary px-4">
-                    <i class="fa-solid fa-save me-2"></i> Save Settings
+            <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm" id="submitBtn">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Save Company Settings
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#companySettingsForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    button: '#submitBtn',
+                    loadingText: 'Saving Settings...',
+                    reloadPage: true
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,209 @@
+@model UserPermissionsPageViewModel
+@{
+    ViewData["Title"] = "User Permissions Configuration";
+
+    var pageGroups = new Dictionary<string, (string Icon, string[] Pages)>
+    {
+        { "Masters", ("fa-folder-open text-primary", new[] { "Company Master", "Customer Master", "Supplier Master", "Product Master", "Category Master", "Brand Master", "Unit Master", "Warehouse Master", "Ledger Master", "Employee Master", "Account Groups", "Bank Master", "Tax Settings", "Payment Modes" }) },
+        { "Sales", ("fa-cart-shopping text-success", new[] { "Quotation", "Sales Order", "Delivery Challan", "Sales Invoice", "Sales Return" }) },
+        { "Purchase", ("fa-bag-shopping text-warning", new[] { "Purchase Order", "Goods Receipt Note", "Purchase Invoice", "Purchase Return" }) },
+        { "Inventory", ("fa-warehouse text-info", new[] { "Stock Opening", "Stock Transfer", "Stock Adjustment", "Physical Stock" }) },
+        { "Accounts", ("fa-calculator text-danger", new[] { "Receipt Voucher", "Payment Voucher", "Contra Voucher", "Journal Voucher", "Debit Note", "Credit Note", "Cash Book", "Bank Book" }) },
+        { "CRM", ("fa-users-rectangle text-secondary", new[] { "Leads", "Follow Ups", "Opportunities", "Pipeline View" }) },
+        { "Reports", ("fa-chart-line text-dark", new[] { "Sales Reports", "Purchase Reports", "Inventory Reports", "Accounting Reports" }) },
+        { "Settings", ("fa-gears text-muted", new[] { "User Management", "Role Configuration", "Company Setup", "System Settings" }) }
+    };
+
+    var selectedUser = Model.Users.FirstOrDefault(u => u.Id == Model.SelectedUserId);
+    var isSuperAdminUser = selectedUser != null && (selectedUser.CompanyId == null || selectedUser.Email?.ToLowerInvariant() == "admin@smarterp.com");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-user-shield me-2"></i> User Permissions Configuration</h4>
+        <p class="text-muted small m-0 mt-1">Configure fine-grained screen and CRUD operation permissions per user</p>
+    </div>
+    <div>
+        <a href="/Settings/Users" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-users me-1"></i> User Management</a>
+        <a href="/Settings/Roles" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-users-gear me-1"></i> Roles List</a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-check me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-light border-bottom py-3">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold mb-1 mb-md-0 text-dark">Select User to Configure</label>
+            </div>
+            <div class="col-md-6 col-lg-5">
+                <select id="userSelector" class="form-select fw-semibold border-primary shadow-sm">
+                    @foreach (var user in Model.Users)
+                    {
+                        var compTag = user.Company != null ? $" [{user.Company.CompanyCode}]" : "";
+                        <!option value="@user.Id" @(user.Id == Model.SelectedUserId ? "selected" : "")>@user.FullName (@user.Email)@compTag</!option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 text-end">
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-primary" id="btnCheckAll">Select All</button>
+                    <button type="button" class="btn btn-outline-secondary" id="btnUncheckAll">Clear All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="SavePermissions" method="post" id="permissionsForm">
+        <input type="hidden" name="userId" value="@Model.SelectedUserId" />
+
+        <div class="card-body p-0">
+            @if (isSuperAdminUser)
+            {
+                <div class="alert alert-warning m-3 border-0 shadow-sm d-flex align-items-center">
+                    <i class="fa-solid fa-circle-info fs-4 me-3 text-warning"></i>
+                    <div>
+                        <strong>Super Admin Account:</strong> Permissions for the system administrator are fully unlocked by default and cannot be restricted to prevent lockout.
+                    </div>
+                </div>
+            }
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-uppercase fs-8 text-muted fw-bold">
+                        <tr>
+                            <th class="ps-4" style="width: 45%;">Screen / Page Name</th>
+                            <th class="text-center" style="width: 18%;">View Access</th>
+                            <th class="text-center" style="width: 18%;">Create & Edit</th>
+                            <th class="text-center" style="width: 18%;">Delete Access</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var group in pageGroups)
+                        {
+                            var groupName = group.Key;
+                            var groupIcon = group.Value.Icon;
+                            var pages = group.Value.Pages;
+                            var collapseClass = $"group-{groupName.Replace(" ", "")}";
+
+                            <!-- Module Group Header Row -->
+                            <tr class="table-light fw-bold" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target=".@collapseClass">
+                                <td colspan="4" class="ps-3 py-2 fw-bold text-dark border-bottom">
+                                    <i class="fa-solid @groupIcon me-2"></i> @groupName Module
+                                    <span class="badge bg-secondary ms-2 text-white" style="font-size: 0.75rem;">@pages.Length Screens</span>
+                                    <i class="fa-solid fa-chevron-down float-end fs-7 mt-1 me-3 text-muted"></i>
+                                </td>
+                            </tr>
+
+                            @foreach (var pageName in pages)
+                            {
+                                var i = Model.Permissions.FindIndex(p => p.ScreenName == pageName);
+                                if (i >= 0)
+                                {
+                                    var item = Model.Permissions[i];
+
+                                    <tr class="collapse show @collapseClass">
+                                        <td class="ps-5 py-2 text-secondary">
+                                            <i class="fa-solid fa-file-lines me-2 text-muted" style="font-size: 0.85rem;"></i> @item.ScreenName
+                                            <input type="hidden" name="permissions[@i].ScreenName" value="@item.ScreenName" />
+                                        </td>
+                                        <td class="text-center py-2">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input permission-switch view-switch" type="checkbox" name="permissions[@i].CanView" value="true" @(item.CanView ? "checked" : "") @(isSuperAdminUser ? "disabled" : "") />
+                                                <input type="hidden" name="permissions[@i].CanView" value="false" />
+                                            </div>
+                                        </td>
+                                        <td class="text-center py-2">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input permission-switch edit-switch" type="checkbox" name="permissions[@i].CanEdit" value="true" @(item.CanEdit ? "checked" : "") @(isSuperAdminUser ? "disabled" : "") />
+                                                <input type="hidden" name="permissions[@i].CanEdit" value="false" />
+                                            </div>
+                                        </td>
+                                        <td class="text-center py-2">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input permission-switch delete-switch" type="checkbox" name="permissions[@i].CanDelete" value="true" @(item.CanDelete ? "checked" : "") @(isSuperAdminUser ? "disabled" : "") />
+                                                <input type="hidden" name="permissions[@i].CanDelete" value="false" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer bg-light text-end py-3">
+            <a href="/Settings/Users" class="btn btn-outline-secondary me-2">Cancel</a>
+            <button type="submit" class="btn btn-primary shadow-sm" id="submitBtn" @(isSuperAdminUser ? "disabled" : "")>
+                <i class="fa-solid fa-floppy-disk me-1"></i> Save Permissions Matrix
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#permissionsForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    button: '#submitBtn',
+                    loadingText: 'Saving Matrix...',
+                    reloadPage: true
+                });
+            });
+
+            $('#userSelector').on('change', function () {
+                var selectedUserId = $(this).val();
+                window.location.href = '/Settings/Permissions?userId=' + encodeURIComponent(selectedUserId);
+            });
+
+            // Auto-align checkboxes
+            $('.permission-switch').on('change', function () {
+                var row = $(this).closest('tr');
+                var viewSwitch = row.find('.view-switch');
+                var editSwitch = row.find('.edit-switch');
+                var deleteSwitch = row.find('.delete-switch');
+
+                if ($(this).hasClass('view-switch') && !$(this).is(':checked')) {
+                    editSwitch.prop('checked', false);
+                    deleteSwitch.prop('checked', false);
+                } else if (($(this).hasClass('edit-switch') || $(this).hasClass('delete-switch')) && $(this).is(':checked')) {
+                    viewSwitch.prop('checked', true);
+                }
+            });
+
+            $('#btnCheckAll').on('click', function () {
+                $('.permission-switch:not(:disabled)').prop('checked', true);
+            });
+
+            $('#btnUncheckAll').on('click', function () {
+                $('.permission-switch:not(:disabled)').prop('checked', false);
+            });
+
+            $('tr[data-bs-toggle="collapse"]').on('click', function () {
+                var icon = $(this).find('.fa-chevron-down, .fa-chevron-up');
+                if (icon.hasClass('fa-chevron-down')) {
+                    icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+                } else {
+                    icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                }
+            });
+        });
+    </script>
+}

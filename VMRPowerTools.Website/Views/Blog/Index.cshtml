@@ -1,0 +1,83 @@
+@model IEnumerable<VMRPowerTools.Website.Controllers.BlogPost>
+@{
+    ViewData["Title"] = "Technical Blog";
+    var categories = ViewBag.Categories as List<string> ?? new List<string>();
+}
+
+<section class="py-5 bg-dark text-white border-bottom" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+    <div class="container">
+        <h1>VMR Knowledge Hub</h1>
+        <p class="text-slate-300 mb-0">Technical articles, tools maintenance checklists, and industrial spares advisories.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Blog Posts Listing -->
+            <div class="col-lg-8">
+                @if (Model != null && Model.Any())
+                {
+                    <div class="row g-4">
+                        @foreach (var post in Model)
+                        {
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm overflow-hidden bg-white" style="border-radius: 12px;">
+                                    <div class="row g-0">
+                                        <div class="col-md-4" style="min-height: 200px; background-image: url('@post.ImagePath'); background-size: cover; background-position: center;">
+                                        </div>
+                                        <div class="col-md-8 p-4 d-flex flex-direction-column">
+                                            <div class="mb-2">
+                                                <span class="badge bg-primary text-uppercase font-weight-bold tracking-wider px-2 py-1" style="font-size: 0.65rem;">@post.Category</span>
+                                                <span class="text-muted fs-8 ms-2">@post.PublishedDate.ToString("dd MMM yyyy")</span>
+                                            </div>
+                                            <h4 class="font-weight-bold text-dark mb-2">@post.Title</h4>
+                                            <p class="text-muted fs-7 mb-4">@post.Summary</p>
+                                            <div class="mt-auto">
+                                                <a href="/blog/@post.Slug" class="btn btn-sm btn-outline-primary">Read Article <i class="fa-solid fa-arrow-right-long ms-1"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 bg-white border rounded shadow-sm">
+                        <i class="fa-regular fa-newspaper text-muted mb-3" style="font-size: 5rem; opacity: 0.3;"></i>
+                        <h5>No blog posts found</h5>
+                        <p class="text-muted fs-7">Try resetting search query filters.</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Sidebar: Search and Categories -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm p-4 bg-white sticky-top" style="top: 2rem; border-radius: 12px;">
+                    <!-- Search Form -->
+                    <form method="get" class="mb-4">
+                        <label class="form-label font-weight-semibold uppercase tracking-wider fs-8 text-muted">Search Articles</label>
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Search blog content..." value="@ViewBag.Search">
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        </div>
+                    </form>
+
+                    <!-- Categories Filter -->
+                    <div class="mb-0">
+                        <label class="form-label font-weight-semibold uppercase tracking-wider fs-8 text-muted">Categories</label>
+                        <div class="list-group list-group-flush fs-7">
+                            <a asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 py-2 @(string.IsNullOrEmpty(ViewBag.SelectedCategory) ? "active font-weight-bold text-primary bg-transparent" : "")">All Categories</a>
+                            @foreach (var cat in categories)
+                            {
+                                <a asp-action="Index" asp-route-category="@cat" class="list-group-item list-group-item-action border-0 px-0 py-2 @(ViewBag.SelectedCategory == cat ? "active font-weight-bold text-primary bg-transparent" : "")">@cat</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

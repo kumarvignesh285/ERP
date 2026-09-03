@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Filters;
 using ERP.Interfaces;
 using ERP.Models;
 using ERP.ViewModels;
@@ -7,6 +8,7 @@ using ERP.ViewModels;
 namespace ERP.Controllers;
 
 [Authorize]
+[Permission("Sales", "View")]
 [Route("Sales")]
 public class SalesController : Controller
 {
@@ -42,6 +44,13 @@ public class SalesController : Controller
         };
     }
 
+    private Dictionary<string, string> GetModelStateErrors() =>
+        ModelState.Where(x => x.Value?.Errors.Count > 0)
+                  .ToDictionary(
+                      k => k.Key,
+                      v => v.Value!.Errors.First().ErrorMessage
+                  );
+
     // --- Sales Quotation ---
     [HttpGet("Quotation")]
     public async Task<IActionResult> Quotation()
@@ -53,19 +62,27 @@ public class SalesController : Controller
     [HttpPost("SaveQuotation")]
     public async Task<IActionResult> SaveQuotation([FromBody] SalesQuotation quotation)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _salesService.SaveQuotationAsync(quotation);
-            return Json(new { success = true, message = "Sales Quotation saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data model." });
+
+        try
+        {
+            var saved = await _salesService.SaveQuotationAsync(quotation);
+            return Json(ApiResponse.Ok("Sales Quotation saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeleteQuotation")]
     public async Task<IActionResult> DeleteQuotation(int id)
     {
-        await _salesService.DeleteQuotationAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _salesService.DeleteQuotationAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     // --- Sales Order ---
@@ -79,19 +96,27 @@ public class SalesController : Controller
     [HttpPost("SaveOrder")]
     public async Task<IActionResult> SaveOrder([FromBody] SalesOrder order)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _salesService.SaveSalesOrderAsync(order);
-            return Json(new { success = true, message = "Sales Order saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data." });
+
+        try
+        {
+            var saved = await _salesService.SaveSalesOrderAsync(order);
+            return Json(ApiResponse.Ok("Sales Order saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeleteOrder")]
     public async Task<IActionResult> DeleteOrder(int id)
     {
-        await _salesService.DeleteSalesOrderAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _salesService.DeleteSalesOrderAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     [HttpPost("ConvertOrderToInvoice")]
@@ -102,7 +127,7 @@ public class SalesController : Controller
             var order = await _salesService.GetSalesOrderByIdAsync(id);
             if (order == null || !order.IsActive)
             {
-                return Json(new { success = false, message = "Sales order not found." });
+                return Json(ApiResponse.Fail("Sales order not found."));
             }
 
             var invoice = new SalesInvoice
@@ -141,11 +166,11 @@ public class SalesController : Controller
             await _salesService.SaveInvoiceAsync(invoice);
             await _salesService.UpdateSalesOrderStatusAsync(order.Id, "Completed");
 
-            return Json(new { success = true, message = $"Sales order converted to invoice {invoice.InvoiceNumber}." });
+            return Json(ApiResponse.Ok($"Sales order converted to invoice {invoice.InvoiceNumber}.", invoice));
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = ex.Message });
+            return Json(ApiResponse.Fail(ex.Message));
         }
     }
 
@@ -160,19 +185,27 @@ public class SalesController : Controller
     [HttpPost("SaveChallan")]
     public async Task<IActionResult> SaveChallan([FromBody] DeliveryChallan challan)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _salesService.SaveDeliveryChallanAsync(challan);
-            return Json(new { success = true, message = "Delivery Challan saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data." });
+
+        try
+        {
+            var saved = await _salesService.SaveDeliveryChallanAsync(challan);
+            return Json(ApiResponse.Ok("Delivery Challan saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeleteChallan")]
     public async Task<IActionResult> DeleteChallan(int id)
     {
-        await _salesService.DeleteDeliveryChallanAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _salesService.DeleteDeliveryChallanAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     // --- Sales Invoice ---
@@ -201,26 +234,26 @@ public class SalesController : Controller
             ModelState.Remove(key);
         }
 
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            try
-            {
-                if (invoice.Id == 0)
-                {
-                    invoice.InvoiceNumber = await _masterService.ReserveNextBillNumberAsync("sales");
-                }
-
-                await _salesService.SaveInvoiceAsync(invoice);
-                return Json(new { success = true, message = "Sales Invoice saved successfully.", invoiceNumber = invoice.InvoiceNumber });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
+            return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
         }
 
-        var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-        return Json(new { success = false, message = string.IsNullOrWhiteSpace(errors) ? "Invalid data." : errors });
+        try
+        {
+            if (invoice.Id == 0)
+            {
+                invoice.InvoiceNumber = await _masterService.ReserveNextBillNumberAsync("sales");
+            }
+
+            await _salesService.SaveInvoiceAsync(invoice);
+            return Json(ApiResponse.Ok("Sales Invoice saved successfully.", new { invoiceNumber = invoice.InvoiceNumber, id = invoice.Id }));
+        }
+        catch (Exception ex)
+        {
+            var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            return Json(ApiResponse.Fail(message));
+        }
     }
 
     [HttpGet("GetInvoice/{id}")]
@@ -234,8 +267,8 @@ public class SalesController : Controller
     [HttpPost("DeleteInvoice")]
     public async Task<IActionResult> DeleteInvoice(int id)
     {
-        await _salesService.DeleteInvoiceAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _salesService.DeleteInvoiceAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     [HttpGet("GetOrder/{id}")]
@@ -281,18 +314,26 @@ public class SalesController : Controller
     [HttpPost("SaveReturn")]
     public async Task<IActionResult> SaveReturn([FromBody] SalesReturn salesReturn)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _salesService.SaveReturnAsync(salesReturn);
-            return Json(new { success = true, message = "Sales Return saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data." });
+
+        try
+        {
+            var saved = await _salesService.SaveReturnAsync(salesReturn);
+            return Json(ApiResponse.Ok("Sales Return saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeleteReturn")]
     public async Task<IActionResult> DeleteReturn(int id)
     {
-        await _salesService.DeleteReturnAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _salesService.DeleteReturnAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 }

@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class PurchaseOrder : BaseEntity
+public class PurchaseOrder : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string OrderNumber { get; set; } = string.Empty;
     public DateTime OrderDate { get; set; } = DateTime.Today;
@@ -25,6 +28,9 @@ public class PurchaseOrder : BaseEntity
     public string Status { get; set; } = "Pending";
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    [MaxLength(200)]
+    public string? DocumentPath { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<PurchaseOrderItem> Items { get; set; } = new List<PurchaseOrderItem>();
 }
 

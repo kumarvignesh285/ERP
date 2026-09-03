@@ -1,0 +1,102 @@
+@model SalesOrder
+@{
+    ViewData["Title"] = "Order Success";
+}
+
+<section class="py-5">
+    <div class="container text-center" style="max-width: 800px;">
+        <!-- Success Icon Banner -->
+        <div class="mb-4">
+            <i class="fa-solid fa-circle-check text-success" style="font-size: 6rem;"></i>
+        </div>
+        <h1 class="display-5 font-weight-bold">Thank You for Your Order!</h1>
+        <p class="lead text-muted mb-5">Your order has been recorded and is currently being processed by our warehouse dispatch team.</p>
+
+        <!-- ERP Success Logs Status Checklist (WOW factor) -->
+        <div class="card border-0 shadow-sm p-4 bg-light mb-5 text-start" style="border-radius: 12px;">
+            <h5 class="mb-3 font-weight-bold"><i class="fa-solid fa-server text-primary me-2"></i> SmartERP Execution Report</h5>
+            <ul class="list-unstyled mb-0 fs-7">
+                <li class="mb-2 text-success"><i class="fa-solid fa-check-double me-2"></i> <strong>Sales Order Generated:</strong> Unique code <code>@Model.OrderNumber</code> saved in ERP pipeline.</li>
+                <li class="mb-2 text-success"><i class="fa-solid fa-check-double me-2"></i> <strong>Sales Invoice Created:</strong> Financial invoice created & customer balance updated.</li>
+                <li class="mb-0 text-success"><i class="fa-solid fa-check-double me-2"></i> <strong>Stock Reconciled:</strong> Quantities reduced in products ledger and negative stock transactions registered.</li>
+            </ul>
+        </div>
+
+        <!-- Order Summary Card -->
+        <div class="card border-0 shadow-sm p-4 bg-white text-start mb-5" style="border-radius: 12px;">
+            <h4 class="mb-4 border-bottom pb-2 font-weight-bold">Order Details</h4>
+            
+            <div class="row g-3 mb-4 fs-7">
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Order Number:</span>
+                    <strong class="text-dark">@Model.OrderNumber</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Order Date:</span>
+                    <strong class="text-dark">@Model.OrderDate.ToString("dd MMMM yyyy")</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Shipping Address:</span>
+                    <strong class="text-dark">@Model.ShippingAddress</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Status:</span>
+                    <span class="badge bg-warning-subtle text-warning px-2 py-1">@Model.Status</span>
+                </div>
+            </div>
+
+            <h5 class="mb-3 border-bottom pb-1 font-weight-bold fs-7">Ordered Tools</h5>
+            <div class="table-responsive">
+                <table class="table align-middle fs-7 mb-0">
+                    <thead>
+                        <tr class="text-muted font-weight-bold">
+                            <th>Tool Name</th>
+                            <th>Qty</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="font-weight-semibold">@item.ProductName</div>
+                                    <span class="fs-8 text-muted">@item.Product?.ProductCode</span>
+                                </td>
+                                <td>@item.Quantity.ToString("N0")</td>
+                                <td class="text-end font-weight-semibold">₹@item.Amount.ToString("N2")</td>
+                            </tr>
+                        }
+                        <tr class="border-top-0">
+                            <td colspan="2" class="text-end text-muted py-1">Subtotal:</td>
+                            <td class="text-end font-weight-semibold py-1">₹@Model.SubTotal.ToString("N2")</td>
+                        </tr>
+                        @if (Model.DiscountAmount > 0)
+                        {
+                            <tr>
+                                <td colspan="2" class="text-end text-success py-1">Discount:</td>
+                                <td class="text-end font-weight-semibold text-success py-1">-₹@Model.DiscountAmount.ToString("N2")</td>
+                            </tr>
+                        }
+                        <tr>
+                            <td colspan="2" class="text-end text-muted py-1">Tax Value:</td>
+                            <td class="text-end font-weight-semibold py-1">₹@Model.TaxAmount.ToString("N2")</td>
+                        </tr>
+                        <tr class="border-top fs-6 font-weight-bold">
+                            <td colspan="2" class="text-end pt-3">Grand Total:</td>
+                            <td class="text-end text-primary pt-3">₹@Model.GrandTotal.ToString("N2")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-lg px-4"><i class="fa-solid fa-toolbox me-2"></i> Continue Shopping</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-secondary btn-lg px-4"><i class="fa-solid fa-clock-rotate-left me-2"></i> Order History</a>
+            }
+        </div>
+    </div>
+</section>

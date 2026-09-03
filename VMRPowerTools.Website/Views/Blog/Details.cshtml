@@ -1,0 +1,80 @@
+@model VMRPowerTools.Website.Controllers.BlogPost
+@{
+    ViewData["Title"] = Model.Title;
+    var related = ViewBag.RelatedPosts as List<VMRPowerTools.Website.Controllers.BlogPost> ?? new List<VMRPowerTools.Website.Controllers.BlogPost>();
+}
+
+<!-- Article Hero -->
+<section class="py-5 bg-dark text-white border-bottom" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+    <div class="container text-center" style="max-width: 800px;">
+        <span class="badge bg-primary text-uppercase font-weight-bold tracking-wider px-3 py-2 mb-3" style="font-size: 0.75rem;">@Model.Category</span>
+        <h1 class="display-5 font-weight-bold mb-3">@Model.Title</h1>
+        <div class="d-flex justify-content-center align-items-center gap-3 fs-7 text-slate-300">
+            <span>By <strong>@Model.Author</strong></span>
+            <span>|</span>
+            <span>Published @Model.PublishedDate.ToString("dd MMMM yyyy")</span>
+        </div>
+    </div>
+</section>
+
+<!-- Content Block -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Main image -->
+                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                {
+                    <div class="mb-5 text-center">
+                        <img src="@Model.ImagePath" alt="@Model.Title" class="img-fluid rounded shadow-sm" style="max-height: 450px; width: 100%; object-fit: cover;">
+                    </div>
+                }
+
+                <!-- Rich text content -->
+                <div class="rich-blog-content fs-6 text-muted mb-5" style="line-height: 1.8;">
+                    @Html.Raw(Model.Content)
+                </div>
+
+                <!-- Back button & Share hooks -->
+                <div class="d-flex justify-content-between align-items-center border-top pt-4 mb-5">
+                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-2"></i> Back to Blog</a>
+                    <a href="https://wa.me/919876543210?text=Hi%2C%20check%20out%20this%20article%20on%20VMR%20website%3A%20@(Context.Request.Scheme)%3A%2F%2F@(Context.Request.Host)%2Fblog%2F@Model.Slug" target="_blank" rel="noopener noreferrer" class="btn btn-success"><i class="fa-brands fa-whatsapp me-2"></i> Share on WhatsApp</a>
+                </div>
+
+                <!-- Related Posts -->
+                @if (related != null && related.Any())
+                {
+                    <div class="border-top pt-5">
+                        <h3 class="mb-4 font-weight-bold">Related Articles</h3>
+                        <div class="row g-4">
+                            @foreach (var post in related)
+                            {
+                                <div class="col-sm-6">
+                                    <div class="card border-0 shadow-sm bg-white h-100" style="border-radius: 12px; overflow: hidden;">
+                                        <div class="p-3">
+                                            <span class="fs-8 text-muted uppercase tracking-wider font-weight-bold">@post.Category</span>
+                                            <h6 class="font-weight-bold text-dark mt-1 mb-2">@post.Title</h6>
+                                            <a href="/blog/@post.Slug" class="fs-7 text-primary text-decoration-none font-weight-bold d-block">Read Article <i class="fa-solid fa-angle-right"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .rich-blog-content h5 {
+        color: var(--text-dark);
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    .rich-blog-content p {
+        margin-bottom: 1.5rem;
+    }
+</style>

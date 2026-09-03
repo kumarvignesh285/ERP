@@ -1,0 +1,148 @@
+@inject ICompanyService CompanyService
+@{
+    var company = await CompanyService.GetDefaultCompanyAsync();
+    var name = company?.CompanyName ?? "VMR Power Tools";
+    var address = company?.Address ?? "123 Industrial Hub, GST Road, Chennai, Tamil Nadu";
+    var phone = company?.Phone ?? "+91 98765 43210";
+    var email = company?.Email ?? "info@vmrpowertools.com";
+    var website = company?.Website ?? "www.vmrpowertools.com";
+}
+
+<footer class="no-print bg-[#050505] border-t border-white/10 py-16 px-4 md:px-8 mt-24">
+    <div class="container mx-auto max-w-7xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+            
+            <!-- 1. Brand Brief & Social Links -->
+            <div class="flex flex-col gap-6">
+                <!-- Crisp Vector Emblem + HTML Text -->
+                <a asp-controller="Home" asp-action="Index" class="flex items-center gap-2.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-8 h-8 shrink-0">
+                        <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" fill="none" stroke="#FF5C00" stroke-width="8"/>
+                        <circle cx="50" cy="50" r="16" fill="#FF5C00"/>
+                        <path d="M 50 35 L 50 65 M 35 50 L 65 50" stroke="#050505" stroke-width="4"/>
+                    </svg>
+                    <div class="flex items-baseline font-syne leading-none">
+                        <span class="text-white font-extrabold text-2xl tracking-tighter">VMR</span>
+                        <span class="text-brand-orange font-extrabold text-xs tracking-widest ml-1 uppercase">TOOLS</span>
+                    </div>
+                </a>
+
+                <p class="text-zinc-400 text-xs leading-relaxed font-inter">
+                    Redefining power and endurance through world-class precision engineering. Built for extreme work environments across India.
+                </p>
+
+                <!-- Social Icons -->
+                <div class="flex items-center gap-3">
+                    <a href="javascript:void(0)" class="w-9 h-9 rounded-full bg-zinc-900 border border-white/10 hover:border-brand-orange hover:bg-brand-orange/10 text-zinc-400 hover:text-brand-orange flex items-center justify-center transition-colors">
+                        <i class="fa-brands fa-facebook-f text-xs"></i>
+                    </a>
+                    <a href="javascript:void(0)" class="w-9 h-9 rounded-full bg-zinc-900 border border-white/10 hover:border-brand-orange hover:bg-brand-orange/10 text-zinc-400 hover:text-brand-orange flex items-center justify-center transition-colors">
+                        <i class="fa-brands fa-instagram text-xs"></i>
+                    </a>
+                    <a href="javascript:void(0)" class="w-9 h-9 rounded-full bg-zinc-900 border border-white/10 hover:border-brand-orange hover:bg-brand-orange/10 text-zinc-400 hover:text-brand-orange flex items-center justify-center transition-colors">
+                        <i class="fa-brands fa-linkedin-in text-xs"></i>
+                    </a>
+                    <a href="javascript:void(0)" class="w-9 h-9 rounded-full bg-zinc-900 border border-white/10 hover:border-brand-orange hover:bg-brand-orange/10 text-zinc-400 hover:text-brand-orange flex items-center justify-center transition-colors">
+                        <i class="fa-brands fa-youtube text-xs"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 2. Quick Navigation Links -->
+            <div class="flex flex-col gap-4">
+                <h5 class="text-white text-xs font-bold uppercase tracking-widest font-syne text-brand-orange">Quick Links</h5>
+                <ul class="flex flex-col gap-2.5 font-syne text-xs font-bold">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-[8px] text-brand-orange"></i> Home Portal
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Product" asp-action="Index" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-[8px] text-brand-orange"></i> Products Catalog
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home" asp-action="About" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-[8px] text-brand-orange"></i> About VMR
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home" asp-action="Contact" asp-route-subject="Dealer Registration" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-[8px] text-brand-orange"></i> Dealer Registration
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home" asp-action="Contact" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-[8px] text-brand-orange"></i> Contact & Support
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 3. Products Categories -->
+            <div class="flex flex-col gap-4">
+                <h5 class="text-white text-xs font-bold uppercase tracking-widest font-syne text-brand-orange">Categories</h5>
+                <ul class="flex flex-col gap-2.5 font-syne text-xs font-bold">
+                    <li>
+                        <a asp-controller="Product" asp-action="Index" asp-route-search="Chainsaw" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-[8px] text-brand-orange"></i> Heavy Duty Chainsaws
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Product" asp-action="Index" asp-route-search="Brush Cutter" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-[8px] text-brand-orange"></i> Brush Cutters
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Product" asp-action="Index" asp-route-search="Pressure Washer" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-[8px] text-brand-orange"></i> Pressure Washers
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Product" asp-action="Index" asp-route-search="Water Pump" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-[8px] text-brand-orange"></i> Dewatering Water Pumps
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Product" asp-action="Index" asp-route-search="Generator" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-[8px] text-brand-orange"></i> Silent Generators
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 4. Newsletter Signup & Desk -->
+            <div class="flex flex-col gap-4">
+                <h5 class="text-white text-xs font-bold uppercase tracking-widest font-syne text-brand-orange">Stay Updated</h5>
+                <p class="text-zinc-400 font-inter text-xs leading-relaxed">
+                    Subscribe for new machinery launches, technical bulletins, and dealer offers.
+                </p>
+
+                <form onsubmit="event.preventDefault(); alert('Subscribed to VMR Newsletter!');" class="flex items-center">
+                    <input type="email" placeholder="Your Email Address" required class="bg-zinc-900 border border-zinc-700 text-white font-inter text-xs px-3 py-2.5 rounded-l-lg focus:outline-none focus:border-brand-orange w-full">
+                    <button type="submit" class="bg-brand-orange hover:bg-orange-600 text-white font-syne text-xs font-extrabold uppercase px-4 py-2.5 rounded-r-lg transition-colors shrink-0">
+                        Join
+                    </button>
+                </form>
+
+                <div class="pt-2 text-zinc-400 text-xs font-inter flex flex-col gap-1.5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-brand-orange"></i> @address</span>
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-phone text-brand-orange"></i> @phone</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="border-t border-white/10 mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 font-inter text-xs text-zinc-500">
+            <div>
+                &copy; @DateTime.Now.Year @name. Engineered for industrial precision across India. All Rights Reserved.
+            </div>
+            <div class="flex gap-6">
+                <a href="javascript:void(0)" class="hover:text-zinc-300 transition-colors">Privacy Policy</a>
+                <a href="javascript:void(0)" class="hover:text-zinc-300 transition-colors">Terms of Service</a>
+                <a href="javascript:void(0)" class="hover:text-zinc-300 transition-colors">Sitemap</a>
+            </div>
+        </div>
+    </div>
+</footer>

@@ -6,8 +6,8 @@ public class Company : BaseEntity
 {
     [Required, MaxLength(200)]
     public string CompanyName { get; set; } = string.Empty;
-    [MaxLength(50)]
-    public string? CompanyCode { get; set; }
+    [Required, MaxLength(50)]
+    public string CompanyCode { get; set; } = string.Empty;
     [MaxLength(500)]
     public string? Address { get; set; }
     [MaxLength(100)]
@@ -16,6 +16,8 @@ public class Company : BaseEntity
     public string? State { get; set; }
     [MaxLength(100)]
     public string? Country { get; set; } = "India";
+    [MaxLength(20)]
+    public string? Pincode { get; set; }
     [MaxLength(20)]
     public string? Phone { get; set; }
     [MaxLength(100)]
@@ -47,4 +49,12 @@ public class Company : BaseEntity
     public string? BankDetails { get; set; }
     [MaxLength(50)]
     public string? TAN { get; set; }
+    [MaxLength(10)]
+    public string Currency { get; set; } = "INR";
+    [MaxLength(20)]
+    public string? FinancialYear { get; set; }
+    [MaxLength(100)]
+    public string? BusinessType { get; set; }
+    [MaxLength(20)]
+    public string? AlternatePhone { get; set; }
 }

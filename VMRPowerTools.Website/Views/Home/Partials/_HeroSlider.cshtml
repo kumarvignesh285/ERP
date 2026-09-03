@@ -1,0 +1,620 @@
+<section class="relative w-full min-h-[calc(100vh-72px)] bg-brand-black overflow-hidden flex flex-col justify-between no-print" id="hero-main-section">
+    <!-- Grid Mesh & Ambient Volumetric Glow -->
+    <div class="absolute inset-0 grid-mesh opacity-20 pointer-events-none z-0"></div>
+    <div id="hero-backlight-glow" class="absolute top-1/2 right-[10%] -translate-y-1/2 w-[650px] h-[650px] orange-glow-radial opacity-75 pointer-events-none z-0 animate-pulse-slow"></div>
+    
+    <!-- Moving Ambient Spotlight Accent -->
+    <div class="absolute top-10 left-1/4 w-[400px] h-[400px] bg-gradient-to-br from-brand-orange/10 to-transparent rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
+
+    <!-- 60 FPS Floating Dust & Glowing Sparks Background Canvas -->
+    <canvas id="hero-particles-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+    <!-- Hero Main Split Container: Left 45%, Right 55% -->
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl relative z-10 py-6 md:py-8 my-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+            
+            <!-- LEFT AREA (45%) -->
+            <div class="lg:col-span-5 flex flex-col justify-center text-left">
+                
+                <!-- Small Tag -->
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange font-syne text-[10px] font-extrabold uppercase tracking-widest mb-3 w-fit">
+                    <span class="w-1.5 h-1.5 rounded-full bg-brand-orange animate-ping"></span>
+                    ENGINEERED FOR PROFESSIONALS
+                </div>
+
+                <!-- Large Heading & Small Heading -->
+                <h1 class="text-3xl md:text-5xl font-syne font-extrabold uppercase leading-none tracking-tight text-white mb-2">
+                    Professional Power Tools
+                </h1>
+                <h2 class="text-xl md:text-3xl font-syne font-bold uppercase text-brand-orange mb-4">
+                    Built for Every Challenge
+                </h2>
+
+                <!-- Description -->
+                <p class="text-zinc-300 font-inter text-xs md:text-sm leading-relaxed mb-6 max-w-lg">
+                    Premium chainsaws, brush cutters, pressure washers and industrial equipment trusted across India.
+                </p>
+
+                <!-- CTA Buttons (Glow, Ripple, Magnetic) -->
+                <div class="flex flex-col sm:flex-row flex-wrap gap-3 mb-8">
+                    <!-- Primary -->
+                    <a asp-controller="Product" asp-action="Index" class="btn-magnetic px-6 py-3.5 bg-brand-orange hover:bg-orange-600 text-white font-syne text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-[0_0_25px_rgba(255,92,0,0.4)] flex items-center justify-center gap-2 group">
+                        Explore Products <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1.5 transition-transform"></i>
+                    </a>
+                    
+                    <!-- Secondary -->
+                    <a asp-controller="Product" asp-action="Index" asp-route-search="Chainsaw" class="btn-magnetic px-6 py-3.5 bg-zinc-900 border border-zinc-700 hover:border-brand-orange text-white font-syne text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2">
+                        Shop Chainsaws
+                    </a>
+
+                    <!-- Outline -->
+                    <a asp-controller="Home" asp-action="Contact" asp-route-subject="Dealer Enquiry" class="btn-magnetic px-6 py-3.5 bg-transparent border border-white/15 hover:border-white/40 text-zinc-300 hover:text-white font-syne text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2">
+                        Become Dealer
+                    </a>
+                </div>
+
+                <!-- TRUST SECTION (Animated Counters & Badges) -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-5 border-t border-white/10 font-syne text-[11px]">
+                    <div class="flex items-center gap-2 text-zinc-300">
+                        <i class="fa-solid fa-check text-brand-orange"></i>
+                        <span><strong class="text-white counter" data-target="15000">0</strong>+ Customers</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-zinc-300">
+                        <i class="fa-solid fa-check text-brand-orange"></i>
+                        <span><strong class="text-white counter" data-target="500">0</strong>+ Products</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-zinc-300">
+                        <i class="fa-solid fa-check text-brand-orange"></i>
+                        <span><strong class="text-white counter" data-target="100">0</strong>+ Dealers</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-zinc-300">
+                        <i class="fa-solid fa-shield-halved text-brand-orange"></i>
+                        <span>Genuine Products</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-zinc-300 col-span-2 sm:col-span-2">
+                        <i class="fa-solid fa-award text-brand-orange"></i>
+                        <span>Warranty Support Included</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT AREA (55%): Interactive Layered 3D WebGL Assembly & Exploded Showcase -->
+            <div class="lg:col-span-7 relative flex items-center justify-center pointer-events-auto">
+                <div id="hero-drill-container" class="relative w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing">
+                    <canvas id="hero-3d-canvas" class="w-full h-full z-10"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCROLL INDICATOR -->
+    <div class="flex flex-col items-center justify-center gap-1 pb-4 z-20">
+        <div class="w-5 h-8 border-2 border-white/20 rounded-full flex items-start justify-center p-1">
+            <div class="w-1 h-2 bg-brand-orange rounded-full animate-bounce"></div>
+        </div>
+        <span class="text-zinc-400 font-syne text-[10px] tracking-widest uppercase font-bold flex items-center gap-1.5">
+            Discover Products <i class="fa-solid fa-chevron-down text-[8px] animate-pulse text-brand-orange"></i>
+        </span>
+    </div>
+</section>
+
+<!-- QUICK CATEGORY PREVIEW (Immediately below Hero) -->
+<section class="bg-zinc-950 border-t border-b border-white/10 py-6 no-print">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
+        <div class="flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+            
+            <!-- Chainsaws -->
+            <a asp-controller="Product" asp-action="Index" asp-route-search="Chainsaw" class="flex items-center gap-3.5 px-6 py-3.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:border-brand-orange hover:bg-brand-orange/10 transition-all duration-300 group shrink-0 shadow-lg hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(255,92,0,0.15)]">
+                <span class="text-2xl group-hover:scale-125 transition-transform duration-300">🪚</span>
+                <div>
+                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Chainsaws</h5>
+                    <span class="text-zinc-500 font-inter text-[10px]">Logging & Timber Saws</span>
+                </div>
+            </a>
+
+            <!-- Brush Cutters -->
+            <a asp-controller="Product" asp-action="Index" asp-route-search="Brush Cutter" class="flex items-center gap-3.5 px-6 py-3.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:border-brand-orange hover:bg-brand-orange/10 transition-all duration-300 group shrink-0 shadow-lg hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(255,92,0,0.15)]">
+                <span class="text-2xl group-hover:scale-125 transition-transform duration-300">🌿</span>
+                <div>
+                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Brush Cutters</h5>
+                    <span class="text-zinc-500 font-inter text-[10px]">Grass Trimmers & Clearing</span>
+                </div>
+            </a>
+
+            <!-- Pressure Washers -->
+            <a asp-controller="Product" asp-action="Index" asp-route-search="Pressure Washer" class="flex items-center gap-3.5 px-6 py-3.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:border-brand-orange hover:bg-brand-orange/10 transition-all duration-300 group shrink-0 shadow-lg hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(255,92,0,0.15)]">
+                <span class="text-2xl group-hover:scale-125 transition-transform duration-300">💧</span>
+                <div>
+                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Pressure Washers</h5>
+                    <span class="text-zinc-500 font-inter text-[10px]">High Pressure Cleaners</span>
+                </div>
+            </a>
+
+            <!-- Water Pumps -->
+            <a asp-controller="Product" asp-action="Index" asp-route-search="Water Pump" class="flex items-center gap-3.5 px-6 py-3.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:border-brand-orange hover:bg-brand-orange/10 transition-all duration-300 group shrink-0 shadow-lg hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(255,92,0,0.15)]">
+                <span class="text-2xl group-hover:scale-125 transition-transform duration-300">🌊</span>
+                <div>
+                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Water Pumps</h5>
+                    <span class="text-zinc-500 font-inter text-[10px]">Site Dewatering & Irrigation</span>
+                </div>
+            </a>
+
+            <!-- Accessories -->
+            <a asp-controller="Product" asp-action="Index" asp-route-search="Accessories" class="flex items-center gap-3.5 px-6 py-3.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:border-brand-orange hover:bg-brand-orange/10 transition-all duration-300 group shrink-0 shadow-lg hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(255,92,0,0.15)]">
+                <span class="text-2xl group-hover:scale-125 transition-transform duration-300">🧰</span>
+                <div>
+                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Accessories</h5>
+                    <span class="text-zinc-500 font-inter text-[10px]">Blades & Spares Kits</span>
+                </div>
+            </a>
+
+            <!-- Generators -->
+            <a asp-controller="Product" asp-action="Index" asp-route-search="Generator" class="flex items-center gap-3.5 px-6 py-3.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:border-brand-orange hover:bg-brand-orange/10 transition-all duration-300 group shrink-0 shadow-lg hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(255,92,0,0.15)]">
+                <span class="text-2xl group-hover:scale-125 transition-transform duration-300">⚡</span>
+                <div>
+                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Generators</h5>
+                    <span class="text-zinc-500 font-inter text-[10px]">Silent Power Backup</span>
+                </div>
+            </a>
+
+        </div>
+    </div>
+</section>
+
+<!-- Custom CSS Keyframe Animations -->
+<style>
+@@keyframes pulseSlow {
+    0%, 100% {
+        opacity: 0.65;
+        transform: translate3d(0, -50%, 0) scale(0.98);
+    }
+    50% {
+        opacity: 0.90;
+        transform: translate3d(0, -50%, 0) scale(1.04);
+    }
+}
+.animate-pulse-slow {
+    animation: pulseSlow 4.5s ease-in-out infinite;
+}
+</style>
+
+<!-- Fully Layered 3D WebGL Assembly & Exploded Engineering View Engine -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const canvas = document.getElementById("hero-3d-canvas");
+    const container = document.getElementById("hero-drill-container");
+    if (!canvas || typeof THREE === 'undefined') return;
+
+    // High Precision WebGL Studio Renderer
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.18;
+
+    const scene = new THREE.Scene();
+
+    // Studio Camera Setup
+    const camera = new THREE.PerspectiveCamera(32, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+    camera.position.set(3.2, 1.4, 7.0);
+
+    // Smooth Orbit Controls
+    const controls = new THREE.OrbitControls(camera, canvas);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.04;
+    controls.enableZoom = false;
+    controls.target.set(0, 0, 0);
+
+    // 1. STUDIO LIGHTING SETUP
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
+    keyLight.position.set(7, 10, 8);
+    scene.add(keyLight);
+
+    const orangeRimLight = new THREE.SpotLight(0xFF5C00, 4.2, 22, Math.PI / 4, 0.5, 1);
+    orangeRimLight.position.set(-7, 4, -4);
+    scene.add(orangeRimLight);
+
+    const fillLight = new THREE.DirectionalLight(0xe0e7ff, 1.6);
+    fillLight.position.set(-2, 6, 5);
+    scene.add(fillLight);
+
+    // Soft Studio Contact Floor Shadow
+    const shadowGeo = new THREE.PlaneGeometry(9, 9);
+    const canvasShadow = document.createElement('canvas');
+    canvasShadow.width = 256; canvasShadow.height = 256;
+    const ctx = canvasShadow.getContext('2d');
+    const grad = ctx.createRadialGradient(128, 128, 10, 128, 128, 120);
+    grad.addColorStop(0, 'rgba(0,0,0,0.72)');
+    grad.addColorStop(0.5, 'rgba(0,0,0,0.25)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad; ctx.fillRect(0,0,256,256);
+
+    const shadowTex = new THREE.CanvasTexture(canvasShadow);
+    const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.85 });
+    const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+    shadowMesh.rotation.x = -Math.PI / 2;
+    shadowMesh.position.set(0, -2.1, 0);
+    scene.add(shadowMesh);
+
+    // 2. MATERIALS
+    const orangeCompositeMat = new THREE.MeshStandardMaterial({ color: 0xFF5C00, metalness: 0.12, roughness: 0.30 });
+    const dieCastMetalMat = new THREE.MeshStandardMaterial({ color: 0x2e3036, metalness: 0.90, roughness: 0.18 });
+    const polishedSteelMat = new THREE.MeshStandardMaterial({ color: 0xe8e8e8, metalness: 0.98, roughness: 0.06 });
+    const rubberGripMat = new THREE.MeshStandardMaterial({ color: 0x121214, metalness: 0.02, roughness: 0.88 });
+    const batteryPackMat = new THREE.MeshStandardMaterial({ color: 0x18181c, metalness: 0.22, roughness: 0.32 });
+    const selectorRedMat = new THREE.MeshStandardMaterial({ color: 0xFF3300, metalness: 0.3, roughness: 0.2 });
+    const ledActiveMat = new THREE.MeshBasicMaterial({ color: 0x00FF66 });
+    const lineLaserMat = new THREE.LineBasicMaterial({ color: 0xFF5C00, transparent: true, opacity: 0.0 });
+
+    // 3. LAYERED MULTI-COMPONENT 3D DRILL CONTAINER
+    const drillGroup = new THREE.Group();
+    scene.add(drillGroup);
+
+    // Component Groups
+    const parts = {
+        drillBit: new THREE.Group(),
+        chuck: new THREE.Group(),
+        frontGearbox: new THREE.Group(),
+        sideHandle: new THREE.Group(),
+        selectorDial: new THREE.Group(),
+        motorHousing: new THREE.Group(),
+        ventCover: new THREE.Group(),
+        trigger: new THREE.Group(),
+        mainHandle: new THREE.Group(),
+        batteryBase: new THREE.Group(),
+        logoPlate: new THREE.Group(),
+        screws: new THREE.Group()
+    };
+
+    Object.values(parts).forEach(p => drillGroup.add(p));
+
+    // A. Drill Bit Component
+    const sdsBitMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 4.2, 16), polishedSteelMat);
+    sdsBitMesh.rotation.x = Math.PI / 2;
+    sdsBitMesh.position.set(0, 0.3, 5.2);
+    parts.drillBit.add(sdsBitMesh);
+
+    for (let i = 0; i < 22; i++) {
+        const flute = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.09, 0.2), polishedSteelMat);
+        flute.position.set(0, 0.3, 4.1 + (i * 0.16));
+        flute.rotation.z = i * 0.48;
+        parts.drillBit.add(flute);
+    }
+
+    // B. Chuck Component
+    const sdsCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.68, 1.4, 32), polishedSteelMat);
+    sdsCollar.rotation.x = Math.PI / 2;
+    sdsCollar.position.set(0, 0.3, 2.9);
+    parts.chuck.add(sdsCollar);
+
+    const dustCap = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.52, 0.6, 32), rubberGripMat);
+    dustCap.rotation.x = Math.PI / 2;
+    dustCap.position.set(0, 0.3, 3.8);
+    parts.chuck.add(dustCap);
+
+    // C. Front Gearbox Component
+    const gearCasing = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.78, 1.8, 32), dieCastMetalMat);
+    gearCasing.rotation.x = Math.PI / 2;
+    gearCasing.position.set(0, 0.3, 1.4);
+    parts.frontGearbox.add(gearCasing);
+
+    for (let i = 0; i < 6; i++) {
+        const fin = new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.08, 0.15), dieCastMetalMat);
+        fin.position.set(0, 0.3, 0.8 + (i * 0.22));
+        parts.frontGearbox.add(fin);
+    }
+
+    // D. Side Handle Component
+    const auxCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.92, 0.92, 0.35, 32), dieCastMetalMat);
+    auxCollar.rotation.x = Math.PI / 2;
+    auxCollar.position.set(0, 0.3, 1.8);
+    parts.sideHandle.add(auxCollar);
+
+    const auxHandleGrip = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 2.2, 24), rubberGripMat);
+    auxHandleGrip.position.set(-1.4, -0.6, 1.8);
+    auxHandleGrip.rotation.z = 0.5;
+    parts.sideHandle.add(auxHandleGrip);
+
+    const depthRod = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3.6, 12), polishedSteelMat);
+    depthRod.rotation.x = Math.PI / 2;
+    depthRod.position.set(-0.95, 0.95, 3.4);
+    parts.sideHandle.add(depthRod);
+
+    // E. Selector Dial Component
+    const modeDial = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.3, 24), dieCastMetalMat);
+    modeDial.rotation.z = Math.PI / 2;
+    modeDial.position.set(-0.88, 0.4, 1.3);
+    parts.selectorDial.add(modeDial);
+
+    const modeLockBtn = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.32, 16), selectorRedMat);
+    modeLockBtn.rotation.z = Math.PI / 2;
+    modeLockBtn.position.set(-0.92, 0.4, 1.3);
+    parts.selectorDial.add(modeLockBtn);
+
+    // F. Motor Housing Component
+    const motorBody = new THREE.Mesh(new THREE.CylinderGeometry(0.88, 0.88, 2.6, 32), orangeCompositeMat);
+    motorBody.rotation.x = Math.PI / 2;
+    motorBody.position.set(0, 0.3, -0.4);
+    parts.motorHousing.add(motorBody);
+
+    // G. Vent Cover Component
+    for (let i = 0; i < 6; i++) {
+        const ventL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.75, 0.16), dieCastMetalMat);
+        ventL.position.set(-0.85, 0.3, -0.8 + (i * 0.22));
+        parts.ventCover.add(ventL);
+
+        const ventR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.75, 0.16), dieCastMetalMat);
+        ventR.position.set(0.85, 0.3, -0.8 + (i * 0.22));
+        parts.ventCover.add(ventR);
+    }
+    const rearCap = new THREE.Mesh(new THREE.CylinderGeometry(0.86, 0.86, 0.4, 32), rubberGripMat);
+    rearCap.rotation.x = Math.PI / 2;
+    rearCap.position.set(0, 0.3, -1.8);
+    parts.ventCover.add(rearCap);
+
+    // H. Trigger Component
+    const triggerBtn = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.75, 0.42), polishedSteelMat);
+    triggerBtn.position.set(0, -0.45, -0.72);
+    parts.trigger.add(triggerBtn);
+
+    const fwdRevSwitch = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.85, 16), orangeCompositeMat);
+    fwdRevSwitch.rotation.z = Math.PI / 2;
+    fwdRevSwitch.position.set(0, 0.08, -0.75);
+    parts.trigger.add(fwdRevSwitch);
+
+    // I. Main Handle Component
+    const handleFrame = new THREE.Mesh(new THREE.BoxGeometry(0.58, 2.6, 0.9), orangeCompositeMat);
+    handleFrame.position.set(0, -1.2, -1.1);
+    handleFrame.rotation.x = 0.18;
+    parts.mainHandle.add(handleFrame);
+
+    const rubberGripOverlay = new THREE.Mesh(new THREE.BoxGeometry(0.62, 2.5, 0.48), rubberGripMat);
+    rubberGripOverlay.position.set(0, -1.2, -1.32);
+    rubberGripOverlay.rotation.x = 0.18;
+    parts.mainHandle.add(rubberGripOverlay);
+
+    // J. Battery Base Component
+    const batteryBaseMesh = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.95, 2.5), batteryPackMat);
+    batteryBaseMesh.position.set(0, -2.6, -1.1);
+    parts.batteryBase.add(batteryBaseMesh);
+
+    const latchL = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.42, 0.6), orangeCompositeMat);
+    latchL.position.set(-0.85, -2.4, -1.1);
+    parts.batteryBase.add(latchL);
+
+    const latchR = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.42, 0.6), orangeCompositeMat);
+    latchR.position.set(0.85, -2.4, -1.1);
+    parts.batteryBase.add(latchR);
+
+    for (let i = 0; i < 4; i++) {
+        const led = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.06), ledActiveMat);
+        led.position.set(-0.35 + (i * 0.24), -2.3, 0.18);
+        parts.batteryBase.add(led);
+    }
+
+    // K. Logo Plate & Screws Components
+    const nameplate = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.38, 1.3), polishedSteelMat);
+    nameplate.position.set(0.9, 0.35, -0.2);
+    parts.logoPlate.add(nameplate);
+
+    const screwHeadGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.04, 12);
+    const screwPositions = [
+        [0.88, 0.5, 0.4], [-0.88, 0.5, 0.4],
+        [0.88, 0.5, -0.6], [-0.88, 0.5, -0.6],
+        [0.32, -1.8, -1.4], [-0.32, -1.8, -1.4]
+    ];
+    screwPositions.forEach(p => {
+        const screw = new THREE.Mesh(screwHeadGeo, polishedSteelMat);
+        screw.position.set(p[0], p[1], p[2]);
+        screw.rotation.z = Math.PI / 2;
+        parts.screws.add(screw);
+    });
+
+    // 4. LASER EXPLODED VIEW CONNECTION LINES
+    const lineGeo = new THREE.BufferGeometry();
+    const linePos = new Float32Array(24 * 3); // 12 line segments connecting component pairs
+    lineGeo.setAttribute('position', new THREE.BufferAttribute(linePos, 3));
+    const laserLines = new THREE.LineSegments(lineGeo, lineLaserMat);
+    drillGroup.add(laserLines);
+
+    // Initial Assembled & Exploded Offsets Configuration
+    const explodeOffsets = {
+        drillBit:     { x: 0,    y: 0,    z: 1.6 },
+        chuck:        { x: 0,    y: 0,    z: 0.9 },
+        frontGearbox: { x: 0,    y: 0,    z: 0.4 },
+        sideHandle:   { x: -0.9, y: -0.4, z: 0.3 },
+        selectorDial: { x: -0.7, y: 0.2,  z: 0.1 },
+        motorHousing: { x: 0,    y: 0,    z: 0 },
+        ventCover:    { x: 0,    y: 0,    z: -0.5 },
+        trigger:      { x: 0,    y: -0.4, z: -0.2 },
+        mainHandle:   { x: 0,    y: -0.6, z: -0.5 },
+        batteryBase:  { x: 0,    y: -1.2, z: -0.5 },
+        logoPlate:    { x: 0.6,  y: 0.1,  z: 0 },
+        screws:       { x: 0.4,  y: 0.3,  z: 0.4 }
+    };
+
+    const initialFlyInOffsets = {
+        drillBit:     { x: 0,    y: 2,    z: 8 },
+        chuck:        { x: 0,    y: 1.5,  z: 5 },
+        frontGearbox: { x: 0,    y: -1,   z: 4 },
+        sideHandle:   { x: -5,   y: -2,   z: 2 },
+        selectorDial: { x: -4,   y: 2,    z: 1 },
+        motorHousing: { x: 0,    y: 0,    z: 0 },
+        ventCover:    { x: 0,    y: 2,    z: -6 },
+        trigger:      { x: 0,    y: -4,   z: -2 },
+        mainHandle:   { x: 0,    y: -5,   z: -3 },
+        batteryBase:  { x: 0,    y: -6,   z: -2 },
+        logoPlate:    { x: 5,    y: 1,    z: 0 },
+        screws:       { x: 3,    y: 4,    z: 2 }
+    };
+
+    // Set initial flying-in positions
+    Object.keys(parts).forEach(key => {
+        parts[key].position.set(
+            initialFlyInOffsets[key].x,
+            initialFlyInOffsets[key].y,
+            initialFlyInOffsets[key].z
+        );
+    });
+
+    // Orient Drill Group
+    drillGroup.position.set(0, 0.15, 0);
+    drillGroup.rotation.y = -Math.PI / 4.8;
+    drillGroup.rotation.x = Math.PI / 16;
+
+    // 5. PAGE LOAD ASSEMBLY ANIMATION (2.8s Duration Smooth Easing)
+    let isAssembled = false;
+    let isExploded = false;
+    const flyInDuration = 2800; // 2.8s
+    const startTime = Date.now();
+
+    function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+    }
+
+    // 6. MOUSE PARALLAX & HOVER EXPLODED EVENT LISTENERS
+    let mouseX = 0, mouseY = 0;
+    let targetRotationX = 0, targetRotationY = 0;
+
+    document.addEventListener("mousemove", (e) => {
+        mouseX = (e.clientX / window.innerWidth) - 0.5;
+        mouseY = (e.clientY / window.innerHeight) - 0.5;
+        targetRotationY = mouseX * 0.22;
+        targetRotationX = mouseY * 0.14;
+    });
+
+    if (container) {
+        container.addEventListener("mouseenter", () => {
+            if (isAssembled) isExploded = true;
+        });
+        container.addEventListener("mouseleave", () => {
+            isExploded = false;
+        });
+    }
+
+    // 7. 60 FPS RENDER & ANIMATION LOOP
+    let time = 0;
+    function renderLoop() {
+        requestAnimationFrame(renderLoop);
+        time += 0.012;
+
+        const now = Date.now();
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / flyInDuration, 1.0);
+        const easeProgress = easeOutCubic(progress);
+
+        if (progress >= 1.0) isAssembled = true;
+
+        // Smooth position interpolation per component
+        let lineIdx = 0;
+        const positions = lineGeo.attributes.position.array;
+
+        Object.keys(parts).forEach(key => {
+            const part = parts[key];
+            let target = { x: 0, y: 0, z: 0 };
+
+            if (!isAssembled) {
+                // Fly-in Assembly Phase
+                const init = initialFlyInOffsets[key];
+                target.x = init.x * (1 - easeProgress);
+                target.y = init.y * (1 - easeProgress);
+                target.z = init.z * (1 - easeProgress);
+            } else if (isExploded) {
+                // Hover Exploded View Phase
+                target = explodeOffsets[key];
+            }
+
+            // Damped linear interpolation (Lerp)
+            part.position.x += (target.x - part.position.x) * 0.08;
+            part.position.y += (target.y - part.position.y) * 0.08;
+            part.position.z += (target.z - part.position.z) * 0.08;
+
+            // Connect Laser Lines during Exploded View
+            if (isExploded && key !== 'motorHousing') {
+                positions[lineIdx++] = 0; positions[lineIdx++] = 0.3; positions[lineIdx++] = 0;
+                positions[lineIdx++] = part.position.x; positions[lineIdx++] = part.position.y + 0.3; positions[lineIdx++] = part.position.z;
+            }
+        });
+
+        lineGeo.attributes.position.needsUpdate = true;
+        lineLaserMat.opacity += ((isExploded ? 0.85 : 0.0) - lineLaserMat.opacity) * 0.1;
+
+        // Slow, ultra-smooth floating movement after assembly
+        drillGroup.position.y = 0.15 + Math.sin(time * 1.2) * 0.1;
+        
+        // Spin SDS bit shaft during preview
+        parts.drillBit.rotation.y += 0.05;
+
+        // Damped Mouse Parallax Rotation
+        drillGroup.rotation.y += ((-Math.PI / 4.8 + targetRotationY) - drillGroup.rotation.y) * 0.04;
+        drillGroup.rotation.x += ((Math.PI / 16 + targetRotationX) - drillGroup.rotation.x) * 0.04;
+
+        controls.update();
+        renderer.render(scene, camera);
+    }
+    renderLoop();
+
+    // 8. 60 FPS FLOATING DUST PARTICLES CANVAS
+    const pCanvas = document.getElementById("hero-particles-canvas");
+    if (pCanvas) {
+        const pCtx = pCanvas.getContext("2d");
+        let width = pCanvas.width = window.innerWidth;
+        let height = pCanvas.height = window.innerHeight;
+
+        window.addEventListener("resize", () => {
+            width = pCanvas.width = window.innerWidth;
+            height = pCanvas.height = window.innerHeight;
+            if (canvas) {
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            }
+        });
+
+        const particles = [];
+        for (let i = 0; i < 35; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 1.8 + 0.5,
+                color: Math.random() > 0.4 ? "rgba(255, 92, 0, " + (Math.random() * 0.4 + 0.2) + ")" : "rgba(255, 255, 255, " + (Math.random() * 0.2 + 0.1) + ")",
+                speedX: (Math.random() - 0.5) * 0.4,
+                speedY: -Math.random() * 0.5 - 0.2
+            });
+        }
+
+        function renderParticles() {
+            pCtx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.x += p.speedX; p.y += p.speedY;
+                if (p.y < 0) { p.y = height; p.x = Math.random() * width; }
+                pCtx.beginPath();
+                pCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                pCtx.fillStyle = p.color;
+                pCtx.fill();
+            });
+            requestAnimationFrame(renderParticles);
+        }
+        renderParticles();
+    }
+
+    // GSAP Counter Animations for Trust Section
+    if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+        gsap.registerPlugin(ScrollTrigger);
+
+        document.querySelectorAll('.counter').forEach(el => {
+            const target = parseInt(el.getAttribute('data-target'));
+            gsap.to(el, {
+                innerText: target,
+                duration: 2,
+                snap: { innerText: 1 },
+                scrollTrigger: { trigger: el, start: "top 95%" }
+            });
+        });
+    }
+});
+</script>

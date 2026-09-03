@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Filters;
 using ERP.Interfaces;
 using ERP.Models;
 using ERP.ViewModels;
@@ -17,8 +18,21 @@ public class CRMController : Controller
         _crmService = crmService;
     }
 
+    private bool IsAjaxRequest() =>
+        Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+        Request.Headers["Accept"].ToString().Contains("application/json") ||
+        Request.ContentType?.Contains("application/json") == true;
+
+    private Dictionary<string, string> GetModelStateErrors() =>
+        ModelState.Where(x => x.Value?.Errors.Count > 0)
+                  .ToDictionary(
+                      k => k.Key,
+                      v => v.Value!.Errors.First().ErrorMessage
+                  );
+
     // --- Leads ---
     [HttpGet("Leads")]
+    [Permission("Leads", "View")]
     public async Task<IActionResult> Leads()
     {
         var list = await _crmService.GetLeadsAsync();
@@ -26,25 +40,45 @@ public class CRMController : Controller
     }
 
     [HttpPost("SaveLead")]
+    [Permission("Leads", "Edit")]
     public async Task<IActionResult> SaveLead(Lead lead)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _crmService.SaveLeadAsync(lead);
-            TempData["Success"] = "Lead saved successfully.";
+            if (IsAjaxRequest())
+                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+            TempData["Error"] = "Failed to save lead. Check inputs.";
+            return RedirectToAction(nameof(Leads));
         }
-        return RedirectToAction(nameof(Leads));
+
+        try
+        {
+            var saved = await _crmService.SaveLeadAsync(lead);
+            if (IsAjaxRequest())
+                return Json(ApiResponse.Ok("Lead saved successfully.", saved));
+            TempData["Success"] = "Lead saved successfully.";
+            return RedirectToAction(nameof(Leads));
+        }
+        catch (Exception ex)
+        {
+            if (IsAjaxRequest())
+                return Json(ApiResponse.Fail(ex.Message));
+            TempData["Error"] = ex.Message;
+            return RedirectToAction(nameof(Leads));
+        }
     }
 
     [HttpPost("DeleteLead")]
+    [Permission("Leads", "Delete")]
     public async Task<IActionResult> DeleteLead(int id)
     {
-        await _crmService.DeleteLeadAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _crmService.DeleteLeadAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     // --- Follow-ups ---
     [HttpGet("FollowUps")]
+    [Permission("Follow Ups", "View")]
     public async Task<IActionResult> FollowUps()
     {
         return View(new CrmLookupPageViewModel<FollowUp>
@@ -55,25 +89,45 @@ public class CRMController : Controller
     }
 
     [HttpPost("SaveFollowUp")]
+    [Permission("Follow Ups", "Edit")]
     public async Task<IActionResult> SaveFollowUp(FollowUp followUp)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _crmService.SaveFollowUpAsync(followUp);
-            TempData["Success"] = "Follow-up saved successfully.";
+            if (IsAjaxRequest())
+                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+            TempData["Error"] = "Failed to save follow-up.";
+            return RedirectToAction(nameof(FollowUps));
         }
-        return RedirectToAction(nameof(FollowUps));
+
+        try
+        {
+            var saved = await _crmService.SaveFollowUpAsync(followUp);
+            if (IsAjaxRequest())
+                return Json(ApiResponse.Ok("Follow-up saved successfully.", saved));
+            TempData["Success"] = "Follow-up saved successfully.";
+            return RedirectToAction(nameof(FollowUps));
+        }
+        catch (Exception ex)
+        {
+            if (IsAjaxRequest())
+                return Json(ApiResponse.Fail(ex.Message));
+            TempData["Error"] = ex.Message;
+            return RedirectToAction(nameof(FollowUps));
+        }
     }
 
     [HttpPost("DeleteFollowUp")]
+    [Permission("Follow Ups", "Delete")]
     public async Task<IActionResult> DeleteFollowUp(int id)
     {
-        await _crmService.DeleteFollowUpAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _crmService.DeleteFollowUpAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     // --- Opportunities ---
     [HttpGet("Opportunities")]
+    [Permission("Opportunities", "View")]
     public async Task<IActionResult> Opportunities()
     {
         return View(new CrmLookupPageViewModel<Opportunity>
@@ -84,25 +138,45 @@ public class CRMController : Controller
     }
 
     [HttpPost("SaveOpportunity")]
+    [Permission("Opportunities", "Edit")]
     public async Task<IActionResult> SaveOpportunity(Opportunity opportunity)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _crmService.SaveOpportunityAsync(opportunity);
-            TempData["Success"] = "Opportunity saved successfully.";
+            if (IsAjaxRequest())
+                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+            TempData["Error"] = "Failed to save opportunity.";
+            return RedirectToAction(nameof(Opportunities));
         }
-        return RedirectToAction(nameof(Opportunities));
+
+        try
+        {
+            var saved = await _crmService.SaveOpportunityAsync(opportunity);
+            if (IsAjaxRequest())
+                return Json(ApiResponse.Ok("Opportunity saved successfully.", saved));
+            TempData["Success"] = "Opportunity saved successfully.";
+            return RedirectToAction(nameof(Opportunities));
+        }
+        catch (Exception ex)
+        {
+            if (IsAjaxRequest())
+                return Json(ApiResponse.Fail(ex.Message));
+            TempData["Error"] = ex.Message;
+            return RedirectToAction(nameof(Opportunities));
+        }
     }
 
     [HttpPost("DeleteOpportunity")]
+    [Permission("Opportunities", "Delete")]
     public async Task<IActionResult> DeleteOpportunity(int id)
     {
-        await _crmService.DeleteOpportunityAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _crmService.DeleteOpportunityAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     // --- Pipeline View ---
     [HttpGet("Pipeline")]
+    [Permission("Pipeline View", "View")]
     public async Task<IActionResult> Pipeline()
     {
         var leads = await _crmService.GetLeadsAsync();

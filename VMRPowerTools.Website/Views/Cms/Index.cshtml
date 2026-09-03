@@ -1,0 +1,106 @@
+@model IEnumerable<VMRPowerTools.Domain.Entities.CmsSetting>
+@{
+    ViewData["Title"] = "Website CMS Dashboard";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-sm-6">
+            <h1 class="h3 mb-0 text-gray-800"><i class="fa-solid fa-screwdriver-wrench me-2 text-primary"></i> VMR Website CMS</h1>
+            <p class="text-muted fs-7 mb-0">Modify company details, sliders, promotions, and SEO settings in real-time.</p>
+        </div>
+        <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+            <a asp-action="BlogList" class="btn btn-outline-primary me-2"><i class="fa-solid fa-newspaper me-1"></i> Manage Blog Articles</a>
+            <a asp-action="Subscribers" class="btn btn-outline-secondary"><i class="fa-solid fa-users-envelope me-1"></i> View Newsletter List</a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted uppercase tracking-wider fs-8 font-weight-bold">Active Subscribers</span>
+                        <h2 class="font-weight-bold mb-0 mt-1 text-dark">@ViewBag.SubscribersCount</h2>
+                    </div>
+                    <div class="bg-primary-subtle text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                        <i class="fa-solid fa-envelope-open-text fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted uppercase tracking-wider fs-8 font-weight-bold">CMS Blog Articles</span>
+                        <h2 class="font-weight-bold mb-0 mt-1 text-dark">@ViewBag.BlogsCount</h2>
+                    </div>
+                    <div class="bg-success-subtle text-success rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                        <i class="fa-solid fa-newspaper fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted uppercase tracking-wider fs-8 font-weight-bold">Active CRM Inquiries</span>
+                        <h2 class="font-weight-bold mb-0 mt-1 text-dark">@ViewBag.LeadsCount</h2>
+                    </div>
+                    <div class="bg-warning-subtle text-warning rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                        <i class="fa-solid fa-bullhorn fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CMS Configuration Form list -->
+    <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
+        <h4 class="font-weight-bold mb-4">Website Variables & Content Block Management</h4>
+        <div class="table-responsive">
+            <table class="table align-middle fs-7">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 25%;">Configuration Key</th>
+                        <th style="width: 50%;">Current Setting Value</th>
+                        <th style="width: 15%;">Purpose</th>
+                        <th style="width: 10%;" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var setting in Model)
+                    {
+                        <tr>
+                            <td class="font-weight-bold text-dark">@setting.SettingKey</td>
+                            <td>
+                                <form asp-action="SaveSetting" method="post" class="d-flex gap-2 align-items-center">
+                                    <input type="hidden" name="key" value="@setting.SettingKey" />
+                                    <input type="text" name="value" class="form-control form-control-sm py-2" value="@setting.SettingValue" required />
+                                    <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-floppy-disk"></i></button>
+                                </form>
+                            </td>
+                            <td class="text-muted fs-8">@setting.Description</td>
+                            <td class="text-end">
+                                <span class="badge bg-success-subtle text-success">Active</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

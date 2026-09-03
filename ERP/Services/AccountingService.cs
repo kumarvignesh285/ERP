@@ -34,6 +34,32 @@ public class AccountingService : IAccountingService
 
     public async Task<Voucher> SaveVoucherAsync(Voucher voucher)
     {
+        if (string.IsNullOrWhiteSpace(voucher.VoucherNumber))
+            throw new InvalidOperationException("Voucher Number is required.");
+
+        if (voucher.Items == null || voucher.Items.Count < 2)
+            throw new InvalidOperationException("An accounting voucher must contain at least two entries (Debit and Credit).");
+
+        foreach (var item in voucher.Items)
+        {
+            if (item.LedgerId <= 0)
+                throw new InvalidOperationException("Every voucher row must have a valid Ledger Account selected.");
+            if (item.DebitAmount < 0 || item.CreditAmount < 0)
+                throw new InvalidOperationException("Debit and Credit amounts cannot be negative.");
+            if (item.DebitAmount == 0 && item.CreditAmount == 0)
+                throw new InvalidOperationException("Each voucher row must have either a Debit or Credit amount greater than 0.");
+        }
+
+        var totalDebit = voucher.Items.Sum(i => i.DebitAmount);
+        var totalCredit = voucher.Items.Sum(i => i.CreditAmount);
+
+        if (Math.Abs(totalDebit - totalCredit) > 0.001m)
+        {
+            throw new InvalidOperationException($"Voucher is out of balance! Total Debit (₹{totalDebit:N2}) must equal Total Credit (₹{totalCredit:N2}). Difference: ₹{Math.Abs(totalDebit - totalCredit):N2}.");
+        }
+
+        voucher.TotalAmount = totalDebit;
+
         if (voucher.Id == 0)
         {
             _context.Vouchers.Add(voucher);
@@ -56,14 +82,14 @@ public class AccountingService : IAccountingService
         return voucher;
     }
 
-    public async Task DeleteVoucherAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteVoucherAsync(int id)
     {
         var item = await _context.Vouchers.FindAsync(id);
-        if (item != null)
-        {
-            item.IsActive = false;
-            await _context.SaveChangesAsync();
-        }
+        if (item == null) return (false, "Voucher not found or already removed.");
+
+        item.IsActive = false;
+        await _context.SaveChangesAsync();
+        return (true, $"Voucher '{item.VoucherNumber}' deleted successfully.");
     }
 
     public async Task<List<LedgerBalance>> GetTrialBalanceAsync()

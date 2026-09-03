@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class DeliveryChallan : BaseEntity
+public class DeliveryChallan : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string ChallanNumber { get; set; } = string.Empty;
     public DateTime ChallanDate { get; set; } = DateTime.Today;
@@ -27,6 +30,7 @@ public class DeliveryChallan : BaseEntity
     public string Status { get; set; } = "Pending";
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<DeliveryChallanItem> Items { get; set; } = new List<DeliveryChallanItem>();
 }
 

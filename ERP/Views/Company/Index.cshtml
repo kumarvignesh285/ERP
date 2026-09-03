@@ -1,0 +1,1718 @@
+@model List<ERP.Models.Company>
+@{
+    ViewData["Title"] = "Company Management";
+    var totalCompanies = Model?.Count ?? 0;
+    var activeCompanies = Model?.Count(c => c.IsActive) ?? 0;
+    var inactiveCompanies = totalCompanies - activeCompanies;
+}
+
+@Html.AntiForgeryToken()
+
+<!-- Page Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h4 class="m-0 fw-bold text-primary">
+            <i class="fa-solid fa-building-user me-2"></i> Company Management
+        </h4>
+        <p class="text-muted small m-0 mt-1">
+            System-level tenant administration, company provisioning, and multi-tenant isolation
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createCompanyModal">
+            <i class="fa-solid fa-circle-plus me-1.5"></i> Create New Company
+        </button>
+    </div>
+</div>
+
+<!-- Metric Cards Row -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="bg-primary-subtle text-primary p-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="fa-solid fa-buildings fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted small text-uppercase fw-semibold mb-1">Total Companies</h6>
+                    <h4 class="fw-bold mb-0 text-dark">@totalCompanies</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="bg-success-subtle text-success p-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="fa-solid fa-circle-check fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted small text-uppercase fw-semibold mb-1">Active Tenants</h6>
+                    <h4 class="fw-bold mb-0 text-success">@activeCompanies</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="bg-danger-subtle text-danger p-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="fa-solid fa-ban fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted small text-uppercase fw-semibold mb-1">Inactive Tenants</h6>
+                    <h4 class="fw-bold mb-0 text-danger">@inactiveCompanies</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alerts -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="fa-solid fa-circle-check fs-5"></i>
+        <div>@TempData["Success"]</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="fa-solid fa-triangle-exclamation fs-5"></i>
+        <div>@TempData["Error"]</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Company Table Card -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent border-bottom py-3">
+        <div class="row g-2 align-items-center justify-content-between">
+            <div class="col-12 col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">
+                        <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                    </span>
+                    <input type="text" id="companyTableSearch" class="form-control border-start-0" placeholder="Search by Code, Name, Phone, Email, GST..." value="@ViewBag.Search" />
+                </div>
+            </div>
+            <div class="col-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 justify-content-md-end">
+                <label for="statusFilter" class="form-label small fw-semibold text-muted mb-0 text-nowrap">Status:</label>
+                <select id="statusFilter" class="form-select form-select-sm">
+                    <option value="All" selected="@(ViewBag.Status == "All")">All Statuses</option>
+                    <option value="Active" selected="@(ViewBag.Status == "Active")">Active Only</option>
+                    <option value="Inactive" selected="@(ViewBag.Status == "Inactive")">Inactive Only</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="companiesTable">
+                <thead class="table-light text-uppercase fs-8 fw-bold text-muted border-bottom">
+                    <tr>
+                        <th style="width: 50px;" class="text-center">#</th>
+                        <th style="min-width: 220px;">Company</th>
+                        <th style="min-width: 110px;">Tenant Code</th>
+                        <th style="min-width: 140px;">Business Type</th>
+                        <th style="min-width: 180px;">Contact Info</th>
+                        <th style="min-width: 140px;">Location</th>
+                        <th style="min-width: 110px;" class="text-center">Status</th>
+                        <th style="min-width: 140px;" class="text-center no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        var rowIdx = 1;
+                        foreach (var item in Model)
+                        {
+                            <tr id="company-row-@item.Id" data-status="@(item.IsActive ? "Active" : "Inactive")" data-search="@(item.CompanyCode.ToLower()) @(item.CompanyName.ToLower()) @(item.Phone?.ToLower() ?? "") @(item.Email?.ToLower() ?? "") @(item.GSTNumber?.ToLower() ?? "")">
+                                <td class="text-center text-muted fw-semibold fs-8">@rowIdx</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2.5">
+                                        @if (!string.IsNullOrEmpty(item.Logo))
+                                        {
+                                            <img src="@item.Logo" alt="Logo" class="rounded border" style="width: 38px; height: 38px; object-fit: contain;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-primary-subtle text-primary fw-bold rounded d-flex align-items-center justify-content-center border" style="width: 38px; height: 38px; font-size: 14px;">
+                                                @(item.CompanyName.Length > 0 ? item.CompanyName.Substring(0, 1).ToUpper() : "C")
+                                            </div>
+                                        }
+                                        <div>
+                                            <div class="fw-bold text-dark text-truncate" style="max-width: 220px;" title="@item.CompanyName">
+                                                @item.CompanyName
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(item.GSTNumber))
+                                            {
+                                                <div class="text-muted fs-8">GST: <span class="font-monospace">@item.GSTNumber</span></div>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border font-monospace px-2 py-1 fs-8 fw-semibold">
+                                        <i class="fa-solid fa-hashtag text-muted me-1"></i>@item.CompanyCode
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-muted small">
+                                        @(string.IsNullOrEmpty(item.BusinessType) ? "—" : item.BusinessType)
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Phone))
+                                    {
+                                        <div class="small text-dark"><i class="fa-solid fa-phone fs-8 text-muted me-1"></i>@item.Phone</div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.Email))
+                                    {
+                                        <div class="small text-muted text-truncate" style="max-width: 170px;" title="@item.Email">
+                                            <i class="fa-regular fa-envelope fs-8 text-muted me-1"></i>@item.Email
+                                        </div>
+                                    }
+                                    @if (string.IsNullOrEmpty(item.Phone) && string.IsNullOrEmpty(item.Email))
+                                    {
+                                        <span class="text-muted small">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="small text-dark">@(item.City ?? "—")</div>
+                                    <div class="text-muted fs-8">@(item.State ?? "")</div>
+                                </td>
+                                <td class="text-center status-col">
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1 fw-bold">
+                                            <i class="fa-solid fa-circle-check me-1 fs-8"></i> Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1 fw-bold">
+                                            <i class="fa-solid fa-circle-xmark me-1 fs-8"></i> Inactive
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center no-print">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-info view-company-btn" data-id="@item.Id" title="View Company Details">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary edit-company-btn" data-id="@item.Id" title="Edit Company">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                        @if (item.IsActive)
+                                        {
+                                            <form action="/Company/SwitchCompany" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="companyId" value="@item.Id" />
+                                                <input type="hidden" name="returnUrl" value="/Company" />
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Switch Working Context to @item.CompanyCode">
+                                                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        <button type="button" class="btn btn-sm btn-outline-info init-sample-data-btn"
+                                                data-id="@item.Id"
+                                                data-name="@item.CompanyName"
+                                                data-code="@item.CompanyCode"
+                                                title="Initialize Sample Data for @item.CompanyCode">
+                                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm @(item.IsActive ? "btn-outline-warning" : "btn-outline-success") toggle-status-btn"
+                                                data-id="@item.Id"
+                                                data-name="@item.CompanyName"
+                                                data-active="@item.IsActive.ToString().ToLowerInvariant()"
+                                                title="@(item.IsActive ? "Deactivate Company" : "Activate Company")">
+                                            <i class="fa-solid @(item.IsActive ? "fa-ban text-warning" : "fa-check text-success")"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            rowIdx++;
+                        }
+                    }
+                    else
+                    {
+                        <tr id="emptyRow">
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-building-circle-xmark fs-1 d-block mb-3 text-secondary"></i>
+                                <div class="fw-semibold">No companies found</div>
+                                <p class="small text-muted mb-3">Get started by creating your first ERP company tenant.</p>
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createCompanyModal">
+                                    <i class="fa-solid fa-plus me-1"></i> Create Company
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ================= CREATE COMPANY MODAL ================= -->
+<div class="modal fade" id="createCompanyModal" tabindex="-1" aria-labelledby="createCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title fw-bold" id="createCompanyModalLabel">
+                    <i class="fa-solid fa-building-circle-check me-2"></i> Create New Company
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="Create" asp-controller="Company" method="post" enctype="multipart/form-data" id="createCompanyForm" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <!-- Nav Tabs inside Modal -->
+                    <ul class="nav nav-pills nav-fill mb-4 p-1 bg-light rounded" id="createCompanyTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active py-2 fw-semibold" id="tab-create-info-btn" data-bs-toggle="pill" data-bs-target="#tab-create-info" type="button">
+                                <i class="fa-solid fa-id-card me-1"></i> Basic Info
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 fw-semibold" id="tab-create-contact-btn" data-bs-toggle="pill" data-bs-target="#tab-create-contact" type="button">
+                                <i class="fa-solid fa-location-dot me-1"></i> Contact & Address
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 fw-semibold" id="tab-create-tax-btn" data-bs-toggle="pill" data-bs-target="#tab-create-tax" type="button">
+                                <i class="fa-solid fa-file-invoice-dollar me-1"></i> Tax & Legal
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 fw-semibold" id="tab-create-settings-btn" data-bs-toggle="pill" data-bs-target="#tab-create-settings" type="button">
+                                <i class="fa-solid fa-sliders me-1"></i> Branding & Settings
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 fw-semibold" id="tab-create-users-btn" data-bs-toggle="pill" data-bs-target="#tab-create-users" type="button">
+                                <i class="fa-solid fa-users-gear me-1"></i> Admin & Users
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="createCompanyTabsContent">
+                        <!-- Tab 1: Basic Info -->
+                        <div class="tab-pane fade show active" id="tab-create-info">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-7">
+                                    <label class="form-label fw-semibold text-dark">Company Name <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-building text-muted"></i></span>
+                                        <input type="text" name="CompanyName" id="createCompanyName" class="form-control border-start-0" placeholder="e.g. Acme Industrial Tools" required maxlength="200" />
+                                    </div>
+                                    <div class="invalid-feedback">Company Name is required.</div>
+                                </div>
+                                <div class="col-12 col-md-5">
+                                    <label class="form-label fw-semibold text-dark">Company Code <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-barcode text-muted"></i></span>
+                                        <input type="text" name="CompanyCode" id="createCompanyCode" class="form-control border-start-0 text-uppercase font-monospace" placeholder="e.g. ACM001" required maxlength="20" />
+                                    </div>
+                                    <div id="createCodeFeedback" class="small mt-1 d-none"></div>
+                                    <div class="invalid-feedback">Company Code is required (alphanumeric).</div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Business Type</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-briefcase text-muted"></i></span>
+                                        <input type="text" name="BusinessType" class="form-control border-start-0" placeholder="e.g. Retail, Manufacturing, Wholesale" maxlength="100" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Initial Status</label>
+                                    <select name="IsActive" class="form-select">
+                                        <option value="true" selected>Active (Standard)</option>
+                                        <option value="false">Inactive (Suspended)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Contact & Address -->
+                        <div class="tab-pane fade" id="tab-create-contact">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold text-dark">Address</label>
+                                    <textarea name="Address" class="form-control" rows="2" placeholder="Street Address, Industrial Area..." maxlength="500"></textarea>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-3">
+                                    <label class="form-label fw-semibold text-dark">City</label>
+                                    <input type="text" name="City" class="form-control" placeholder="City" maxlength="100" />
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-3">
+                                    <label class="form-label fw-semibold text-dark">State</label>
+                                    <input type="text" name="State" class="form-control" placeholder="State" maxlength="100" />
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-3">
+                                    <label class="form-label fw-semibold text-dark">Country</label>
+                                    <input type="text" name="Country" class="form-control" value="India" maxlength="100" />
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-3">
+                                    <label class="form-label fw-semibold text-dark">Pincode</label>
+                                    <input type="text" name="Pincode" class="form-control" placeholder="Pincode / ZIP" maxlength="20" />
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Primary Phone</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-phone text-muted"></i></span>
+                                        <input type="tel" name="Phone" class="form-control border-start-0" placeholder="e.g. 9876543210" maxlength="20" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Alternate Phone</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-phone-volume text-muted"></i></span>
+                                        <input type="tel" name="AlternatePhone" class="form-control border-start-0" placeholder="e.g. 044-23456789" maxlength="20" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Email Address</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-envelope text-muted"></i></span>
+                                        <input type="email" name="Email" class="form-control border-start-0" placeholder="info@company.com" maxlength="100" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Website</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-globe text-muted"></i></span>
+                                        <input type="url" name="Website" class="form-control border-start-0" placeholder="https://www.company.com" maxlength="200" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Tax & Legal -->
+                        <div class="tab-pane fade" id="tab-create-tax">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">GST Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-file-invoice text-muted"></i></span>
+                                        <input type="text" name="GSTNumber" class="form-control border-start-0 text-uppercase font-monospace" placeholder="33AAAAA0000A1Z5" maxlength="20" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">PAN Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-address-card text-muted"></i></span>
+                                        <input type="text" name="PANNumber" class="form-control border-start-0 text-uppercase font-monospace" placeholder="AAAAA0000A" maxlength="15" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 4: Branding & Settings -->
+                        <div class="tab-pane fade" id="tab-create-settings">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Currency</label>
+                                    <input type="text" name="Currency" class="form-control" value="INR" maxlength="10" placeholder="INR" />
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Financial Year</label>
+                                    <input type="text" name="FinancialYear" class="form-control" value="@($"{DateTime.Now.Year}-{(DateTime.Now.Year + 1)}")" maxlength="20" placeholder="e.g. 2026-2027" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold text-dark">Company Logo</label>
+                                    <input type="file" name="logoFile" class="form-control" accept=".png,.jpg,.jpeg,.webp" id="createLogoInput" />
+                                    <div class="form-text small">Upload PNG, JPG, or WEBP under 2MB.</div>
+                                    <div id="createLogoPreviewContainer" class="mt-2 d-none">
+                                        <img id="createLogoPreview" src="" alt="Preview" class="rounded border p-1" style="max-height: 70px;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 5: Admin & Users Provisioning -->
+                        <div class="tab-pane fade" id="tab-create-users">
+                            <div class="row g-3">
+                                <!-- Company Admin Section -->
+                                <div class="col-12">
+                                    <div class="card border-primary border-opacity-25 bg-light bg-opacity-50 shadow-none">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge bg-primary text-white p-2 rounded"><i class="fa-solid fa-user-shield"></i></span>
+                                                    <div>
+                                                        <h6 class="fw-bold mb-0 text-primary">Company Administrator Account</h6>
+                                                        <span class="text-muted fs-8">Primary system manager for this company (Role: CompanyAdmin)</span>
+                                                    </div>
+                                                </div>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace">CompanyAdmin</span>
+                                            </div>
+
+                                            <div class="row g-3">
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label fw-semibold text-dark">Admin Full Name <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="fa-regular fa-user text-muted"></i></span>
+                                                        <input type="text" name="AdminFullName" id="createAdminFullName" class="form-control border-start-0" placeholder="e.g. John Smith" required maxlength="100" />
+                                                    </div>
+                                                    <div class="invalid-feedback">Admin Name is required.</div>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label fw-semibold text-dark">Admin Username</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-at text-muted"></i></span>
+                                                        <input type="text" name="AdminUsername" id="createAdminUsername" class="form-control border-start-0 bg-light font-monospace text-uppercase" readonly placeholder="Auto: CODE_ADMIN" />
+                                                    </div>
+                                                    <span class="text-muted fs-8">Auto-generated format: {CompanyCode}_ADMIN</span>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label fw-semibold text-dark">Admin Password <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-key text-muted"></i></span>
+                                                        <input type="password" name="AdminPassword" id="createAdminPassword" class="form-control border-start-0" placeholder="••••••••" required />
+                                                        <button type="button" class="btn btn-outline-secondary toggle-pwd-btn" data-target="#createAdminPassword"><i class="fa-regular fa-eye"></i></button>
+                                                    </div>
+                                                    <div class="invalid-feedback">Admin Password is required.</div>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label fw-semibold text-dark">Confirm Password <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
+                                                        <input type="password" name="AdminConfirmPassword" id="createAdminConfirmPassword" class="form-control border-start-0" placeholder="••••••••" required />
+                                                        <button type="button" class="btn btn-outline-secondary toggle-pwd-btn" data-target="#createAdminConfirmPassword"><i class="fa-regular fa-eye"></i></button>
+                                                    </div>
+                                                    <div class="invalid-feedback">Passwords must match.</div>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label fw-semibold text-dark">Admin Email</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="fa-regular fa-envelope text-muted"></i></span>
+                                                        <input type="email" name="AdminEmail" id="createAdminEmail" class="form-control border-start-0" placeholder="admin@company.com" maxlength="100" />
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label fw-semibold text-dark">Admin Mobile</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-phone text-muted"></i></span>
+                                                        <input type="tel" name="AdminMobile" id="createAdminMobile" class="form-control border-start-0" placeholder="e.g. 9876543210" maxlength="20" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Optional Initial User Section -->
+                                <div class="col-12">
+                                    <div class="card border shadow-none">
+                                        <div class="card-body p-3">
+                                            <div class="form-check form-switch mb-2">
+                                                <input class="form-check-input" type="checkbox" role="switch" name="CreateInitialUser" value="true" id="chkCreateInitialUser" />
+                                                <label class="form-check-label fw-bold text-dark" for="chkCreateInitialUser">
+                                                    <i class="fa-solid fa-user-plus me-1 text-success"></i> Also Provision Initial Company User (Optional)
+                                                </label>
+                                            </div>
+
+                                            <div id="initialUserFields" class="d-none mt-3">
+                                                <div class="row g-3">
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label fw-semibold text-dark">User Full Name</label>
+                                                        <input type="text" name="UserFullName" id="createUserFullName" class="form-control" placeholder="e.g. Jane Doe" maxlength="100" />
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label fw-semibold text-dark">User Username</label>
+                                                        <input type="text" name="UserUsername" id="createUserUsername" class="form-control bg-light font-monospace text-uppercase" readonly placeholder="Auto: CODE_USER01" />
+                                                        <span class="text-muted fs-8">Auto-generated format: {CompanyCode}_USER01</span>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label fw-semibold text-dark">User Password</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-key text-muted"></i></span>
+                                                            <input type="password" name="UserPassword" id="createUserPassword" class="form-control border-start-0" placeholder="••••••••" />
+                                                            <button type="button" class="btn btn-outline-secondary toggle-pwd-btn" data-target="#createUserPassword"><i class="fa-regular fa-eye"></i></button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label fw-semibold text-dark">Confirm Password</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
+                                                            <input type="password" name="UserConfirmPassword" id="createUserConfirmPassword" class="form-control border-start-0" placeholder="••••••••" />
+                                                            <button type="button" class="btn btn-outline-secondary toggle-pwd-btn" data-target="#createUserConfirmPassword"><i class="fa-regular fa-eye"></i></button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label fw-semibold text-dark">Assigned Role</label>
+                                                        <select name="UserRole" class="form-select">
+                                                            <option value="CompanyUser" selected>CompanyUser (Standard Operator)</option>
+                                                            <option value="Sales User">Sales User</option>
+                                                            <option value="Purchase User">Purchase User</option>
+                                                            <option value="Accountant">Accountant</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label fw-semibold text-dark">User Email</label>
+                                                        <input type="email" name="UserEmail" class="form-control" placeholder="user@company.com" maxlength="100" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sample / Test Data Selection Section -->
+                                <div class="col-12">
+                                    <div class="card border shadow-none bg-light bg-opacity-50">
+                                        <div class="card-body p-3">
+                                            <label class="form-label fw-bold text-dark mb-2">
+                                                <i class="fa-solid fa-database text-primary me-1"></i> Sample / Test Master Data
+                                            </label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="CreateSampleData" id="sampleDataNo" value="false" checked />
+                                                    <label class="form-check-label fw-semibold text-dark" for="sampleDataNo">
+                                                        <i class="fa-solid fa-folder-open text-primary me-1"></i> Clean / Empty Company Setup (Default)
+                                                        <div class="text-muted small fw-normal">Creates clean tenant with administrator user and zero sample or dummy records.</div>
+                                                    </label>
+                                                </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitCreate">
+                        <i class="fa-solid fa-floppy-disk me-1.5"></i> Create Company
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ================= EDIT COMPANY MODAL ================= -->
+<div class="modal fade" id="editCompanyModal" tabindex="-1" aria-labelledby="editCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title fw-bold" id="editCompanyModalLabel">
+                    <i class="fa-solid fa-pen-to-square me-2"></i> Edit Company
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="Edit" asp-controller="Company" method="post" enctype="multipart/form-data" id="editCompanyForm" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="editCompanyId" />
+
+                <div class="modal-body p-4">
+                    <!-- Nav Tabs inside Modal -->
+                    <ul class="nav nav-pills nav-fill mb-4 p-1 bg-light rounded" id="editCompanyTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active py-2 fw-semibold" id="tab-edit-info-btn" data-bs-toggle="pill" data-bs-target="#tab-edit-info" type="button">
+                                <i class="fa-solid fa-id-card me-1"></i> Basic Info
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 fw-semibold" id="tab-edit-contact-btn" data-bs-toggle="pill" data-bs-target="#tab-edit-contact" type="button">
+                                <i class="fa-solid fa-location-dot me-1"></i> Contact & Address
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 fw-semibold" id="tab-edit-tax-btn" data-bs-toggle="pill" data-bs-target="#tab-edit-tax" type="button">
+                                <i class="fa-solid fa-file-invoice-dollar me-1"></i> Tax & Legal
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 fw-semibold" id="tab-edit-settings-btn" data-bs-toggle="pill" data-bs-target="#tab-edit-settings" type="button">
+                                <i class="fa-solid fa-sliders me-1"></i> Branding & Settings
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-2 fw-semibold" id="tab-edit-users-btn" data-bs-toggle="pill" data-bs-target="#tab-edit-users" type="button">
+                                <i class="fa-solid fa-users-gear me-1"></i> Admin & Users
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="editCompanyTabsContent">
+                        <!-- Tab 1: Basic Info -->
+                        <div class="tab-pane fade show active" id="tab-edit-info">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-7">
+                                    <label class="form-label fw-semibold text-dark">Company Name <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-building text-muted"></i></span>
+                                        <input type="text" name="CompanyName" id="editCompanyName" class="form-control border-start-0" required maxlength="200" />
+                                    </div>
+                                    <div class="invalid-feedback">Company Name is required.</div>
+                                </div>
+                                <div class="col-12 col-md-5">
+                                    <label class="form-label fw-semibold text-dark">Company Code <span class="badge bg-secondary-subtle text-secondary ms-1 fs-9">Locked</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
+                                        <input type="text" id="editCompanyCode" class="form-control border-start-0 bg-light text-uppercase font-monospace" readonly disabled />
+                                    </div>
+                                    <div class="form-text small text-muted">Company Code is read-only after tenant creation.</div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Business Type</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-briefcase text-muted"></i></span>
+                                        <input type="text" name="BusinessType" id="editBusinessType" class="form-control border-start-0" maxlength="100" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Tenant Status</label>
+                                    <select name="IsActive" id="editIsActive" class="form-select">
+                                        <option value="true">Active (Accessible)</option>
+                                        <option value="false">Inactive (Suspended)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Contact & Address -->
+                        <div class="tab-pane fade" id="tab-edit-contact">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold text-dark">Address</label>
+                                    <textarea name="Address" id="editAddress" class="form-control" rows="2" maxlength="500"></textarea>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-3">
+                                    <label class="form-label fw-semibold text-dark">City</label>
+                                    <input type="text" name="City" id="editCity" class="form-control" maxlength="100" />
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-3">
+                                    <label class="form-label fw-semibold text-dark">State</label>
+                                    <input type="text" name="State" id="editState" class="form-control" maxlength="100" />
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-3">
+                                    <label class="form-label fw-semibold text-dark">Country</label>
+                                    <input type="text" name="Country" id="editCountry" class="form-control" maxlength="100" />
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-3">
+                                    <label class="form-label fw-semibold text-dark">Pincode</label>
+                                    <input type="text" name="Pincode" id="editPincode" class="form-control" maxlength="20" />
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Primary Phone</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-phone text-muted"></i></span>
+                                        <input type="tel" name="Phone" id="editPhone" class="form-control border-start-0" maxlength="20" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Alternate Phone</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-phone-volume text-muted"></i></span>
+                                        <input type="tel" name="AlternatePhone" id="editAlternatePhone" class="form-control border-start-0" maxlength="20" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Email Address</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-envelope text-muted"></i></span>
+                                        <input type="email" name="Email" id="editEmail" class="form-control border-start-0" maxlength="100" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Website</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-globe text-muted"></i></span>
+                                        <input type="url" name="Website" id="editWebsite" class="form-control border-start-0" maxlength="200" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Tax & Legal -->
+                        <div class="tab-pane fade" id="tab-edit-tax">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">GST Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-file-invoice text-muted"></i></span>
+                                        <input type="text" name="GSTNumber" id="editGSTNumber" class="form-control border-start-0 text-uppercase font-monospace" maxlength="20" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">PAN Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-address-card text-muted"></i></span>
+                                        <input type="text" name="PANNumber" id="editPANNumber" class="form-control border-start-0 text-uppercase font-monospace" maxlength="15" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 4: Branding & Settings -->
+                        <div class="tab-pane fade" id="tab-edit-settings">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Currency</label>
+                                    <input type="text" name="Currency" id="editCurrency" class="form-control" maxlength="10" />
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold text-dark">Financial Year</label>
+                                    <input type="text" name="FinancialYear" id="editFinancialYear" class="form-control" maxlength="20" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold text-dark">Replace Logo</label>
+                                    <input type="file" name="logoFile" class="form-control" accept=".png,.jpg,.jpeg,.webp" id="editLogoInput" />
+                                    <div class="form-text small">Leave blank to keep existing logo. Maximum size 2MB.</div>
+                                    <div id="editLogoPreviewContainer" class="mt-2 d-none">
+                                        <img id="editLogoPreview" src="" alt="Current Logo" class="rounded border p-1" style="max-height: 70px;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 5: Admin & Users -->
+                        <div class="tab-pane fade" id="tab-edit-users">
+                            <input type="hidden" name="AdminUserId" id="editAdminUserId" />
+                            <div class="row g-3">
+                                <!-- Company Admin Details -->
+                                <div class="col-12">
+                                    <div class="card border-primary border-opacity-25 bg-light bg-opacity-50 shadow-none mb-3">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge bg-primary text-white p-2 rounded"><i class="fa-solid fa-user-shield"></i></span>
+                                                    <div>
+                                                        <h6 class="fw-bold mb-0 text-primary">Company Administrator Profile</h6>
+                                                        <span class="text-muted fs-8">Primary administrative account for this tenant</span>
+                                                    </div>
+                                                </div>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace" id="editAdminRoleBadge">CompanyAdmin</span>
+                                            </div>
+
+                                            <div class="row g-3">
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label fw-semibold text-dark">Admin Full Name</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="fa-regular fa-user text-muted"></i></span>
+                                                        <input type="text" name="AdminFullName" id="editAdminFullName" class="form-control border-start-0" placeholder="Administrator Name" maxlength="100" />
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label fw-semibold text-dark">Admin Username</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-at text-muted"></i></span>
+                                                        <input type="text" name="AdminUsername" id="editAdminUsername" class="form-control border-start-0 bg-light font-monospace" readonly />
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label fw-semibold text-dark">Admin Email</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="fa-regular fa-envelope text-muted"></i></span>
+                                                        <input type="email" name="AdminEmail" id="editAdminEmail" class="form-control border-start-0" placeholder="admin@company.com" maxlength="100" />
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label fw-semibold text-dark">Admin Mobile</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-phone text-muted"></i></span>
+                                                        <input type="tel" name="AdminMobile" id="editAdminMobile" class="form-control border-start-0" placeholder="Mobile Number" maxlength="20" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Reset Password Option -->
+                                            <div class="border-top mt-3 pt-3">
+                                                <label class="form-label fw-semibold text-dark mb-1">
+                                                    <i class="fa-solid fa-key text-warning me-1"></i> Reset Administrator Password (Optional)
+                                                </label>
+                                                <div class="form-text small text-muted mb-2">Leave password fields blank to keep current password unchanged.</div>
+                                                <div class="row g-3">
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label fs-8 text-muted">New Password</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
+                                                            <input type="password" name="AdminNewPassword" id="editAdminNewPassword" class="form-control border-start-0" placeholder="Leave blank to keep current" autocomplete="new-password" />
+                                                            <button type="button" class="btn btn-outline-secondary btn-toggle-password"><i class="fa-regular fa-eye"></i></button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label fs-8 text-muted">Confirm New Password</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
+                                                            <input type="password" name="AdminConfirmPassword" id="editAdminConfirmPassword" class="form-control border-start-0" placeholder="Confirm new password" autocomplete="new-password" />
+                                                            <button type="button" class="btn btn-outline-secondary btn-toggle-password"><i class="fa-regular fa-eye"></i></button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Company Registered Users Table -->
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <h6 class="fw-bold mb-0 text-dark">
+                                            <i class="fa-solid fa-users text-primary me-1.5"></i> Registered Users Roster
+                                        </h6>
+                                        <span class="badge bg-light text-dark border" id="editUsersCountBadge">0 Users</span>
+                                    </div>
+                                    <div class="table-responsive border rounded">
+                                        <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.825rem;">
+                                            <thead class="table-light text-uppercase fs-8 text-muted fw-bold">
+                                                <tr>
+                                                    <th class="ps-2.5">User</th>
+                                                    <th>Contact</th>
+                                                    <th>Role</th>
+                                                    <th class="text-center">Status</th>
+                                                    <th class="text-end pe-2.5">Created</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="editCompanyUsersTableBody">
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-3 text-muted">No additional users found.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitEdit">
+                        <i class="fa-solid fa-floppy-disk me-1.5"></i> Update Company
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ================= VIEW DETAILS MODAL ================= -->
+<div class="modal fade" id="viewCompanyModal" tabindex="-1" aria-labelledby="viewCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light py-3 border-bottom">
+                <div class="d-flex align-items-center gap-3">
+                    <div id="viewCompanyLogoContainer">
+                        <div class="bg-primary text-white fw-bold rounded d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 18px;" id="viewCompanyAvatar">
+                            C
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark m-0" id="viewCompanyName">Company Details</h5>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="badge bg-light text-dark border font-monospace" id="viewCompanyCode">CODE</span>
+                            <span class="badge" id="viewCompanyStatus">Status</span>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <!-- General Details -->
+                    <div class="col-12 col-md-6">
+                        <h6 class="text-uppercase text-muted fw-bold fs-8 border-bottom pb-2 mb-3">
+                            <i class="fa-solid fa-circle-info text-primary me-1.5"></i> Company Profile
+                        </h6>
+                        <dl class="row mb-0 small">
+                            <dt class="col-sm-5 text-muted">Business Type:</dt>
+                            <dd class="col-sm-7 fw-semibold text-dark" id="viewBusinessType">—</dd>
+
+                            <dt class="col-sm-5 text-muted">Currency:</dt>
+                            <dd class="col-sm-7 fw-semibold text-dark" id="viewCurrency">—</dd>
+
+                            <dt class="col-sm-5 text-muted">Financial Year:</dt>
+                            <dd class="col-sm-7 fw-semibold text-dark" id="viewFinancialYear">—</dd>
+
+                            <dt class="col-sm-5 text-muted">Website:</dt>
+                            <dd class="col-sm-7" id="viewWebsite">—</dd>
+                        </dl>
+                    </div>
+
+                    <!-- Tax & Registration -->
+                    <div class="col-12 col-md-6">
+                        <h6 class="text-uppercase text-muted fw-bold fs-8 border-bottom pb-2 mb-3">
+                            <i class="fa-solid fa-file-shield text-success me-1.5"></i> Tax & Compliance
+                        </h6>
+                        <dl class="row mb-0 small">
+                            <dt class="col-sm-5 text-muted">GST Number:</dt>
+                            <dd class="col-sm-7 font-monospace fw-semibold text-dark" id="viewGSTNumber">—</dd>
+
+                            <dt class="col-sm-5 text-muted">PAN Number:</dt>
+                            <dd class="col-sm-7 font-monospace fw-semibold text-dark" id="viewPANNumber">—</dd>
+                        </dl>
+                    </div>
+
+                    <!-- Contact Details -->
+                    <div class="col-12 col-md-6">
+                        <h6 class="text-uppercase text-muted fw-bold fs-8 border-bottom pb-2 mb-3">
+                            <i class="fa-solid fa-phone text-info me-1.5"></i> Communication
+                        </h6>
+                        <dl class="row mb-0 small">
+                            <dt class="col-sm-5 text-muted">Primary Phone:</dt>
+                            <dd class="col-sm-7 text-dark" id="viewPhone">—</dd>
+
+                            <dt class="col-sm-5 text-muted">Alternate Phone:</dt>
+                            <dd class="col-sm-7 text-dark" id="viewAlternatePhone">—</dd>
+
+                            <dt class="col-sm-5 text-muted">Email:</dt>
+                            <dd class="col-sm-7 text-dark" id="viewEmail">—</dd>
+                        </dl>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="col-12 col-md-6">
+                        <h6 class="text-uppercase text-muted fw-bold fs-8 border-bottom pb-2 mb-3">
+                            <i class="fa-solid fa-map-pin text-danger me-1.5"></i> Registered Address
+                        </h6>
+                        <div class="small text-dark" id="viewAddressFull">—</div>
+                    </div>
+
+                    <!-- Administrator & Users Section -->
+                    <div class="col-12">
+                        <div class="card border shadow-none bg-light bg-opacity-50 mb-0">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-primary text-white p-2 rounded"><i class="fa-solid fa-user-shield"></i></span>
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-primary">Company Administrator</h6>
+                                            <span class="text-muted fs-8">Primary system manager</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace" id="viewAdminRole">CompanyAdmin</span>
+                                </div>
+                                <dl class="row mb-3 small">
+                                    <dt class="col-sm-3 text-muted">Admin Full Name:</dt>
+                                    <dd class="col-sm-3 fw-semibold text-dark" id="viewAdminFullName">—</dd>
+
+                                    <dt class="col-sm-3 text-muted">Admin Username:</dt>
+                                    <dd class="col-sm-3 font-monospace fw-semibold text-dark" id="viewAdminUsername">—</dd>
+
+                                    <dt class="col-sm-3 text-muted">Admin Email:</dt>
+                                    <dd class="col-sm-3 text-dark" id="viewAdminEmail">—</dd>
+
+                                    <dt class="col-sm-3 text-muted">Admin Mobile:</dt>
+                                    <dd class="col-sm-3 text-dark" id="viewAdminMobile">—</dd>
+                                </dl>
+
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h6 class="fw-bold mb-0 text-dark fs-8 text-uppercase">
+                                        <i class="fa-solid fa-users text-primary me-1"></i> Registered Tenant Users (<span id="viewUsersCount">0</span>)
+                                    </h6>
+                                </div>
+                                <div class="table-responsive border rounded bg-white">
+                                    <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.8rem;">
+                                        <thead class="table-light text-uppercase fs-8 text-muted fw-bold">
+                                            <tr>
+                                                <th class="ps-2">User</th>
+                                                <th>Email</th>
+                                                <th>Mobile</th>
+                                                <th>Role</th>
+                                                <th class="text-center">Status</th>
+                                                <th class="text-end pe-2">Created</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="viewCompanyUsersTableBody">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-2 text-muted">No users found.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audit Trail -->
+                    <div class="col-12">
+                        <div class="bg-light p-3 rounded border small">
+                            <div class="row g-2 text-muted">
+                                <div class="col-sm-6">
+                                    <i class="fa-regular fa-calendar-plus me-1"></i> Created On: <strong class="text-dark" id="viewCreatedAt">—</strong> by <span id="viewCreatedBy">—</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <i class="fa-regular fa-calendar-check me-1"></i> Last Modified: <strong class="text-dark" id="viewUpdatedAt">—</strong> by <span id="viewUpdatedBy">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= TOGGLE STATUS CONFIRMATION MODAL ================= -->
+<div class="modal fade" id="toggleStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header text-white py-3" id="toggleModalHeader">
+                <h5 class="modal-title fw-bold" id="toggleModalTitle">Confirm Status Change</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3" id="toggleModalIcon">
+                    <i class="fa-solid fa-triangle-exclamation text-warning display-4"></i>
+                </div>
+                <h5 class="fw-bold mb-2 text-dark" id="toggleModalCompanyName">Company Name</h5>
+                <p class="text-muted mb-3" id="toggleModalMessage">
+                    Are you sure you want to deactivate this company?
+                </p>
+                <div class="alert alert-warning small text-start mb-0" id="toggleModalWarning">
+                    <i class="fa-solid fa-circle-exclamation me-1.5"></i>
+                    <strong>Important:</strong> Users belonging to this company will not be able to access the system while the company is inactive.
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-3 justify-content-center">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn px-4" id="confirmToggleStatusBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= PROVISIONING SUCCESS MODAL ================= -->
+<div class="modal fade" id="provisionSuccessModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white py-3">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa-solid fa-circle-check me-2"></i> Company Provisioned Successfully
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-3">
+                    <div class="avatar-circle bg-success text-white mx-auto mb-2" style="width: 56px; height: 56px; font-size: 24px;">
+                        <i class="fa-solid fa-building-circle-check"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-0" id="provModalCompanyName">Company Name</h5>
+                    <span class="badge bg-light text-dark border font-monospace mt-1 fs-8" id="provModalCompanyCode">CODE</span>
+                </div>
+
+                <div class="card bg-light border-0 mb-3">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold text-uppercase fs-8 text-primary border-bottom pb-1 mb-2">
+                            <i class="fa-solid fa-user-shield me-1"></i> Company Administrator
+                        </h6>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted small">Username:</span>
+                            <span class="font-monospace fw-bold text-dark fs-7" id="provModalAdminUsername">CODE_ADMIN</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted small">Full Name:</span>
+                            <span class="fw-semibold text-dark small" id="provModalAdminName">—</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Role:</span>
+                            <span class="badge bg-primary text-white fs-8">CompanyAdmin</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-light border-0 mb-3 d-none" id="provModalUserCard">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold text-uppercase fs-8 text-success border-bottom pb-1 mb-2">
+                            <i class="fa-solid fa-user me-1"></i> Initial Company User
+                        </h6>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted small">Username:</span>
+                            <span class="font-monospace fw-bold text-dark fs-7" id="provModalUserUsername">CODE_USER01</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted small">Full Name:</span>
+                            <span class="fw-semibold text-dark small" id="provModalUserName">—</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Role:</span>
+                            <span class="badge bg-success text-white fs-8" id="provModalUserRole">CompanyUser</span>
+                        </div>
+                    </div>
+                <div class="card bg-light border-0 mb-3 d-none" id="provModalSampleCard">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold text-uppercase fs-8 text-info border-bottom pb-1 mb-2">
+                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Sample Master Data
+                        </h6>
+                        <div class="small text-muted mb-0" id="provModalSampleSummary">Sample data initialized.</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info small d-flex align-items-center gap-2 mb-0">
+                    <i class="fa-solid fa-circle-info fs-5"></i>
+                    <div>
+                        The Company Admin can immediately sign in with their credentials. Passwords are securely hashed.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= INITIALIZE SAMPLE DATA CONFIRMATION MODAL ================= -->
+<div class="modal fade" id="initSampleDataModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-info text-white py-3">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Initialize Sample Master Data
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div class="avatar-circle bg-info bg-opacity-10 text-info mx-auto mb-3" style="width: 64px; height: 64px; font-size: 28px;">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1" id="initSampleCompanyName">Company Name</h5>
+                <span class="badge bg-light text-dark border font-monospace mb-3" id="initSampleCompanyCode">CODE</span>
+                
+                <p class="text-muted small mb-3">
+                    Are you sure you want to initialize a complete set of sample master data for this company?
+                </p>
+                <div class="bg-light p-3 rounded text-start small text-muted border mb-2">
+                    <div class="fw-semibold text-dark mb-1">This will generate:</div>
+                    <ul class="mb-0 ps-3">
+                        <li>7 Tool Categories & 4 Industry Brands</li>
+                        <li>5 Units of Measurement (PCS, BOX, SET, KG, MTR)</li>
+                        <li>4 GST Tax configurations & 4 Payment Modes</li>
+                        <li>12 Sample Products with Opening Stock</li>
+                        <li>5 Demo Customers & 5 Demo Suppliers</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-3 justify-content-center">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info text-white px-4" id="confirmInitSampleBtn">
+                    <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Initialize
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function () {
+    const antiForgeryToken = $('input[name="__RequestVerificationToken"]').first().val();
+
+    // ================= CLIENT-SIDE SEARCH & STATUS FILTER =================
+    function filterTable() {
+        const searchTerm = $('#companyTableSearch').val().toLowerCase().trim();
+        const statusFilter = $('#statusFilter').val();
+        let visibleCount = 0;
+
+        $('#companiesTable tbody tr').each(function () {
+            if ($(this).attr('id') === 'emptyRow') return;
+
+            const rowSearch = $(this).attr('data-search') || '';
+            const rowStatus = $(this).attr('data-status') || '';
+
+            const matchesSearch = !searchTerm || rowSearch.includes(searchTerm);
+            const matchesStatus = (statusFilter === 'All') || (rowStatus === statusFilter);
+
+            if (matchesSearch && matchesStatus) {
+                $(this).show();
+                visibleCount++;
+            } else {
+                $(this).hide();
+            }
+        });
+
+        if (visibleCount === 0 && $('#companiesTable tbody tr[id!="emptyRow"]').length > 0) {
+            if ($('#noResultsRow').length === 0) {
+                $('#companiesTable tbody').append('<tr id="noResultsRow"><td colspan="8" class="text-center py-4 text-muted"><i class="fa-solid fa-search me-1"></i> No companies match the search/filter criteria.</td></tr>');
+            } else {
+                $('#noResultsRow').show();
+            }
+        } else {
+            $('#noResultsRow').hide();
+        }
+    }
+
+    $('#companyTableSearch').on('input', filterTable);
+    $('#statusFilter').on('change', filterTable);
+
+    // ================= LIVE COMPANY CODE AVAILABILITY CHECK =================
+    let codeCheckTimeout;
+    $('#createCompanyCode').on('input', function () {
+        const input = $(this);
+        const code = input.val().trim().toUpperCase();
+        input.val(code);
+
+        const feedback = $('#createCodeFeedback');
+        clearTimeout(codeCheckTimeout);
+
+        if (!code) {
+            feedback.addClass('d-none').text('');
+            return;
+        }
+
+        if (code.length < 2) {
+            feedback.removeClass('d-none text-success').addClass('text-danger').text('Code must be at least 2 characters.');
+            return;
+        }
+
+        feedback.removeClass('d-none text-success text-danger').addClass('text-muted').html('<i class="fa-solid fa-spinner fa-spin me-1"></i> Checking availability...');
+
+        codeCheckTimeout = setTimeout(function () {
+            $.ajax({
+                url: '/Company/CheckCode',
+                type: 'GET',
+                data: { code: code },
+                success: function (res) {
+                    if (res.isAvailable) {
+                        feedback.removeClass('d-none text-danger text-muted').addClass('text-success').html('<i class="fa-solid fa-check me-1"></i> Company Code is available');
+                        $('#btnSubmitCreate').prop('disabled', false);
+
+                        // Auto-populate Admin & User usernames
+                        $.get('/Company/GetProvisioningDefaults', { code: code }, function (defs) {
+                            $('#createAdminUsername').val(defs.adminUsername || (code + '_ADMIN'));
+                            $('#createUserUsername').val(defs.userUsername || (code + '_USER01'));
+                        });
+                    } else {
+                        feedback.removeClass('d-none text-success text-muted').addClass('text-danger').html('<i class="fa-solid fa-xmark me-1"></i> ' + res.message);
+                        $('#btnSubmitCreate').prop('disabled', true);
+                    }
+                },
+                error: function () {
+                    feedback.addClass('d-none');
+                }
+            });
+        }, 350);
+    });
+
+    // ================= INITIAL USER TOGGLE =================
+    $('#chkCreateInitialUser').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('#initialUserFields').removeClass('d-none');
+            $('#createUserPassword').prop('required', true);
+            $('#createUserConfirmPassword').prop('required', true);
+        } else {
+            $('#initialUserFields').addClass('d-none');
+            $('#createUserPassword').prop('required', false).val('');
+            $('#createUserConfirmPassword').prop('required', false).val('');
+        }
+    });
+
+    // ================= TOGGLE PASSWORD VISIBILITY =================
+    $(document).on('click', '.toggle-pwd-btn', function () {
+        const targetSelector = $(this).data('target');
+        const input = $(targetSelector);
+        const icon = $(this).find('i');
+        if (input.attr('type') === 'password') {
+            input.attr('type', 'text');
+            icon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            input.attr('type', 'password');
+            icon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
+
+    // ================= CHECK PROVISIONING SUCCESS FLASH =================
+    @if (TempData["ProvisionSuccessJson"] != null)
+    {
+        <text>
+        try {
+            var provData = @Html.Raw(TempData["ProvisionSuccessJson"]);
+            if (provData && provData.Success) {
+                $('#provModalCompanyName').text(provData.CompanyName || '—');
+                $('#provModalCompanyCode').text(provData.CompanyCode || '—');
+                $('#provModalAdminUsername').text(provData.AdminUsername || '—');
+                $('#provModalAdminName').text(provData.AdminFullName || '—');
+
+                if (provData.InitialUsername) {
+                    $('#provModalUserUsername').text(provData.InitialUsername);
+                    $('#provModalUserName').text(provData.InitialUserFullName || '—');
+                    $('#provModalUserRole').text(provData.InitialUserRole || 'CompanyUser');
+                    $('#provModalUserCard').removeClass('d-none');
+                } else {
+                    $('#provModalUserCard').addClass('d-none');
+                }
+
+                if (provData.SampleDataInitialized) {
+                    $('#provModalSampleSummary').text(provData.SampleDataSummary || 'Master catalog, products, customers, and suppliers generated.');
+                    $('#provModalSampleCard').removeClass('d-none');
+                } else {
+                    $('#provModalSampleCard').addClass('d-none');
+                }
+
+                var provModal = new bootstrap.Modal(document.getElementById('provisionSuccessModal'));
+                provModal.show();
+            }
+        } catch (e) {
+            console.error('Error rendering provisioning modal:', e);
+        }
+        </text>
+    }
+
+    // ================= INITIALIZE SAMPLE DATA MODAL HANDLER =================
+    let targetInitCompanyId = null;
+    $(document).on('click', '.init-sample-data-btn', function () {
+        targetInitCompanyId = $(this).data('id');
+        const companyName = $(this).data('name');
+        const companyCode = $(this).data('code');
+
+        $('#initSampleCompanyName').text(companyName);
+        $('#initSampleCompanyCode').text(companyCode);
+        $('#initSampleDataModal').modal('show');
+    });
+
+    // ================= FORM SUBMISSION HANDLERS =================
+    var createCompanyModalEl = document.getElementById('createCompanyModal');
+    var createCompanyModal = createCompanyModalEl ? new bootstrap.Modal(createCompanyModalEl) : null;
+    var editCompanyModalEl = document.getElementById('editCompanyModal');
+    var editCompanyModal = editCompanyModalEl ? new bootstrap.Modal(editCompanyModalEl) : null;
+
+    $('#createCompanyForm').on('submit', function (e) {
+        e.preventDefault();
+        ErpApp.submitForm(this, {
+            button: '#btnSubmitCreate',
+            modal: createCompanyModal,
+            loadingText: 'Provisioning Company...',
+            onSuccess: function (res) {
+                $('#createCompanyForm')[0].reset();
+                $('#createLogoPreviewContainer').addClass('d-none');
+                $('#createCodeFeedback').addClass('d-none').text('');
+                $('#initialUserFields').addClass('d-none');
+                $('#createAdminPassword').val('');
+                $('#createAdminConfirmPassword').val('');
+                $('#createUserPassword').val('');
+                $('#createUserConfirmPassword').val('');
+                var firstTab = new bootstrap.Tab(document.querySelector('#tab-create-info-btn'));
+                if (firstTab) firstTab.show();
+            },
+            reloadPage: true
+        });
+    });
+
+    $('#editCompanyForm').on('submit', function (e) {
+        e.preventDefault();
+        ErpApp.submitForm(this, {
+            button: '#btnSubmitEdit',
+            modal: editCompanyModal,
+            loadingText: 'Saving Company...',
+            onSuccess: function (res) {
+                $('#editAdminNewPassword').val('');
+                $('#editAdminConfirmPassword').val('');
+            },
+            reloadPage: true
+        });
+    });
+
+    $('#confirmInitSampleBtn').on('click', function () {
+        if (!targetInitCompanyId) return;
+
+        const btn = $(this);
+        ErpApp.setButtonLoading(btn, true, 'Initializing...');
+
+        $.ajax({
+            url: '/Company/InitializeSampleData/' + targetInitCompanyId,
+            type: 'POST',
+            headers: { 'RequestVerificationToken': antiForgeryToken },
+            success: function (res) {
+                $('#initSampleDataModal').modal('hide');
+                ErpApp.setButtonLoading(btn, false);
+
+                if (res && res.success) {
+                    ErpApp.notify(res.message || 'Sample data initialized.', 'success');
+                    setTimeout(function () { location.reload(); }, 600);
+                } else {
+                    ErpApp.notify(res?.message || 'Failed to initialize sample data.', 'error');
+                }
+            },
+            error: function (xhr) {
+                $('#initSampleDataModal').modal('hide');
+                ErpApp.setButtonLoading(btn, false);
+                var msg = xhr.responseJSON?.message || 'A server error occurred while initializing sample data.';
+                ErpApp.notify(msg, 'error');
+            }
+        });
+    });
+
+    // ================= LOGO FILE PREVIEW =================
+    $('#createLogoInput').on('change', function () {
+        const file = this.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                ErpApp.notify('File size must be less than 2 MB.', 'warning', 'File Size Limit');
+                this.value = '';
+                $('#createLogoPreviewContainer').addClass('d-none');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#createLogoPreview').attr('src', e.target.result);
+                $('#createLogoPreviewContainer').removeClass('d-none');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            $('#createLogoPreviewContainer').addClass('d-none');
+        }
+    });
+
+    $('#editLogoInput').on('change', function () {
+        const file = this.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                ErpApp.notify('File size must be less than 2 MB.', 'warning', 'File Size Limit');
+                this.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#editLogoPreview').attr('src', e.target.result);
+                $('#editLogoPreviewContainer').removeClass('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // ================= VIEW DETAILS MODAL =================
+    $(document).on('click', '.view-company-btn', function () {
+        const companyId = $(this).data('id');
+        $.ajax({
+            url: '/Company/GetCompany/' + companyId,
+            type: 'GET',
+            success: function (c) {
+                $('#viewCompanyName').text(c.companyName || '—');
+                $('#viewCompanyCode').text(c.companyCode || '—');
+                $('#viewBusinessType').text(c.businessType || '—');
+                $('#viewCurrency').text(c.currency || 'INR');
+                $('#viewFinancialYear').text(c.financialYear || '—');
+                $('#viewPhone').text(c.phone || '—');
+                $('#viewAlternatePhone').text(c.alternatePhone || '—');
+                $('#viewEmail').text(c.email || '—');
+                $('#viewGSTNumber').text(c.gstNumber || '—');
+                $('#viewPANNumber').text(c.panNumber || '—');
+                $('#viewCreatedAt').text(c.createdAt || '—');
+                $('#viewCreatedBy').text(c.createdBy || '—');
+                $('#viewUpdatedAt').text(c.updatedAt || '—');
+                $('#viewUpdatedBy').text(c.updatedBy || '—');
+
+                // Administrator Details
+                $('#viewAdminFullName').text(c.adminFullName || '—');
+                $('#viewAdminUsername').text(c.adminUsername || '—');
+                $('#viewAdminEmail').text(c.adminEmail || '—');
+                $('#viewAdminMobile').text(c.adminMobile || '—');
+                $('#viewAdminRole').text(c.adminRole || 'CompanyAdmin');
+
+                // Registered Users Roster
+                const users = c.users || [];
+                $('#viewUsersCount').text(users.length);
+                let usersHtml = '';
+                if (users.length > 0) {
+                    users.forEach(function (u) {
+                        const statusBadge = u.isActive
+                            ? '<span class="badge bg-success-subtle text-success border border-success-subtle fs-9">Active</span>'
+                            : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-9">Inactive</span>';
+                        usersHtml += `<tr>
+                            <td class="ps-2">
+                                <div class="fw-semibold text-dark">${u.fullName}</div>
+                                <span class="font-monospace text-muted fs-9">${u.userName}</span>
+                            </td>
+                            <td>
+                                <div>${u.email}</div>
+                            </td>
+                            <td>
+                                <span>${u.mobile}</span>
+                            </td>
+                            <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-9">${u.roles}</span></td>
+                            <td class="text-center">${statusBadge}</td>
+                            <td class="text-end pe-2 text-muted fs-9">${u.createdAt}</td>
+                        </tr>`;
+                    });
+                } else {
+                    usersHtml = '<tr><td colspan="6" class="text-center py-2 text-muted">No users found.</td></tr>';
+                }
+                $('#viewCompanyUsersTableBody').html(usersHtml);
+
+                if (c.website) {
+                    $('#viewWebsite').html('<a href="' + c.website + '" target="_blank" class="text-decoration-none">' + c.website + ' <i class="fa-solid fa-arrow-up-right-from-square fs-9"></i></a>');
+                } else {
+                    $('#viewWebsite').text('—');
+                }
+
+                const addressParts = [c.address, c.city, c.state, c.pincode, c.country].filter(Boolean);
+                $('#viewAddressFull').text(addressParts.length > 0 ? addressParts.join(', ') : '—');
+
+                const statusBadge = $('#viewCompanyStatus');
+                if (c.isActive) {
+                    statusBadge.removeClass('bg-secondary-subtle text-secondary border-secondary-subtle').addClass('bg-success-subtle text-success border border-success-subtle fw-bold').text('Active');
+                } else {
+                    statusBadge.removeClass('bg-success-subtle text-success border-success-subtle').addClass('bg-secondary-subtle text-secondary border border-secondary-subtle fw-bold').text('Inactive');
+                }
+
+                const logoContainer = $('#viewCompanyLogoContainer');
+                if (c.logo) {
+                    logoContainer.html('<img src="' + c.logo + '" class="rounded border" style="width: 44px; height: 44px; object-fit: contain;" />');
+                } else {
+                    const initial = (c.companyName && c.companyName.length > 0) ? c.companyName.charAt(0).toUpperCase() : 'C';
+                    logoContainer.html('<div class="bg-primary text-white fw-bold rounded d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 18px;">' + initial + '</div>');
+                }
+
+                $('#viewCompanyModal').modal('show');
+            },
+            error: function () {
+                ErpApp.notify('Failed to retrieve company details.', 'error');
+            }
+        });
+    });
+
+    // ================= EDIT COMPANY MODAL =================
+    $(document).on('click', '.edit-company-btn', function () {
+        const companyId = $(this).data('id');
+        $.ajax({
+            url: '/Company/GetCompany/' + companyId,
+            type: 'GET',
+            success: function (c) {
+                $('#editCompanyId').val(c.id);
+                $('#editCompanyName').val(c.companyName);
+                $('#editCompanyCode').val(c.companyCode);
+                $('#editBusinessType').val(c.businessType || '');
+                $('#editIsActive').val(c.isActive ? 'true' : 'false');
+                $('#editAddress').val(c.address || '');
+                $('#editCity').val(c.city || '');
+                $('#editState').val(c.state || '');
+                $('#editCountry').val(c.country || 'India');
+                $('#editPincode').val(c.pincode || '');
+                $('#editPhone').val(c.phone || '');
+                $('#editAlternatePhone').val(c.alternatePhone || '');
+                $('#editEmail').val(c.email || '');
+                $('#editWebsite').val(c.website || '');
+                $('#editGSTNumber').val(c.gstNumber || '');
+                $('#editPANNumber').val(c.panNumber || '');
+                $('#editCurrency').val(c.currency || 'INR');
+                $('#editFinancialYear').val(c.financialYear || '');
+
+                // Administrator Profile in Edit Modal
+                $('#editAdminUserId').val(c.adminUserId || '');
+                $('#editAdminUsername').val(c.adminUsername || '');
+                $('#editAdminFullName').val(c.adminFullName || '');
+                $('#editAdminEmail').val(c.adminEmail || '');
+                $('#editAdminMobile').val(c.adminMobile || '');
+                $('#editAdminRoleBadge').text(c.adminRole || 'CompanyAdmin');
+                $('#editAdminNewPassword').val('');
+                $('#editAdminConfirmPassword').val('');
+
+                // Registered Users Roster in Edit Modal
+                const users = c.users || [];
+                $('#editUsersCountBadge').text(users.length + (users.length === 1 ? ' User' : ' Users'));
+                let usersHtml = '';
+                if (users.length > 0) {
+                    users.forEach(function (u) {
+                        const statusBadge = u.isActive
+                            ? '<span class="badge bg-success-subtle text-success border border-success-subtle fs-9">Active</span>'
+                            : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-9">Inactive</span>';
+                        usersHtml += `<tr>
+                            <td class="ps-2.5">
+                                <div class="fw-semibold text-dark">${u.fullName}</div>
+                                <span class="font-monospace text-muted fs-9">${u.userName}</span>
+                            </td>
+                            <td>
+                                <div>${u.email}</div>
+                                <small class="text-muted">${u.mobile}</small>
+                            </td>
+                            <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-9">${u.roles}</span></td>
+                            <td class="text-center">${statusBadge}</td>
+                            <td class="text-end pe-2.5 text-muted fs-9">${u.createdAt}</td>
+                        </tr>`;
+                    });
+                } else {
+                    usersHtml = '<tr><td colspan="5" class="text-center py-3 text-muted">No additional users found.</td></tr>';
+                }
+                $('#editCompanyUsersTableBody').html(usersHtml);
+
+                if (c.logo) {
+                    $('#editLogoPreview').attr('src', c.logo);
+                    $('#editLogoPreviewContainer').removeClass('d-none');
+                } else {
+                    $('#editLogoPreviewContainer').addClass('d-none');
+                }
+
+                // Reset tabs to first tab
+                var firstTab = new bootstrap.Tab(document.querySelector('#tab-edit-info-btn'));
+                firstTab.show();
+
+                $('#editCompanyModal').modal('show');
+            },
+            error: function () {
+                ErpApp.notify('Failed to retrieve company data for editing.', 'error');
+            }
+        });
+    });
+
+    // ================= ACTIVATE / DEACTIVATE MODAL =================
+    let targetCompanyId = 0;
+    let willActivate = false;
+
+    $(document).on('click', '.toggle-status-btn', function () {
+        targetCompanyId = $(this).data('id');
+        const companyName = $(this).data('name');
+        const isActive = $(this).data('active') === true || $(this).data('active') === 'true';
+        willActivate = !isActive;
+
+        $('#toggleModalCompanyName').text(companyName);
+
+        if (willActivate) {
+            $('#toggleModalHeader').removeClass('bg-warning text-dark').addClass('bg-success text-white');
+            $('#toggleModalTitle').text('Activate Company');
+            $('#toggleModalIcon').html('<i class="fa-solid fa-circle-check text-success display-4"></i>');
+            $('#toggleModalMessage').text('Are you sure you want to activate this company? Normal user access will be restored.');
+            $('#toggleModalWarning').hide();
+            $('#confirmToggleStatusBtn').removeClass('btn-danger btn-warning').addClass('btn-success').text('Activate');
+        } else {
+            $('#toggleModalHeader').removeClass('bg-success').addClass('bg-warning text-dark');
+            $('#toggleModalTitle').text('Deactivate Company');
+            $('#toggleModalIcon').html('<i class="fa-solid fa-triangle-exclamation text-warning display-4"></i>');
+            $('#toggleModalMessage').text('Are you sure you want to deactivate this company?');
+            $('#toggleModalWarning').show();
+            $('#confirmToggleStatusBtn').removeClass('btn-success btn-warning').addClass('btn-danger').text('Deactivate');
+        }
+
+        $('#toggleStatusModal').modal('show');
+    });
+
+    $('#confirmToggleStatusBtn').on('click', function () {
+        if (!targetCompanyId) return;
+
+        const btn = $(this);
+        ErpApp.setButtonLoading(btn, true, 'Processing...');
+
+        $.ajax({
+            url: '/Company/ToggleStatus/' + targetCompanyId,
+            type: 'POST',
+            headers: { 'RequestVerificationToken': antiForgeryToken },
+            success: function (res) {
+                $('#toggleStatusModal').modal('hide');
+                ErpApp.setButtonLoading(btn, false);
+
+                if (res && res.success) {
+                    ErpApp.notify(res.message || 'Status updated.', 'success');
+                    setTimeout(function () { location.reload(); }, 600);
+                } else {
+                    ErpApp.notify(res?.message || 'Failed to update company status.', 'error');
+                }
+            },
+            error: function (xhr) {
+                $('#toggleStatusModal').modal('hide');
+                ErpApp.setButtonLoading(btn, false);
+                var msg = xhr.responseJSON?.message || 'A server error occurred while updating status.';
+                ErpApp.notify(msg, 'error');
+            }
+        });
+    });
+});
+</script>
+}

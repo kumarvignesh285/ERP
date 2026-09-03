@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class SalesReturn : BaseEntity
+public class SalesReturn : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string ReturnNumber { get; set; } = string.Empty;
     public DateTime ReturnDate { get; set; } = DateTime.Today;
@@ -24,6 +27,7 @@ public class SalesReturn : BaseEntity
     public string Status { get; set; } = "Draft";
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<SalesReturnItem> Items { get; set; } = new List<SalesReturnItem>();
 }
 

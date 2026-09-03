@@ -1,0 +1,228 @@
+@model CartSummary
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<section class="py-5 bg-brand-black border-b border-white/5">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
+        <h1 class="text-3xl md:text-5xl font-syne font-extrabold uppercase tracking-luxury text-white">Shopping Cart</h1>
+        <p class="text-zinc-500 font-inter text-sm mt-2">Manage your orders and configure bulk coupons before proceeding to delivery options.</p>
+    </div>
+</section>
+
+<section class="py-12 bg-brand-black">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
+        @if (Model.Items != null && Model.Items.Any())
+        {
+            <div class="row g-4">
+                <!-- Cart Items List -->
+                <div class="col-lg-8">
+                    <div class="glass-panel-custom p-4">
+                        <div class="table-responsive">
+                            <table class="table table-glass align-middle">
+                                <thead>
+                                    <tr class="text-zinc-500 fs-8 font-weight-bold uppercase tracking-wider">
+                                        <th colspan="2">Product Details</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Subtotal</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr id="cart-row-@item.ProductId" class="border-b border-white/5">
+                                            <td style="width: 80px;">
+                                                <div class="bg-zinc-950/40 p-2 rounded border border-white/5 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                                                    {
+                                                        <img src="@item.ImagePath" alt="@item.ProductName" class="img-fluid" style="max-height: 100%; object-fit: contain;">
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fa-solid fa-toolbox text-zinc-600 fs-3"></i>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <a asp-controller="Product" asp-action="Details" asp-route-id="@item.ProductId" class="text-white hover:text-brand-orange text-decoration-none font-weight-semibold text-truncate d-block font-syne" style="max-width: 250px;">@item.ProductName</a>
+                                                <span class="fs-8 text-zinc-500">@item.ProductCode</span>
+                                            </td>
+                                            <td style="width: 140px;">
+                                                <div class="input-group input-group-sm border border-zinc-800 rounded" style="width: 110px; overflow: hidden; background: #050505;">
+                                                    <button class="btn btn-dark border-0 hover:bg-zinc-800" type="button" onclick="updateQty(@item.ProductId, @(item.Quantity - 1))" style="background: transparent; color: #a1a1aa;"><i class="fa-solid fa-minus fs-8"></i></button>
+                                                    <input type="text" class="form-control border-0 text-center font-weight-bold text-white bg-transparent" value="@item.Quantity" readonly style="pointer-events: none;">
+                                                    <button class="btn btn-dark border-0 hover:bg-zinc-800" type="button" onclick="updateQty(@item.ProductId, @(item.Quantity + 1))" style="background: transparent; color: #a1a1aa;"><i class="fa-solid fa-plus fs-8"></i></button>
+                                                </div>
+                                            </td>
+                                            <td class="text-zinc-300">₹@item.Rate.ToString("N2")</td>
+                                            <td class="text-white font-bold">₹@item.SubTotal.ToString("N2")</td>
+                                            <td class="text-end">
+                                                <button class="btn btn-link text-danger p-0" onclick="removeItem(@item.ProductId)" title="Remove Item"><i class="fa-regular fa-trash-can fs-5"></i></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-white/5">
+                            <a asp-controller="Product" asp-action="Index" class="btn-magnetic px-5 py-2.5 border border-zinc-800 hover:border-zinc-500 text-white font-syne text-[10px] font-bold uppercase tracking-widest text-decoration-none" style="border-radius: 4px !important;"><i class="fa-solid fa-arrow-left me-2"></i> Catalog</a>
+                            <button class="btn-magnetic px-5 py-2.5 border border-red-950 text-red-500 hover:bg-red-500/10 font-syne text-[10px] font-bold uppercase tracking-widest" onclick="clearCart()" style="border-radius: 4px !important; background: transparent;"><i class="fa-solid fa-trash-arrow-up me-2"></i> Clear Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Panel -->
+                <div class="col-lg-4">
+                    <!-- Coupon Card -->
+                    <div class="glass-panel-custom p-4 mb-4">
+                        <h5 class="mb-3 font-weight-bold font-syne text-white"><i class="fa-solid fa-tag text-brand-orange me-2"></i> Apply Coupon</h5>
+                        <div class="input-group mb-2">
+                            <input type="text" id="couponInput" class="form-control form-control-dark" placeholder="Promo Code (e.g. VMR10)" value="@Model.CouponCode">
+                            <button class="btn btn-primary bg-brand-orange border-brand-orange px-3" onclick="applyCoupon()" style="border-radius: 0 4px 4px 0 !important;"><i class="fa-solid fa-check"></i></button>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.CouponCode))
+                        {
+                            <span class="fs-8 text-success font-weight-bold d-block"><i class="fa-solid fa-circle-check"></i> Coupon "@Model.CouponCode" applied!</span>
+                            <a href="#" class="fs-8 text-red-500 mt-1 d-inline-block text-decoration-none" onclick="removeCoupon()">Remove Coupon</a>
+                        }
+                        else
+                        {
+                            <span class="fs-8 text-zinc-500 d-block">Try VMR10 (10% Off) or WELCOME15 (15% Off)</span>
+                        }
+                    </div>
+
+                    <!-- Totals Card -->
+                    <div class="glass-panel-custom p-4">
+                        <h5 class="mb-4 font-weight-bold border-b border-white/5 pb-2 font-syne text-white">Order Summary</h5>
+                        <table class="table table-borderless align-middle mb-4" style="color: #a1a1aa;">
+                            <tbody>
+                                <tr class="fs-7">
+                                    <td>Cart Subtotal</td>
+                                    <td class="text-end text-white font-weight-semibold">₹@Model.SubTotal.ToString("N2")</td>
+                                </tr>
+                                @if (Model.DiscountAmount > 0)
+                                {
+                                    <tr class="fs-7 text-success">
+                                        <td>Coupon Discount</td>
+                                        <td class="text-end font-weight-semibold">-₹@Model.DiscountAmount.ToString("N2")</td>
+                                    </tr>
+                                }
+                                <tr class="fs-7">
+                                    <td>Tax (@Model.TaxBreakdown)</td>
+                                    <td class="text-end text-white font-weight-semibold">₹@Model.TaxAmount.ToString("N2")</td>
+                                </tr>
+                                <tr class="fs-7">
+                                    <td>Shipping Rate</td>
+                                    <td class="text-end text-white font-weight-semibold">
+                                        @if (Model.ShippingCharge > 0)
+                                        {
+                                            <span>₹@Model.ShippingCharge.ToString("N2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-green-500/10 border border-green-500/20 text-green-400 px-2 py-1" style="border-radius: 4px;">Free</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr class="border-t border-white/5 fs-5 font-weight-bold">
+                                    <td class="pt-3 text-white font-syne">Grand Total</td>
+                                    <td class="text-end text-brand-orange pt-3 font-syne">₹@Model.GrandTotal.ToString("N2")</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <a asp-controller="Checkout" asp-action="Index" class="btn-magnetic btn btn-primary btn-lg w-100 py-3 fs-6 bg-brand-orange border-brand-orange font-syne font-bold uppercase tracking-wider" style="border-radius: 4px !important; color: #ffffff;"><i class="fa-solid fa-credit-card me-2"></i> Checkout</a>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5 glass-panel-custom">
+                <i class="fa-solid fa-cart-shopping text-zinc-700 mb-3" style="font-size: 6rem; opacity: 0.5;"></i>
+                <h3 class="text-white font-syne font-bold">Your Cart is Empty</h3>
+                <p class="text-zinc-500 mb-4">Looks like you haven't added any power tools to your cart yet.</p>
+                <a asp-controller="Product" asp-action="Index" class="btn-magnetic btn btn-primary btn-lg bg-brand-orange border-brand-orange px-5 py-3 font-syne font-bold uppercase tracking-wider" style="border-radius: 4px !important; color: #ffffff;"><i class="fa-solid fa-toolbox me-2"></i> Catalog</a>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function updateQty(productId, newQty) {
+            $.post('/Cart/UpdateQuantity', { productId: productId, quantity: newQty }, function (res) {
+                if (res.success) {
+                    location.reload();
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            });
+        }
+
+        function removeItem(productId) {
+            Swal.fire({
+                title: 'Remove Item?',
+                text: 'Are you sure you want to remove this tool from your cart?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, remove it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Cart/Remove', { productId: productId }, function (res) {
+                        if (res.success) {
+                            location.reload();
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function clearCart() {
+            Swal.fire({
+                title: 'Clear Cart?',
+                text: 'Remove all power tools from your cart?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, clear all!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Cart/Clear', function (res) {
+                        if (res.success) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        }
+
+        function applyCoupon() {
+            var code = $('#couponInput').val();
+            if (!code) return;
+            $.post('/Cart/ApplyCoupon', { couponCode: code }, function (res) {
+                if (res.success) {
+                    location.reload();
+                } else {
+                    Swal.fire('Invalid Coupon', res.message, 'error');
+                }
+            });
+        }
+
+        function removeCoupon() {
+            $.post('/Cart/ApplyCoupon', { couponCode: '' }, function (res) {
+                if (res.success) {
+                    location.reload();
+                }
+            });
+        }
+    </script>
+}

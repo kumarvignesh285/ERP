@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Filters;
 using ERP.Interfaces;
 using ERP.ViewModels;
 
 namespace ERP.Controllers;
 
 [Authorize]
+[Permission("Reports", "View")]
 [Route("Reports")]
 public class ReportsController : Controller
 {

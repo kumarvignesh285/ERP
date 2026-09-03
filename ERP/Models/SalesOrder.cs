@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class SalesOrder : BaseEntity
+public class SalesOrder : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string OrderNumber { get; set; } = string.Empty;
     public DateTime OrderDate { get; set; } = DateTime.Today;
@@ -30,6 +33,7 @@ public class SalesOrder : BaseEntity
     public string? ShippingAddress { get; set; }
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<SalesOrderItem> Items { get; set; } = new List<SalesOrderItem>();
 }
 

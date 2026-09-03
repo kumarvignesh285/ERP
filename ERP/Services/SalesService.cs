@@ -30,6 +30,11 @@ public class SalesService : ISalesService
 
     public async Task<SalesQuotation> SaveQuotationAsync(SalesQuotation quotation)
     {
+        if (quotation.CustomerId <= 0)
+            throw new InvalidOperationException("Customer selection is required.");
+        if (quotation.Items == null || !quotation.Items.Any() || quotation.Items.Any(i => i.Quantity <= 0 || i.Rate <= 0))
+            throw new InvalidOperationException("Please add at least one line item with valid quantity and rate.");
+
         if (quotation.Id == 0)
         {
             _context.SalesQuotations.Add(quotation);
@@ -52,14 +57,17 @@ public class SalesService : ISalesService
         return quotation;
     }
 
-    public async Task DeleteQuotationAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteQuotationAsync(int id)
     {
         var item = await _context.SalesQuotations.FindAsync(id);
-        if (item != null)
-        {
-            item.IsActive = false;
-            await _context.SaveChangesAsync();
-        }
+        if (item == null) return (false, "Sales Quotation not found or already removed.");
+
+        if (item.Status == "Converted" || item.Status == "Accepted")
+            return (false, $"Quotation '{item.QuotationNumber}' cannot be deleted because it is already marked as {item.Status}.");
+
+        item.IsActive = false;
+        await _context.SaveChangesAsync();
+        return (true, $"Sales Quotation '{item.QuotationNumber}' deleted successfully.");
     }
 
     // Sales Order
@@ -78,6 +86,11 @@ public class SalesService : ISalesService
 
     public async Task<SalesOrder> SaveSalesOrderAsync(SalesOrder order)
     {
+        if (order.CustomerId <= 0)
+            throw new InvalidOperationException("Customer selection is required.");
+        if (order.Items == null || !order.Items.Any() || order.Items.Any(i => i.Quantity <= 0 || i.Rate <= 0))
+            throw new InvalidOperationException("Please add at least one line item with valid quantity and rate.");
+
         if (order.Id == 0)
         {
             _context.SalesOrders.Add(order);
@@ -100,14 +113,17 @@ public class SalesService : ISalesService
         return order;
     }
 
-    public async Task DeleteSalesOrderAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteSalesOrderAsync(int id)
     {
         var item = await _context.SalesOrders.FindAsync(id);
-        if (item != null)
-        {
-            item.IsActive = false;
-            await _context.SaveChangesAsync();
-        }
+        if (item == null) return (false, "Sales Order not found or already removed.");
+
+        if (item.Status == "Converted" || item.Status == "Completed")
+            return (false, $"Sales Order '{item.OrderNumber}' cannot be deleted because it has already been {item.Status}.");
+
+        item.IsActive = false;
+        await _context.SaveChangesAsync();
+        return (true, $"Sales Order '{item.OrderNumber}' deleted successfully.");
     }
 
     public async Task UpdateSalesOrderStatusAsync(int id, string status)
@@ -136,6 +152,11 @@ public class SalesService : ISalesService
 
     public async Task<DeliveryChallan> SaveDeliveryChallanAsync(DeliveryChallan challan)
     {
+        if (challan.CustomerId <= 0)
+            throw new InvalidOperationException("Customer selection is required.");
+        if (challan.Items == null || !challan.Items.Any() || challan.Items.Any(i => i.Quantity <= 0))
+            throw new InvalidOperationException("Please add at least one line item with valid quantity.");
+
         if (challan.Id == 0)
         {
             _context.DeliveryChallans.Add(challan);
@@ -158,14 +179,14 @@ public class SalesService : ISalesService
         return challan;
     }
 
-    public async Task DeleteDeliveryChallanAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteDeliveryChallanAsync(int id)
     {
         var item = await _context.DeliveryChallans.FindAsync(id);
-        if (item != null)
-        {
-            item.IsActive = false;
-            await _context.SaveChangesAsync();
-        }
+        if (item == null) return (false, "Delivery Challan not found or already removed.");
+
+        item.IsActive = false;
+        await _context.SaveChangesAsync();
+        return (true, $"Delivery Challan '{item.ChallanNumber}' deleted successfully.");
     }
 
     // Sales Invoice
@@ -178,16 +199,21 @@ public class SalesService : ISalesService
     {
         return await _context.SalesInvoices
             .Include(i => i.Customer)
-            .Include(i => i.Items)
+            .Include(i => i.Items).ThenInclude(item => item.Product)
             .FirstOrDefaultAsync(i => i.Id == id);
     }
 
     public async Task<SalesInvoice> SaveInvoiceAsync(SalesInvoice invoice)
     {
+        if (invoice.CustomerId <= 0)
+            throw new InvalidOperationException("Customer selection is required.");
+        if (invoice.Items == null || !invoice.Items.Any() || invoice.Items.Any(i => i.Quantity <= 0 || i.Rate <= 0))
+            throw new InvalidOperationException("Please add at least one valid invoice item with quantity > 0 and rate > 0.");
+
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            invoice.Customer = await _context.Customers.FindAsync(invoice.CustomerId)
+            var customer = await _context.Customers.FindAsync(invoice.CustomerId)
                 ?? throw new InvalidOperationException("Selected customer was not found.");
 
             foreach (var item in invoice.Items)
@@ -196,15 +222,35 @@ public class SalesService : ISalesService
                     ?? throw new InvalidOperationException("One or more selected products were not found.");
 
                 item.ProductName = string.IsNullOrWhiteSpace(item.ProductName) ? product.ProductName : item.ProductName;
-                item.TaxPercentage = item.TaxPercentage == 0 ? product.GSTPercentage : item.TaxPercentage;
-                item.TaxAmount = item.TaxAmount == 0 ? item.Quantity * item.Rate * (item.TaxPercentage / 100) : item.TaxAmount;
-                item.Amount = item.Amount == 0 ? (item.Quantity * item.Rate) + item.TaxAmount : item.Amount;
+                item.Product = null;
+                item.SalesInvoice = null;
+                if (!invoice.WithGST)
+                {
+                    item.TaxPercentage = 0;
+                    item.CGSTAmount = 0;
+                    item.SGSTAmount = 0;
+                    item.IGSTAmount = 0;
+                    item.TaxAmount = 0;
+                    item.Amount = item.Quantity * item.Rate;
+                }
+                else
+                {
+                    item.TaxPercentage = item.TaxPercentage == 0 ? product.GSTPercentage : item.TaxPercentage;
+                    item.TaxAmount = item.TaxAmount == 0 ? item.Quantity * item.Rate * (item.TaxPercentage / 100) : item.TaxAmount;
+                    item.Amount = item.Amount == 0 ? (item.Quantity * item.Rate) + item.TaxAmount : item.Amount;
+                }
             }
 
+            if (!invoice.WithGST)
+            {
+                invoice.TaxAmount = 0;
+            }
             invoice.SubTotal = invoice.SubTotal == 0 ? invoice.Items.Sum(i => i.Quantity * i.Rate) : invoice.SubTotal;
-            invoice.TaxAmount = invoice.TaxAmount == 0 ? invoice.Items.Sum(i => i.TaxAmount) : invoice.TaxAmount;
-            invoice.GrandTotal = invoice.GrandTotal == 0 ? invoice.SubTotal + invoice.TaxAmount - invoice.DiscountAmount + invoice.RoundOff : invoice.GrandTotal;
-            invoice.BalanceAmount = invoice.BalanceAmount == 0 ? invoice.GrandTotal - invoice.PaidAmount : invoice.BalanceAmount;
+            invoice.TaxAmount = !invoice.WithGST ? 0 : (invoice.TaxAmount == 0 ? invoice.Items.Sum(i => i.TaxAmount) : invoice.TaxAmount);
+            invoice.GrandTotal = invoice.SubTotal + invoice.TaxAmount - invoice.DiscountAmount + invoice.RoundOff;
+            invoice.BalanceAmount = invoice.GrandTotal - invoice.PaidAmount;
+
+            invoice.Customer = null;
 
             if (invoice.Id == 0)
             {
@@ -216,13 +262,11 @@ public class SalesService : ISalesService
                 var existing = await _context.SalesInvoices.Include(i => i.Items).FirstOrDefaultAsync(i => i.Id == invoice.Id);
                 if (existing != null)
                 {
-                    // Revert old stock transactions if updating
                     var oldTransactions = await _context.StockTransactions
                         .Where(t => t.TransactionType == "Sales" && t.ReferenceNumber == existing.InvoiceNumber)
                         .ToListAsync();
                     _context.StockTransactions.RemoveRange(oldTransactions);
 
-                    // Restock quantities
                     foreach (var item in existing.Items)
                     {
                         var product = await _context.Products.FindAsync(item.ProductId);
@@ -243,7 +287,6 @@ public class SalesService : ISalesService
                 }
             }
 
-            // Deduct stock for invoice items & add StockTransactions
             foreach (var item in invoice.Items)
             {
                 var product = await _context.Products.FindAsync(item.ProductId);
@@ -263,15 +306,13 @@ public class SalesService : ISalesService
                 }
             }
 
-            // Generate Accounting Voucher (Sales Account Cr, Customer Account Dr)
-            var customerLedger = await _context.Ledgers.FirstOrDefaultAsync(l => l.LedgerName.Contains(invoice.Customer!.CustomerName) || l.LedgerCode == invoice.Customer.CustomerCode);
+            var customerLedger = await _context.Ledgers.FirstOrDefaultAsync(l => l.LedgerName.Contains(customer.CustomerName) || (!string.IsNullOrEmpty(customer.CustomerCode) && l.LedgerCode == customer.CustomerCode));
             if (customerLedger == null)
             {
-                // Auto create customer ledger if not exist
                 customerLedger = new Ledger
                 {
-                    LedgerCode = invoice.Customer.CustomerCode,
-                    LedgerName = invoice.Customer.CustomerName,
+                    LedgerCode = !string.IsNullOrWhiteSpace(customer.CustomerCode) ? customer.CustomerCode : $"CUST-{customer.Id}",
+                    LedgerName = customer.CustomerName,
                     AccountGroupId = (await _context.AccountGroups.FirstOrDefaultAsync(g => g.GroupName == "Sundry Debtors"))?.Id ?? 1,
                     OpeningBalance = 0,
                     BalanceType = "Dr"
@@ -280,12 +321,12 @@ public class SalesService : ISalesService
                 await _context.SaveChangesAsync();
             }
 
-            var salesLedger = await _context.Ledgers.FirstOrDefaultAsync(l => l.LedgerName == "Sales Account" || l.LedgerCode == "SALES");
+            var salesLedger = await _context.Ledgers.FirstOrDefaultAsync(l => l.LedgerName == "Sales Account");
             if (salesLedger == null)
             {
                 salesLedger = new Ledger
                 {
-                    LedgerCode = "SALES",
+                    LedgerCode = "SALES-001",
                     LedgerName = "Sales Account",
                     AccountGroupId = (await _context.AccountGroups.FirstOrDefaultAsync(g => g.GroupName == "Sales Accounts"))?.Id ?? 1,
                     OpeningBalance = 0,
@@ -295,25 +336,27 @@ public class SalesService : ISalesService
                 await _context.SaveChangesAsync();
             }
 
-            // Check if voucher exists
-            var existingVoucher = await _context.Vouchers.Include(v => v.Items).FirstOrDefaultAsync(v => v.ReferenceNumber == invoice.InvoiceNumber && v.VoucherType == "Journal");
+            var existingVoucher = await _context.Vouchers.Include(v => v.Items).FirstOrDefaultAsync(v => v.ReferenceNumber == invoice.InvoiceNumber);
             if (existingVoucher != null)
             {
                 _context.Vouchers.Remove(existingVoucher);
+                await _context.SaveChangesAsync();
             }
 
             var voucher = new Voucher
             {
+                Id = 0,
                 VoucherNumber = "JV-" + invoice.InvoiceNumber,
                 VoucherDate = invoice.InvoiceDate,
                 VoucherType = "Journal",
                 ReferenceNumber = invoice.InvoiceNumber,
-                Narration = $"Sales invoice {invoice.InvoiceNumber} generated for customer {invoice.Customer.CustomerName}",
+                Narration = $"Sales invoice {invoice.InvoiceNumber} generated for customer {customer.CustomerName}",
                 TotalAmount = invoice.GrandTotal
             };
 
             voucher.Items.Add(new VoucherItem
             {
+                Id = 0,
                 LedgerId = customerLedger.Id,
                 DebitAmount = invoice.GrandTotal,
                 CreditAmount = 0,
@@ -323,6 +366,7 @@ public class SalesService : ISalesService
 
             voucher.Items.Add(new VoucherItem
             {
+                Id = 0,
                 LedgerId = salesLedger.Id,
                 DebitAmount = 0,
                 CreditAmount = invoice.GrandTotal,
@@ -344,13 +388,18 @@ public class SalesService : ISalesService
         return invoice;
     }
 
-    public async Task DeleteInvoiceAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteInvoiceAsync(int id)
     {
-        var item = await _context.SalesInvoices.Include(i => i.Items).FirstOrDefaultAsync(i => i.Id == id);
-        if (item != null)
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
+            var item = await _context.SalesInvoices.Include(i => i.Items).FirstOrDefaultAsync(i => i.Id == id);
+            if (item == null) return (false, "Sales Invoice not found or already removed.");
+
+            if (item.Status == "Paid")
+                return (false, $"Sales Invoice '{item.InvoiceNumber}' cannot be deleted because it is already Paid.");
+
             item.IsActive = false;
-            // Restore stock
             foreach (var line in item.Items)
             {
                 var product = await _context.Products.FindAsync(line.ProductId);
@@ -359,7 +408,26 @@ public class SalesService : ISalesService
                     product.CurrentStock += line.Quantity;
                 }
             }
+
+            var stockTxns = await _context.StockTransactions
+                .Where(t => t.TransactionType == "Sales" && t.ReferenceNumber == item.InvoiceNumber)
+                .ToListAsync();
+            _context.StockTransactions.RemoveRange(stockTxns);
+
+            var voucher = await _context.Vouchers.Include(v => v.Items).FirstOrDefaultAsync(v => v.ReferenceNumber == item.InvoiceNumber);
+            if (voucher != null)
+            {
+                _context.Vouchers.Remove(voucher);
+            }
+
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return (true, $"Sales Invoice '{item.InvoiceNumber}' deleted and stock reverted successfully.");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return (false, $"Failed to delete invoice: {ex.Message}");
         }
     }
 
@@ -379,6 +447,11 @@ public class SalesService : ISalesService
 
     public async Task<SalesReturn> SaveReturnAsync(SalesReturn salesReturn)
     {
+        if (salesReturn.CustomerId <= 0)
+            throw new InvalidOperationException("Customer selection is required.");
+        if (salesReturn.Items == null || !salesReturn.Items.Any() || salesReturn.Items.Any(i => i.Quantity <= 0))
+            throw new InvalidOperationException("Please add at least one line item with valid return quantity.");
+
         if (salesReturn.Id == 0)
         {
             _context.SalesReturns.Add(salesReturn);
@@ -401,13 +474,13 @@ public class SalesService : ISalesService
         return salesReturn;
     }
 
-    public async Task DeleteReturnAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteReturnAsync(int id)
     {
         var item = await _context.SalesReturns.FindAsync(id);
-        if (item != null)
-        {
-            item.IsActive = false;
-            await _context.SaveChangesAsync();
-        }
+        if (item == null) return (false, "Sales Return not found or already removed.");
+
+        item.IsActive = false;
+        await _context.SaveChangesAsync();
+        return (true, $"Sales Return '{item.ReturnNumber}' deleted successfully.");
     }
 }

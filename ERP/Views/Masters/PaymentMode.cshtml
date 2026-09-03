@@ -8,7 +8,7 @@
     <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Payment Mode</button>
 </div>
 
-<div class="card max-width-600 mx-auto">
+<div class="card">
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover datatable align-middle">
@@ -26,10 +26,20 @@
                         <tr id="row-@pm.Id">
                             <td>@pm.Id</td>
                             <td class="font-weight-semibold text-dark">@pm.ModeName</td>
-                            <td><span class="badge bg-light text-primary">@pm.ModeType</span></td>
+                            @{
+                                var badgeClass = pm.ModeType switch
+                                {
+                                    "Cash" => "badge-cash",
+                                    "Bank" => "badge-bank",
+                                    "Card" => "badge-card",
+                                    "UPI" => "badge-upi",
+                                    _ => "badge-other"
+                                };
+                            }
+                            <td><span class="badge @badgeClass">@pm.ModeType</span></td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editPaymentMode(@Json.Serialize(pm))"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { pm.Id, pm.ModeName, pm.ModeType })" onclick="editPaymentMode(this)"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button class="btn btn-sm btn-outline-danger" onclick="deletePaymentMode(@pm.Id)"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </td>
@@ -69,7 +79,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
                 </div>
             </form>
         </div>
@@ -79,45 +89,45 @@
 @section Scripts {
     <script>
         var bootstrapModal;
-        document.addEventListener("DOMContentLoaded", function () {
+        $(function () {
             bootstrapModal = new bootstrap.Modal(document.getElementById('paymentModeModal'));
+
+            $('#paymentModeForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    modal: bootstrapModal,
+                    reloadPage: true
+                });
+            });
         });
 
         function openModal() {
+            ErpApp.clearFieldErrors('#paymentModeForm');
             document.getElementById('paymentModeForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerText = "Add Payment Mode";
+            document.getElementById('submitBtn').innerText = "Save";
             bootstrapModal.show();
         }
 
-        function editPaymentMode(pm) {
-            document.getElementById('Id').value = pm.id;
-            document.getElementById('ModeName').value = pm.modeName;
-            document.getElementById('ModeType').value = pm.modeType;
+        function editPaymentMode(btn) {
+            ErpApp.clearFieldErrors('#paymentModeForm');
+            var pm = $(btn).data('item');
+            document.getElementById('paymentModeForm').reset();
+            document.getElementById('Id').value = window.getVal(pm, 'id');
+            document.getElementById('ModeName').value = window.getVal(pm, 'modeName');
+            document.getElementById('ModeType').value = window.getVal(pm, 'modeType');
             document.getElementById('modalTitle').innerText = "Edit Payment Mode";
+            document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();
         }
 
         function deletePaymentMode(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this payment mode?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Masters/DeletePaymentMode', { id: id }, function (res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Payment Mode has been deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        } else {
-                            Swal.fire('Error!', 'Failed to delete.', 'error');
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Masters/DeletePaymentMode',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this payment mode?'
             });
         }
     </script>

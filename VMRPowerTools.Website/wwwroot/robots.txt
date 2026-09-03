@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /Account/Profile
+Disallow: /Account/MyOrders
+Disallow: /Account/OrderDetails
+Disallow: /Account/Invoices
+Disallow: /Account/InvoiceDetails
+Disallow: /Cart/
+Disallow: /Checkout/
+
+Sitemap: https://www.vmrpowertools.com/sitemap.xml

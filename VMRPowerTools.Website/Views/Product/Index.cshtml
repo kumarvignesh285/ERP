@@ -1,0 +1,331 @@
+@model ProductCatalogViewModel
+@{
+    ViewData["Title"] = "Products Catalog";
+}
+
+<!-- Premium Industrial Hero Section -->
+<section class="py-5 text-white bg-industrial-dark animate-fade-up position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(17, 17, 17, 0.95) 0%, rgba(255, 107, 0, 0.1) 100%), url('https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover; border-bottom: 3px solid var(--primary);">
+    <!-- Orange Gradient overlay -->
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle at 85% 15%, rgba(255, 107, 0, 0.2) 0%, transparent 60%); z-index: 1;"></div>
+    
+    <div class="container py-4 position-relative" style="z-index: 2;">
+        <div class="row align-items-center g-5">
+            <!-- Left Side Content -->
+            <div class="col-lg-7 animate-fade-right">
+                <span class="badge bg-primary px-3.5 py-2 mb-3 text-uppercase font-weight-bold tracking-wider" style="border-radius: 50px; font-size: 0.75rem;">Premium Industrial Tools</span>
+                <h1 class="display-4 font-weight-extrabold text-white mb-3">Professional Power Tools <br><span class="text-primary">for Every Job</span></h1>
+                <p class="lead mb-4 text-light opacity-80 fs-6" style="max-width: 620px; line-height: 1.6;">
+                    Discover premium Chain Saws, Brush Cutters, Pressure Washers, Water Pumps, Generators, and Industrial Equipment trusted by professionals.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="#catalog-grid" class="btn btn-primary btn-lg"><i class="fa-solid fa-layer-group me-2"></i> Explore Products</a>
+                    <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-light btn-lg">Request Quote</a>
+                </div>
+            </div>
+            <!-- Right Side Featured Card -->
+            <div class="col-lg-5 d-none d-lg-block animate-fade-left">
+                <div class="glass-panel-dark p-4 text-center shadow-lg position-relative overflow-hidden" style="border-radius: 28px; border: 2px solid rgba(255, 107, 0, 0.25);">
+                    <img src="https://images.unsplash.com/photo-1608613304899-ea8098577e38?auto=format&fit=crop&w=600&q=80" alt="Timber Wood Cutting Chainsaw" class="img-fluid rounded-4 shadow-sm" style="max-height: 240px; width: 100%; object-fit: cover;">
+                    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4 py-2 px-4 rounded-pill border border-secondary" style="backdrop-filter: blur(10px); background: rgba(0,0,0,0.65);">
+                        <span class="fs-8 font-weight-bold text-white"><i class="fa-solid fa-certificate text-primary me-2"></i>STIHL MS 250 Chainsaw</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Catalog Layout -->
+<section id="catalog-grid" class="py-5 bg-brand-black" style="scroll-margin-top: 80px;">
+    <div class="container py-3">
+        <div class="row g-4">
+            <!-- Sidebar: Filters -->
+            <div class="col-lg-3 animate-fade-right">
+                <div class="glass-panel-custom p-4 sticky-top" style="top: 100px; z-index: 10;">
+                    <form id="filterForm" asp-action="Index" method="get">
+                        <!-- Search Query Box -->
+                        <div class="mb-4">
+                            <label class="form-label font-weight-bold uppercase tracking-wider fs-9 text-zinc-500 mb-2">Search Catalog</label>
+                            <div class="position-relative">
+                                <input type="text" name="search" value="@Model.Search" class="form-control form-control-dark py-2.5 ps-3 pe-5 fs-8 shadow-sm" placeholder="Search name/code..." style="border-radius: 50px !important;">
+                                <button type="submit" class="btn bg-transparent position-absolute end-0 top-50 translate-middle-y border-0 pe-3 text-muted" style="z-index: 5;"><i class="fa-solid fa-magnifying-glass text-zinc-500"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Collapsible Categories List -->
+                        <div class="mb-4">
+                            <label class="form-label font-weight-bold uppercase tracking-wider fs-9 text-zinc-500 mb-3 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#categoryCollapse" role="button" aria-expanded="true" aria-controls="categoryCollapse" style="cursor: pointer;">
+                                <span class="text-white">Categories</span>
+                                <i class="fa-solid fa-chevron-down fs-9 opacity-50"></i>
+                            </label>
+                            <div class="collapse show" id="categoryCollapse">
+                                <div class="list-group list-group-flush fs-8">
+                                    <a asp-action="Index" 
+                                       asp-route-brandId="@Model.BrandId" 
+                                       asp-route-minPrice="@Model.MinPrice" 
+                                       asp-route-maxPrice="@Model.MaxPrice" 
+                                       asp-route-search="@Model.Search" 
+                                       asp-route-sortOrder="@Model.SortOrder" 
+                                       class="list-group-item list-group-item-action border-0 px-3 py-2 d-flex justify-content-between align-items-center rounded mb-1 bg-transparent @(Model.CategoryId == null ? "text-brand-orange font-bold" : "text-zinc-400 hover:text-white")"
+                                       style="transition: var(--transition-magnetic);">
+                                        <span><i class="fa-solid fa-cubes me-2"></i> All Categories</span>
+                                        <i class="fa-solid fa-angle-right fs-9 opacity-50"></i>
+                                    </a>
+                                    @foreach (var cat in Model.Categories)
+                                    {
+                                        var catIcon = cat.CategoryName.ToLower() switch
+                                        {
+                                            var c when c.Contains("drill") => "fa-solid fa-screwdriver-wrench",
+                                            var c when c.Contains("grinder") => "fa-solid fa-dharmachakra",
+                                            var c when c.Contains("hammer") => "fa-solid fa-hammer",
+                                            var c when c.Contains("cut-off") => "fa-solid fa-circle-notch",
+                                            var c when c.Contains("saw") => "fa-solid fa-circle-notch",
+                                            var c when c.Contains("welding") => "fa-solid fa-burst",
+                                            var c when c.Contains("compressor") => "fa-solid fa-wind",
+                                            var c when c.Contains("washer") => "fa-solid fa-shower",
+                                            var c when c.Contains("safety") => "fa-solid fa-helmet-safety",
+                                            _ => "fa-solid fa-toolbox"
+                                        };
+
+                                        <a asp-action="Index" 
+                                           asp-route-categoryId="@cat.Id" 
+                                           asp-route-brandId="@Model.BrandId" 
+                                           asp-route-minPrice="@Model.MinPrice" 
+                                           asp-route-maxPrice="@Model.MaxPrice" 
+                                           asp-route-search="@Model.Search" 
+                                           asp-route-sortOrder="@Model.SortOrder" 
+                                           class="list-group-item list-group-item-action border-0 px-3 py-2 d-flex justify-content-between align-items-center rounded mb-1 bg-transparent @(Model.CategoryId == cat.Id ? "text-brand-orange font-bold" : "text-zinc-400 hover:text-white")"
+                                           style="transition: var(--transition-magnetic);">
+                                            <span><i class="@catIcon me-2"></i> @cat.CategoryName</span>
+                                            <i class="fa-solid fa-angle-right fs-9 opacity-50"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                            <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+                        </div>
+
+                        <!-- Brands Filter -->
+                        <div class="mb-4">
+                            <label class="form-label font-weight-bold uppercase tracking-wider fs-9 text-zinc-500 mb-2">Manufacturer Brands</label>
+                            <div class="fs-8">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input brand-check" type="radio" name="brandId" id="brand_all" value="" @(Model.BrandId == null ? "checked" : "") onchange="this.form.submit()">
+                                    <label class="form-check-label text-zinc-300 font-weight-semibold" for="brand_all">All Brands</label>
+                                </div>
+                                @foreach (var brand in Model.Brands)
+                                {
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input brand-check" type="radio" name="brandId" id="brand_@brand.Id" value="@brand.Id" @(Model.BrandId == brand.Id ? "checked" : "") onchange="this.form.submit()">
+                                        <label class="form-check-label text-zinc-300 text-truncate d-block" for="brand_@brand.Id">@brand.BrandName</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Price Limit Filter -->
+                        <div class="mb-4">
+                            <label class="form-label font-weight-bold uppercase tracking-wider fs-9 text-zinc-500 mb-2">Price Limit (₹)</label>
+                            <div class="row g-2 align-items-center">
+                                <div class="col-5">
+                                    <input type="number" name="minPrice" value="@Model.MinPrice" class="form-control form-control-dark py-1.5 fs-9 shadow-none" placeholder="Min">
+                                </div>
+                                <div class="col-2 text-center text-zinc-600 fs-8">-</div>
+                                <div class="col-5">
+                                    <input type="number" name="maxPrice" value="@Model.MaxPrice" class="form-control form-control-dark py-1.5 fs-9 shadow-none" placeholder="Max">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-magnetic w-100 mt-3 py-2 bg-brand-orange hover:bg-brand-orange/95 text-white font-syne text-[10px] font-bold uppercase tracking-widest border border-brand-orange" style="border-radius: 4px !important;"><i class="fa-solid fa-circle-check me-1"></i> Apply Filter</button>
+                        </div>
+
+                        <input type="hidden" name="sortOrder" value="@Model.SortOrder" />
+
+                        <!-- Clear filters -->
+                        @if (Model.CategoryId.HasValue || Model.BrandId.HasValue || Model.MinPrice.HasValue || Model.MaxPrice.HasValue || !string.IsNullOrEmpty(Model.Search))
+                        {
+                            <a asp-action="Index" class="btn-magnetic w-100 mt-2 py-2 text-center text-zinc-400 hover:text-white font-syne text-[10px] font-bold uppercase tracking-widest border border-zinc-800 hover:border-zinc-500 block" style="border-radius: 4px !important; background: transparent;"><i class="fa-solid fa-filter-circle-xmark me-1"></i> Clear Filters</a>
+                        }
+                    </form>
+                </div>
+            </div>
+
+            <!-- Main Content: Product Listings -->
+            <div class="col-lg-9 animate-fade-left">
+                <!-- Sorting & Info Bar -->
+                <div class="glass-panel-custom p-3 mb-4">
+                    <div class="row align-items-center justify-content-between g-3">
+                        <div class="col-md-6 col-12 text-center text-md-start">
+                            <p class="mb-0 text-zinc-400 fs-8">
+                                Found <span class="font-weight-bold text-white">@Model.TotalItems</span> items matching criteria
+                                @if (Model.TotalItems > 0)
+                                {
+                                    <span class="badge bg-zinc-900 text-zinc-300 border border-zinc-800 ms-1 font-weight-semibold">Page @Model.CurrentPage of @Model.TotalPages</span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-4 col-12 d-flex justify-content-center justify-content-md-end align-items-center gap-2">
+                            <label class="fs-9 text-zinc-400 font-weight-bold mb-0 text-uppercase" style="white-space: nowrap;">Sort By:</label>
+                            <select class="form-select form-select-sm form-control-dark py-1 px-3 fs-8" style="width: 170px; border-radius: 4px !important;" onchange="location = this.value;">
+                                <option value="@Url.Action("Index", new { categoryId = Model.CategoryId, brandId = Model.BrandId, minPrice = Model.MinPrice, maxPrice = Model.MaxPrice, search = Model.Search, sortOrder = "" })" selected="@(string.IsNullOrEmpty(Model.SortOrder))">Name: A to Z</option>
+                                <option value="@Url.Action("Index", new { categoryId = Model.CategoryId, brandId = Model.BrandId, minPrice = Model.MinPrice, maxPrice = Model.MaxPrice, search = Model.Search, sortOrder = "price_asc" })" selected="@(Model.SortOrder == "price_asc")">Price: Low to High</option>
+                                <option value="@Url.Action("Index", new { categoryId = Model.CategoryId, brandId = Model.BrandId, minPrice = Model.MinPrice, maxPrice = Model.MaxPrice, search = Model.Search, sortOrder = "price_desc" })" selected="@(Model.SortOrder == "price_desc")">Price: High to Low</option>
+                                <option value="@Url.Action("Index", new { categoryId = Model.CategoryId, brandId = Model.BrandId, minPrice = Model.MinPrice, maxPrice = Model.MaxPrice, search = Model.Search, sortOrder = "newest" })" selected="@(Model.SortOrder == "newest")">Newest Arrivals</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Catalog Grid -->
+                <div class="row g-4 mb-5">
+                    @if (Model.Products != null && Model.Products.Any())
+                    {
+                        foreach (var product in Model.Products)
+                        {
+                            <div class="col-sm-6 col-md-4">
+                                <div class="product-card">
+                                    <div class="product-img-wrap">
+                                        @if (product.CurrentStock > 0)
+                                        {
+                                            <span class="badge bg-green-500/10 border border-green-500/20 text-green-400 position-absolute top-0 start-0 m-3 shadow-sm fs-9" style="border-radius: 4px; z-index: 5;">In Stock</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-red-500/10 border border-red-500/20 text-red-400 position-absolute top-0 start-0 m-3 shadow-sm fs-9" style="border-radius: 4px; z-index: 5;">Out of Stock</span>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(product.ImagePath))
+                                        {
+                                            <img src="@product.ImagePath" alt="@product.ProductName" class="product-img" loading="lazy">
+                                        }
+                                        else
+                                        {
+                                            <img src="/images/products/no_image_placeholder.jpg" alt="No Image Available" class="product-img opacity-50" loading="lazy">
+                                        }
+                                    </div>
+                                    <div class="product-body">
+                                        @if (product.ImagePath == null || !product.ImagePath.Contains("WhatsApp"))
+                                        {
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="product-category">@(product.Category?.CategoryName ?? "Equipment")</span>
+                                                @if (product.Brand != null)
+                                                {
+                                                    <span class="badge bg-zinc-900 border border-zinc-800 text-zinc-400 fs-9" style="border-radius: 4px;">@product.Brand.BrandName</span>
+                                                }
+                                            </div>
+                                        }
+                                        <h5 class="product-title text-truncate-2" style="height: 2.8rem; overflow: hidden;" title="@product.ProductName">@product.ProductName</h5>
+                                        <p class="product-desc text-truncate-2" style="height: 2.4rem; overflow: hidden;">@product.Description</p>
+                                        
+                                        <!-- Key Features -->
+                                        <ul class="list-unstyled fs-9 text-zinc-500 mb-4 border-top border-white/5 pt-2">
+                                            <li class="mb-1"><i class="fa-solid fa-circle-check text-brand-orange me-2"></i>Professional Duty-Cycle</li>
+                                            <li class="mb-1"><i class="fa-solid fa-circle-check text-brand-orange me-2"></i>High Durability Components</li>
+                                            <li><i class="fa-solid fa-circle-check text-brand-orange me-2"></i>1-Year Warranty Included</li>
+                                        </ul>
+
+                                        <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-white/5">
+                                            <div>
+                                                @if (product.MRP > product.SalesPrice)
+                                                {
+                                                    <span class="text-decoration-line-through text-zinc-600 fs-9 me-1">₹@product.MRP.ToString("N0")</span>
+                                                }
+                                                <span class="product-price d-block text-white">₹@product.SalesPrice.ToString("N0")</span>
+                                            </div>
+                                            <button class="btn btn-sm btn-outline-primary p-0 d-flex align-items-center justify-content-center" 
+                                                    onclick="addToCart(event, @product.Id)" 
+                                                    style="width: 36px; height: 36px; border-radius: 50% !important; border-color: var(--brand-orange); color: var(--brand-orange);" 
+                                                    title="Add to Cart">
+                                                <i class="fa-solid fa-cart-plus"></i>
+                                            </button>
+                                        </div>
+                                        <div class="row g-2 mt-3">
+                                            <div class="col-6">
+                                                <a asp-action="Details" asp-route-id="@product.Id" class="btn-magnetic btn btn-sm btn-outline-light w-100 py-2 fs-9" style="border-radius: 4px !important; border-color: #1f1f23; color: #a1a1aa;"><i class="fa-solid fa-circle-info me-1"></i> Details</a>
+                                            </div>
+                                            <div class="col-6">
+                                                <a asp-controller="Home" asp-action="Contact" asp-route-message="Hi, I am interested in @product.ProductName (Code: @product.ProductCode). Please send a quotation." class="btn-magnetic btn btn-sm btn-primary w-100 py-2 fs-9 bg-brand-orange border-brand-orange" style="border-radius: 4px !important; color: #ffffff;"><i class="fa-solid fa-file-invoice-dollar me-1"></i> Quote</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 text-center py-5 glass-panel-custom">
+                            <i class="fa-solid fa-cubes text-zinc-600 fs-1 mb-3"></i>
+                            <h4 class="font-weight-bold text-white">No matching products found</h4>
+                            <p class="text-zinc-500 mb-0 fs-7">Try resetting search keywords or catalog filters to browse again.</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination controls -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Catalog Navigation">
+                        <ul class="pagination justify-content-center fs-8">
+                            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                                <a class="page-link shadow-sm border" asp-action="Index" 
+                                   asp-route-categoryId="@Model.CategoryId" 
+                                   asp-route-brandId="@Model.BrandId" 
+                                   asp-route-minPrice="@Model.MinPrice" 
+                                   asp-route-maxPrice="@Model.MaxPrice" 
+                                   asp-route-search="@Model.Search" 
+                                   asp-route-sortOrder="@Model.SortOrder" 
+                                   asp-route-page="@(Model.CurrentPage - 1)"
+                                   style="border-radius: 4px 0 0 4px; padding: 0.6rem 1rem; background-color: #0b0b0d; border-color: #1f1f23; color: #a1a1aa;">
+                                    <i class="fa-solid fa-angle-left"></i>
+                                </a>
+                            </li>
+
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                                    <a class="page-link shadow-sm border @(Model.CurrentPage == i ? "text-white" : "text-zinc-400")" asp-action="Index" 
+                                       asp-route-categoryId="@Model.CategoryId" 
+                                       asp-route-brandId="@Model.BrandId" 
+                                       asp-route-minPrice="@Model.MinPrice" 
+                                       asp-route-maxPrice="@Model.MaxPrice" 
+                                       asp-route-search="@Model.Search" 
+                                       asp-route-sortOrder="@Model.SortOrder" 
+                                       asp-route-page="@i"
+                                       style="padding: 0.6rem 1rem; font-weight: 600; background-color: @(Model.CurrentPage == i ? "var(--brand-orange)" : "#0b0b0d"); border-color: @(Model.CurrentPage == i ? "var(--brand-orange)" : "#1f1f23");">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                                <a class="page-link shadow-sm border" asp-action="Index" 
+                                   asp-route-categoryId="@Model.CategoryId" 
+                                   asp-route-brandId="@Model.BrandId" 
+                                   asp-route-minPrice="@Model.MinPrice" 
+                                   asp-route-maxPrice="@Model.MaxPrice" 
+                                   asp-route-search="@Model.Search" 
+                                   asp-route-sortOrder="@Model.SortOrder" 
+                                   asp-route-page="@(Model.CurrentPage + 1)"
+                                   style="border-radius: 0 4px 4px 0; padding: 0.6rem 1rem; background-color: #0b0b0d; border-color: #1f1f23; color: #a1a1aa;">
+                                    <i class="fa-solid fa-angle-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function addToCart(event, productId) {
+            event.preventDefault();
+            event.stopPropagation();
+            $.post('/Cart/Add', { productId: productId, quantity: 1 }, function(res) {
+                location.reload();
+            });
+        }
+    </script>
+}

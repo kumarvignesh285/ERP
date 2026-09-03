@@ -6,15 +6,49 @@
 <!-- List View -->
 <div id="listView">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Sales Invoices</h4>
-        <button class="btn btn-primary" onclick="showForm()"><i class="fa-solid fa-plus me-1"></i> New Invoice</button>
+        <div>
+            <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Sales Invoices</h4>
+            <p class="text-muted small m-0 mt-1">Manage billing invoices, track payments, print receipts, and monitor outstanding balances</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" onclick="showForm()"><i class="fa-solid fa-plus me-1.5"></i> New Sales Invoice</button>
     </div>
 
-    <div class="card">
+    <!-- Filters Row -->
+    <div class="card mb-3 no-print shadow-sm border-0">
+        <div class="card-body p-3">
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-sm-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1 small text-muted">From Date</label>
+                    <input type="date" id="filterFromDate" class="form-control form-control-sm" />
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1 small text-muted">To Date</label>
+                    <input type="date" id="filterToDate" class="form-control form-control-sm" />
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1 small text-muted">Status</label>
+                    <select id="filterStatus" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3 d-flex gap-2 align-self-end">
+                    <button class="btn btn-sm btn-primary w-100" onclick="applyFilters()"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                    <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetFilters()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Datatable Card -->
+    <div class="card shadow-sm border-0">
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover datatable align-middle">
-                    <thead>
+                    <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                         <tr>
                             <th>Invoice No</th>
                             <th>Date</th>
@@ -30,18 +64,36 @@
                         @foreach (var inv in Model.Items)
                         {
                             <tr id="row-@inv.Id">
-                                <td class="font-weight-bold">@inv.InvoiceNumber</td>
+                                <td class="fw-bold text-primary">@inv.InvoiceNumber</td>
                                 <td>@inv.InvoiceDate.ToString("dd-MM-yyyy")</td>
-                                <td>@inv.Customer?.CustomerName</td>
-                                <td class="font-weight-semibold text-dark">₹@inv.GrandTotal.ToString("N2")</td>
+                                <td class="fw-semibold text-dark">@inv.Customer?.CustomerName</td>
+                                <td class="fw-bold text-dark">₹@inv.GrandTotal.ToString("N2")</td>
                                 <td>₹@inv.PaidAmount.ToString("N2")</td>
-                                <td class="text-danger font-weight-semibold">₹@inv.BalanceAmount.ToString("N2")</td>
-                                <td><span class="badge bg-info">@inv.Status</span></td>
+                                <td class="text-danger fw-bold">₹@inv.BalanceAmount.ToString("N2")</td>
+                                @{
+                                    var statusBadgeClass = inv.Status switch
+                                    {
+                                        "Pending" or "Draft" => "badge-pending",
+                                        "Sent" or "Issued" or "Active" => "badge-sent",
+                                        "Completed" or "Paid" or "Accepted" or "Approved" => "badge-accepted",
+                                        "Cancelled" or "Rejected" or "Expired" => "badge-rejected",
+                                        _ => "badge-accepted"
+                                    };
+                                    var isLocked = inv.Status == "Paid" || inv.Status == "Cancelled";
+                                }
+                                <td><span class="badge @statusBadgeClass">@inv.Status</span></td>
                                 <td class="text-center no-print">
                                     <div class="btn-group">
-                                        <button class="btn btn-sm btn-outline-primary" onclick="editInvoice(@inv.Id)" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                        @if (isLocked)
+                                        {
+                                            <button class="btn btn-sm btn-outline-secondary" disabled title="Locked - Cannot edit Paid/Cancelled invoices"><i class="fa-solid fa-lock"></i></button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editInvoice(@inv.Id)" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                        }
                                         <button class="btn btn-sm btn-outline-secondary" onclick="ErpPrint.printBillById('salesInvoice', @inv.Id)" title="Print"><i class="fa-solid fa-print"></i></button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice(@inv.Id)"><i class="fa-solid fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice(@inv.Id)" @(isLocked ? "disabled" : "") title="Delete"><i class="fa-solid fa-trash"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -56,27 +108,32 @@
 <!-- Entry Form View (hidden initially) -->
 <div id="formView" style="display:none">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="m-0 font-weight-bold text-primary" id="formTitle"><i class="fa-solid fa-plus me-2"></i> Create Sales Invoice</h4>
-        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</button>
+        <h4 class="m-0 fw-bold text-primary" id="formTitle"><i class="fa-solid fa-plus me-2"></i> Create Sales Invoice</h4>
+        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1.5"></i> Back to List</button>
     </div>
 
-    <div class="card">
-        <div class="card-body">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
             <form id="invoiceForm">
                 <input type="hidden" id="Id" name="Id" value="0" />
                 
-                <div class="row">
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label font-weight-semibold">Invoice Number *</label>
-                        <input type="text" id="InvoiceNumber" class="form-control" required readonly />
-                        <small class="text-muted">Auto from company settings</small>
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-sm-6 col-md-2">
+                        <label class="form-label fw-semibold text-dark">Invoice Number <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-hashtag text-muted"></i></span>
+                            <input type="text" id="InvoiceNumber" class="form-control border-start-0 fw-bold" required readonly />
+                        </div>
                     </div>
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label font-weight-semibold">Invoice Date *</label>
-                        <input type="date" id="InvoiceDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <div class="col-12 col-sm-6 col-md-2">
+                        <label class="form-label fw-semibold text-dark">Invoice Date <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-calendar text-muted"></i></span>
+                            <input type="date" id="InvoiceDate" class="form-control border-start-0" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Customer *</label>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <label class="form-label fw-semibold text-dark">Customer <span class="text-danger">*</span></label>
                         <select id="CustomerId" class="form-select select2" required>
                             <option value="">Select Customer</option>
                             @foreach (var c in Model.Customers)
@@ -85,12 +142,12 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Terms (Days)</label>
-                        <input type="number" id="CreditDays" class="form-control" value="0" />
+                    <div class="col-12 col-sm-6 col-md-2">
+                        <label class="form-label fw-semibold text-dark">Terms (Days)</label>
+                        <input type="number" id="CreditDays" class="form-control" value="0" placeholder="0" />
                     </div>
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label font-weight-semibold">Status *</label>
+                    <div class="col-12 col-sm-6 col-md-2">
+                        <label class="form-label fw-semibold text-dark">Status <span class="text-danger">*</span></label>
                         <select id="Status" class="form-select" required>
                             <option value="Draft">Draft</option>
                             <option value="Issued">Issued</option>
@@ -99,57 +156,68 @@
                             <option value="Cancelled">Cancelled</option>
                         </select>
                     </div>
-                </div>
-
-                <hr />
-
-                <h5>Line Items</h5>
-                <div class="table-responsive mb-3">
-                    <table class="table table-bordered align-middle" id="itemsTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 20%">Category</th>
-                                <th style="width: 20%">Product *</th>
-                                <th style="width: 12%">Quantity *</th>
-                                <th style="width: 15%">Rate *</th>
-                                <th style="width: 10%">GST %</th>
-                                <th style="width: 15%">Total</th>
-                                <th style="width: 8%" class="text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Dynamic rows will be inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="d-flex justify-content-between mb-4">
-                    <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
-                    
-                    <div class="text-end" style="width: 300px;">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Sub Total:</span>
-                            <span id="lblSubTotal" class="font-weight-semibold">₹0.00</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Total GST:</span>
-                            <span id="lblTotalGST" class="font-weight-semibold">₹0.00</span>
-                        </div>
-                        <div class="d-flex justify-content-between border-top pt-2">
-                            <span class="font-weight-bold">Grand Total:</span>
-                            <span id="lblGrandTotal" class="font-weight-bold text-primary fs-5">₹0.00</span>
+                    <div class="col-12 col-sm-6 col-md-1 d-flex align-items-center pt-md-4">
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" id="WithGST" name="WithGST" onchange="toggleGST(this)" />
+                            <label class="form-check-label fw-bold text-dark" for="WithGST">
+                                GST
+                            </label>
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label font-weight-semibold">Remarks / Terms</label>
-                    <textarea id="Remarks" class="form-control" rows="2"></textarea>
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="m-0 fw-bold text-dark"><i class="fa-solid fa-list-check me-2 text-primary"></i> Line Items</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Item Row</button>
                 </div>
 
-                <div class="text-end">
-                    <button type="button" class="btn btn-secondary me-2" onclick="hideForm()">Cancel</button>
-                    <button type="button" class="btn btn-primary px-4" onclick="saveInvoice()">Save Invoice</button>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle shadow-sm" id="itemsTable">
+                        <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
+                            <tr>
+                                <th style="width: 200px;">Category</th>
+                                <th>Product *</th>
+                                <th class="w-100px">Quantity *</th>
+                                <th class="w-150px">Rate *</th>
+                                <th class="w-100px gst-column">GST %</th>
+                                <th class="w-150px">Total</th>
+                                <th class="w-60px text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic rows inserted via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
+                    <div class="flex-grow-1 w-100" style="max-width: 500px;">
+                        <label class="form-label fw-semibold text-dark">Notes / Terms & Conditions</label>
+                        <textarea id="Remarks" class="form-control" rows="3" placeholder="Additional instructions or payment terms..."></textarea>
+                    </div>
+                    
+                    <div class="summary-calc-card text-end ms-auto shadow-sm">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Sub Total:</span>
+                            <span id="lblSubTotal" class="fw-bold text-dark">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Total GST:</span>
+                            <span id="lblTotalGST" class="fw-bold text-dark">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                            <span class="fw-bold text-dark">Grand Total:</span>
+                            <span id="lblGrandTotal" class="fw-bold text-primary fs-5">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sticky Bottom Actions Bar -->
+                <div class="d-flex justify-content-end gap-2 border-top pt-3 sticky-bottom bg-white">
+                    <button type="button" class="btn btn-secondary px-3" onclick="hideForm()">Cancel</button>
+                    <button type="button" class="btn btn-primary px-4 shadow-sm" onclick="saveInvoice()"><i class="fa-solid fa-floppy-disk me-1.5"></i> Save Sales Invoice</button>
                 </div>
             </form>
         </div>
@@ -160,6 +228,20 @@
     <script>
         // List of all products preloaded for easy lookup in lines
         var productsList = @Json.Serialize(Model.ProductLookups);
+        if (productsList) {
+            productsList = productsList.map(function(p) {
+                return {
+                    id: window.getVal(p, 'id'),
+                    productCode: window.getVal(p, 'productCode'),
+                    productName: window.getVal(p, 'productName'),
+                    salesPrice: window.getVal(p, 'salesPrice'),
+                    purchasePrice: window.getVal(p, 'purchasePrice'),
+                    gstPercentage: window.getVal(p, 'gstPercentage'),
+                    categoryId: window.getVal(p, 'categoryId'),
+                    currentStock: window.getVal(p, 'currentStock')
+                };
+            });
+        }
 
         function showForm() {
             $('#formTitle').html('<i class="fa-solid fa-plus me-2"></i> Create Sales Invoice');
@@ -172,6 +254,8 @@
             $('#CustomerId').val('').trigger('change');
             $('#Status').val('Draft');
             $('#InvoiceDate').val('@DateTime.Today.ToString("yyyy-MM-dd")');
+            $('#WithGST').prop('checked', false);
+            $('.gst-column').hide();
             ErpPrint.fetchNextBillNumber('sales').done(function(res) {
                 $('#InvoiceNumber').val(res.billNumber);
             });
@@ -183,19 +267,43 @@
                 $('#formTitle').html('<i class="fa-solid fa-pen me-2"></i> Edit Sales Invoice');
                 $('#listView').hide();
                 $('#formView').show();
-                $('#Id').val(inv.id);
-                $('#InvoiceNumber').val(inv.invoiceNumber).prop('readonly', true);
-                $('#InvoiceDate').val(inv.invoiceDate.split('T')[0]);
-                $('#CustomerId').val(inv.customerId).trigger('change');
-                $('#Status').val(inv.status);
-                $('#Remarks').val(inv.notes || '');
-                if (inv.paymentTerms) {
-                    var days = parseInt(inv.paymentTerms) || 0;
+                $('#Id').val(window.getVal(inv, 'id'));
+                $('#InvoiceNumber').val(window.getVal(inv, 'invoiceNumber')).prop('readonly', true);
+                
+                var invDate = window.getVal(inv, 'invoiceDate');
+                if (invDate) {
+                    $('#InvoiceDate').val(invDate.split('T')[0]);
+                }
+                
+                $('#CustomerId').val(window.getVal(inv, 'customerId')).trigger('change');
+                $('#Status').val(window.getVal(inv, 'status'));
+                $('#Remarks').val(window.getVal(inv, 'notes') || '');
+                
+                var payTerms = window.getVal(inv, 'paymentTerms') || '';
+                if (payTerms) {
+                    var days = parseInt(payTerms) || 0;
                     $('#CreditDays').val(days);
                 }
+
+                var withGst = window.getVal(inv, 'withGST') || false;
+                $('#WithGST').prop('checked', withGst);
+                if (withGst) {
+                    $('.gst-column').show();
+                } else {
+                    $('.gst-column').hide();
+                }
+
                 $('#itemsTable tbody').empty();
-                (inv.items || []).forEach(function(item) {
-                    addRow(item);
+                
+                var items = window.getVal(inv, 'items') || [];
+                items.forEach(function(item) {
+                    var normalizedItem = {
+                        productId: window.getVal(item, 'productId'),
+                        quantity: window.getVal(item, 'quantity'),
+                        rate: window.getVal(item, 'rate'),
+                        taxPercentage: window.getVal(item, 'taxPercentage')
+                    };
+                    addRow(normalizedItem);
                 });
                 calculateTotals();
             });
@@ -210,14 +318,23 @@
             var index = $('#itemsTable tbody tr').length;
             
             var catOptionsHtml = '<option value="">All Categories</option>';
-            var categoriesList = @Json.Serialize(Model.Categories);
+            var categoriesList = @Json.Serialize(Model.Categories.Select(c => new { id = c.Id, categoryName = c.CategoryName }));
+            if (categoriesList) {
+                categoriesList = categoriesList.map(function(c) {
+                    return {
+                        id: window.getVal(c, 'id'),
+                        categoryName: window.getVal(c, 'categoryName')
+                    };
+                });
+            }
             categoriesList.forEach(function(c) {
                 catOptionsHtml += `<option value="${c.id}">${c.categoryName}</option>`;
             });
 
             var optionsHtml = '<option value="">Select Product</option>';
             productsList.forEach(function(p) {
-                optionsHtml += `<option value="${p.id}">${p.productName} (${p.productCode})</option>`;
+                var optionText = `${p.productName} (${p.productCode}) | Stock: ${p.currentStock || 0} | Price: ₹${(p.salesPrice || 0).toFixed(2)} | GST: ${p.gstPercentage || 0}%`;
+                optionsHtml += `<option value="${p.id}">${optionText}</option>`;
             });
 
             var rowHtml = `
@@ -233,16 +350,16 @@
                         </select>
                     </td>
                     <td>
-                        <input type="number" class="form-control qty-input" value="1" min="1" oninput="calculateRow(this)" required />
+                        <input type="number" class="form-control qty-input fw-semibold" value="1" min="1" oninput="calculateRow(this)" required />
                     </td>
                     <td>
-                        <input type="number" class="form-control rate-input" value="0.00" step="0.01" oninput="calculateRow(this)" required />
+                        <input type="number" class="form-control rate-input fw-semibold" value="0.00" step="0.01" oninput="calculateRow(this)" required />
                     </td>
-                    <td>
+                    <td class="gst-column">
                         <input type="number" class="form-control gst-input" value="18" oninput="calculateRow(this)" required />
                     </td>
                     <td>
-                        <input type="text" class="form-control total-input" value="0.00" readonly />
+                        <input type="text" class="form-control total-input fw-bold text-dark" value="0.00" readonly />
                     </td>
                     <td class="text-center">
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
@@ -254,6 +371,13 @@
             $('#itemsTable tbody').append($row);
             window.initializeSelect2($row.find('.select2-row'));
             window.initializeSelect2($row.find('.select2-category'));
+
+            if ($('#WithGST').is(':checked')) {
+                $row.find('.gst-column').show();
+            } else {
+                $row.find('.gst-column').hide();
+                $row.find('.gst-input').val(0);
+            }
 
             if (existingItem) {
                 $row.find('.select2-row').val(existingItem.productId).trigger('change');
@@ -279,7 +403,8 @@
             
             productsList.forEach(function(p) {
                 if (!catId || p.categoryId == catId) {
-                    $prodSelect.append(`<option value="${p.id}">${p.productName} (${p.productCode})</option>`);
+                    var optionText = `${p.productName} (${p.productCode}) | Stock: ${p.currentStock || 0} | Price: ₹${(p.salesPrice || 0).toFixed(2)} | GST: ${p.gstPercentage || 0}%`;
+                    $prodSelect.append(`<option value="${p.id}">${optionText}</option>`);
                 }
             });
             $prodSelect.trigger('change');
@@ -308,14 +433,26 @@
             calculateTotals();
         }
 
+        function toggleGST(elem) {
+            var isChecked = $(elem).is(':checked');
+            if (isChecked) {
+                $('.gst-column').show();
+            } else {
+                $('.gst-column').hide();
+                $('.gst-input').val(0);
+            }
+            calculateTotals();
+        }
+
         function calculateTotals() {
             var subTotal = 0;
             var totalGST = 0;
+            var withGst = $('#WithGST').is(':checked');
 
             $('#itemsTable tbody tr').each(function() {
                 var qty = parseFloat($(this).find('.qty-input').val()) || 0;
                 var rate = parseFloat($(this).find('.rate-input').val()) || 0;
-                var gst = parseFloat($(this).find('.gst-input').val()) || 0;
+                var gst = withGst ? (parseFloat($(this).find('.gst-input').val()) || 0) : 0;
 
                 var lineTotal = qty * rate;
                 var lineGST = lineTotal * (gst / 100);
@@ -329,6 +466,12 @@
             $('#lblSubTotal').text('₹' + subTotal.toFixed(2));
             $('#lblTotalGST').text('₹' + totalGST.toFixed(2));
             $('#lblGrandTotal').text('₹' + grandTotal.toFixed(2));
+
+            if (withGst) {
+                $('#lblTotalGST').closest('div').show();
+            } else {
+                $('#lblTotalGST').closest('div').hide();
+            }
         }
 
         function saveInvoice() {
@@ -360,8 +503,14 @@
             });
 
             var customerId = $('#CustomerId').val();
-            if (!customerId || items.length === 0 || !isValid) {
-                Swal.fire('Error!', 'Please fill all required fields and add at least one valid line item.', 'error');
+            if (!customerId) {
+                ErpApp.notify('Please select a customer.', 'warning', 'Validation Error');
+                $('#CustomerId').focus();
+                return;
+            }
+
+            if (items.length === 0 || !isValid) {
+                ErpApp.notify('Please add at least one valid product line with positive quantity and rate.', 'warning', 'Line Items Required');
                 return;
             }
 
@@ -377,8 +526,12 @@
                 taxAmount: parseFloat($('#lblTotalGST').text().replace('₹', '')) || 0,
                 grandTotal: parseFloat($('#lblGrandTotal').text().replace('₹', '')) || 0,
                 balanceAmount: parseFloat($('#lblGrandTotal').text().replace('₹', '')) || 0,
-                items: items
+                items: items,
+                withGST: $('#WithGST').is(':checked')
             };
+
+            var $saveBtn = $('#btnSaveInvoice, [onclick="saveInvoice()"]').first();
+            ErpApp.setButtonLoading($saveBtn, true, 'Saving Invoice...');
 
             $.ajax({
                 url: '/Sales/SaveInvoice',
@@ -386,40 +539,31 @@
                 contentType: 'application/json',
                 data: JSON.stringify(invoice),
                 success: function(res) {
-                    if (res.success) {
-                        Swal.fire('Saved!', res.message, 'success').then(() => {
-                            location.reload();
-                        });
+                    ErpApp.setButtonLoading($saveBtn, false);
+                    if (res && res.success) {
+                        ErpApp.notify(res.message || 'Sales Invoice saved successfully.', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
                     } else {
-                        Swal.fire('Error!', res.message, 'error');
+                        ErpApp.notify(res.message || 'Failed to save sales invoice.', 'error');
+                        if (res.errors) ErpApp.showFieldErrors('#invoiceForm', res.errors);
                     }
                 },
                 error: function(xhr) {
-                    Swal.fire('Error!', xhr.responseJSON?.message || 'Failed to save invoice.', 'error');
+                    ErpApp.setButtonLoading($saveBtn, false);
+                    var msg = xhr.responseJSON?.message || 'Failed to save invoice.';
+                    ErpApp.notify(msg, 'error');
                 }
             });
         }
 
         function deleteInvoice(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "This will restore stock levels and revert journal accounting voucher entries!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Sales/DeleteInvoice', { id: id }, function(res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Invoice has been deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Sales/DeleteInvoice',
+                id: id,
+                rowElement: '#row-' + id,
+                title: 'Delete Sales Invoice?',
+                message: 'This will restore stock levels and revert accounting journal voucher entries! This action cannot be undone.'
             });
         }
     </script>
 }
-

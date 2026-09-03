@@ -11,4 +11,6 @@ public class Notification : BaseEntity
     public bool IsRead { get; set; }
     [MaxLength(250)]
     public string? LinkUrl { get; set; }
+    public int? CompanyId { get; set; }
+    public Company? Company { get; set; }
 }

@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class GoodsReceiptNote : BaseEntity
+public class GoodsReceiptNote : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string GRNNumber { get; set; } = string.Empty;
     public DateTime GRNDate { get; set; } = DateTime.Today;
@@ -26,6 +29,7 @@ public class GoodsReceiptNote : BaseEntity
     public string Status { get; set; } = "Pending";
     [MaxLength(1000)]
     public string? Notes { get; set; }
+    public bool WithGST { get; set; } = false;
     public ICollection<GoodsReceiptNoteItem> Items { get; set; } = new List<GoodsReceiptNoteItem>();
 }
 

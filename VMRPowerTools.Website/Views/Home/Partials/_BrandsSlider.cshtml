@@ -1,0 +1,62 @@
+<section class="py-12 bg-brand-black border-y border-white/5 overflow-hidden no-print">
+    <div class="container mx-auto px-4 text-center mb-6">
+        <span class="text-brand-orange font-syne font-extrabold text-xs tracking-widest uppercase block mb-1">GLOBAL ENGINEERING PARTNERS</span>
+        <h5 class="text-zinc-500 font-syne text-[10px] tracking-widest uppercase">Authorized Brand & OEM Distributors</h5>
+    </div>
+
+    <!-- Infinite horizontal scrolling marquee -->
+    <div class="relative w-full overflow-hidden flex items-center h-20">
+        <!-- Marquee track -->
+        <div class="flex gap-16 items-center animate-marquee whitespace-nowrap">
+            <!-- Set 1 -->
+            <div class="brand-item">MILWAUKEE</div>
+            <div class="brand-item">BOSCH PRO</div>
+            <div class="brand-item">MAKITA</div>
+            <div class="brand-item">HILTI</div>
+            <div class="brand-item">DEWALT</div>
+            <div class="brand-item">STIHL</div>
+            <div class="brand-item text-brand-orange/70">VMR ENGINE</div>
+
+            <!-- Set 2 (duplicates for continuous loop) -->
+            <div class="brand-item">MILWAUKEE</div>
+            <div class="brand-item">BOSCH PRO</div>
+            <div class="brand-item">MAKITA</div>
+            <div class="brand-item">HILTI</div>
+            <div class="brand-item">DEWALT</div>
+            <div class="brand-item">STIHL</div>
+            <div class="brand-item text-brand-orange/70">VMR ENGINE</div>
+        </div>
+    </div>
+</section>
+
+<!-- Custom marquee styling -->
+<style>
+@@keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 25s linear infinite;
+}
+.animate-marquee:hover {
+    animation-play-state: paused;
+}
+.brand-item {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.75rem;
+    letter-spacing: 0.15em;
+    color: #52525b;
+    filter: grayscale(100%);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.brand-item:hover {
+    color: #FFFFFF;
+    filter: grayscale(0%);
+    text-shadow: 0 0 15px rgba(255, 92, 0, 0.4);
+    transform: scale(1.05);
+}
+</style>

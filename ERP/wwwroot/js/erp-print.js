@@ -30,22 +30,27 @@ window.ErpPrint = (function () {
         printWindow.document.write(
             '<html><head><title>' + title + '</title>' +
             '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />' +
+            '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet" />' +
             '<style>' +
-            'body { padding: 40px; font-size: 14px; color: #333; font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }' +
-            '.invoice-title { color: #2563eb; font-weight: 800; font-size: 36px; letter-spacing: 2px; text-transform: uppercase; }' +
-            '.top-border { border-top: 2px solid #93c5fd; margin-top: 10px; margin-bottom: 40px; }' +
-            '.bottom-border { border-top: 2px solid #93c5fd; margin-top: 40px; padding-top: 15px; }' +
-            '.section-title { font-weight: 600; color: #555; }' +
-            '.table { border-collapse: collapse; margin-bottom: 20px; }' +
-            '.table th { background-color: #2563eb !important; color: white !important; font-weight: 600; text-transform: uppercase; padding: 10px; border: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
-            '.table td { padding: 10px; border: none; }' +
-            '.table tbody tr:nth-child(even) { background-color: #dbeafe !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
-            '.table tbody tr:nth-child(odd) { background-color: #ffffff !important; }' +
-            '.blue-box { background-color: #2563eb !important; color: white !important; padding: 8px 15px; font-weight: 600; text-transform: uppercase; display: inline-block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
-            '.footer-contact { display: flex; justify-content: space-between; color: #555; font-size: 13px; }' +
-            '.signature-area { text-align: right; margin-top: 20px; }' +
-            '.signature-name { font-weight: bold; font-size: 16px; margin-bottom: 0; }' +
-            '.signature-role { color: #555; font-size: 13px; }' +
+            'body { padding: 0; font-size: 14px; color: #334155; font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; min-height: 100vh; position: relative; }' +
+            '.invoice-wrapper { padding: 150px 40px 120px 40px; }' +
+            '.table-custom { width: 100%; border-collapse: collapse; margin-top: 25px; margin-bottom: 25px; }' +
+            '.table-custom th { background-color: #1e3a8a !important; color: #ffffff !important; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; padding: 12px 20px; border: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+            '.table-custom td { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; color: #475569; }' +
+            '.table-custom tbody tr:nth-child(even) { background-color: #f8fafc !important; }' +
+            '.address-col-title { font-size: 13px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }' +
+            '.address-col-name { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }' +
+            '.address-col-text { font-size: 13px; color: #475569; line-height: 1.4; margin-bottom: 1px; }' +
+            '.total-badge-solid { background-color: #1e3a8a !important; color: #ffffff !important; font-weight: 800; padding: 10px 20px; border-radius: 4px; font-size: 16px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+            '.signature-font { font-family: "Great Vibes", cursive; font-size: 32px; color: #0f172a; line-height: 1; }' +
+            '.header-overlay-text, .header-overlay-text * { color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }' +
+            '.footer-overlay-text, .footer-overlay-text * { color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }' +
+            '@media print {' +
+            '  @page { margin: 0; }' +
+            '  body { margin: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }' +
+            '  .header-overlay-text, .header-overlay-text * { color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }' +
+            '  .footer-overlay-text, .footer-overlay-text * { color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }' +
+            '}' +
             '</style>' +
             '</head><body>' + bodyHtml +
             '<script>window.onload=function(){setTimeout(function(){window.print();}, 500);};<\/script></body></html>'
@@ -54,101 +59,163 @@ window.ErpPrint = (function () {
     }
 
     function generateInvoiceHtml(company, invoice, billTitle, partyTitle, partyName) {
-        var logoHtml = company.logo
-            ? '<img src="' + company.logo + '" alt="Logo" style="max-height:80px;max-width:250px;" />'
-            : '<h2 style="font-weight: 800;">' + (company.companyName || 'Company') + '</h2>';
+        var clientDetails = {
+            name: partyName,
+            address: '',
+            city: '',
+            state: '',
+            country: '',
+            email: '',
+            phone: '',
+            gst: ''
+        };
+
+        if (invoice.customer) {
+            clientDetails.name = invoice.customer.customerName || partyName;
+            clientDetails.address = invoice.customer.address || '';
+            clientDetails.city = invoice.customer.city || '';
+            clientDetails.state = invoice.customer.state || '';
+            clientDetails.country = invoice.customer.country || '';
+            clientDetails.email = invoice.customer.email || '';
+            clientDetails.phone = invoice.customer.phone || '';
+            clientDetails.gst = invoice.customer.gstNumber || '';
+        } else if (invoice.supplier) {
+            clientDetails.name = invoice.supplier.supplierName || partyName;
+            clientDetails.address = invoice.supplier.address || '';
+            clientDetails.city = invoice.supplier.city || '';
+            clientDetails.state = invoice.supplier.state || '';
+            clientDetails.country = invoice.supplier.country || '';
+            clientDetails.email = invoice.supplier.email || '';
+            clientDetails.phone = invoice.supplier.phone || '';
+            clientDetails.gst = invoice.supplier.gstNumber || '';
+        }
+
+        var companyCityState = [company.city, company.state].filter(Boolean).join(', ');
+        if (company.pincode) {
+            companyCityState += ' - ' + company.pincode;
+        }
+        var companyAddress = [company.address, companyCityState, company.country].filter(Boolean).join(', ');
+        var clientAddress = [clientDetails.address, clientDetails.city, clientDetails.state, clientDetails.country].filter(Boolean).join(', ');
+
+        var showGST = invoice.withGST || false;
 
         var itemRows = (invoice.items || []).map(function (item, index) {
+            var gstCol = showGST
+                ? '<td class="text-end">' + (item.taxPercentage || 0) + '%</td>'
+                : '';
+
             return '<tr>' +
                 '<td class="text-center">' + (index + 1) + '</td>' +
-                '<td>' + (item.productName || item.productId) + '</td>' +
+                '<td>' +
+                '  <div class="fw-semibold text-dark">' + (item.productName || 'N/A') + '</div>' +
+                '</td>' +
                 '<td class="text-center">' + Number(item.quantity || 0).toFixed(0) + '</td>' +
                 '<td class="text-end">' + formatMoney(item.rate) + '</td>' +
-                '<td class="text-end">' + formatMoney(item.amount || item.totalAmount) + '</td>' +
+                gstCol +
+                '<td class="text-end fw-semibold text-dark">' + formatMoney(item.quantity * item.rate) + '</td>' +
                 '</tr>';
         }).join('');
 
-        var addressParts = [company.address, company.city, company.state, company.country].filter(Boolean).join(', ');
-        var invoiceDate = formatDate(invoice.invoiceDate);
+        var tableHeaderGST = showGST ? '<th class="text-end" style="width: 12%">GST %</th>' : '';
+        var tableWidthSL = showGST ? '5%' : '8%';
+        var tableWidthDesc = showGST ? '43%' : '50%';
+        var tableWidthQty = showGST ? '10%' : '12%';
+        var tableWidthPrice = showGST ? '12%' : '15%';
+        var tableWidthTotal = showGST ? '15%' : '15%';
 
-        return '' +
-            '<div class="d-flex justify-content-between align-items-center">' +
-            '  <div>' + logoHtml + '</div>' +
-            '  <div class="invoice-title">' + billTitle + '</div>' +
-            '</div>' +
-            '<div class="top-border"></div>' +
-            
-            '<div class="row mb-5">' +
-            '  <div class="col-6">' +
-            '    <div class="section-title mb-1">' + partyTitle + ' :</div>' +
-            '    <h4 class="fw-bold mb-2">' + partyName + '</h4>' +
-            '  </div>' +
-            '  <div class="col-6 text-end">' +
-            '    <div class="section-title mb-1">Invoice no : <span class="fw-bold text-dark">' + invoice.invoiceNumber + '</span></div>' +
-            '    <div class="mb-2">' + invoiceDate + '</div>' +
-            '  </div>' +
-            '</div>' +
+        var topWaveSvg = 
+            '<svg viewBox="0 0 800 120" preserveAspectRatio="none" style="position: absolute; top: 0; left: 0; width: 100%; height: 120px; z-index: 1;">' +
+            '  <polygon points="0,0 440,0 390,110 0,110" fill="#3b82f6" opacity="0.4" />' +
+            '  <polygon points="0,0 400,0 350,100 0,100" fill="#1e3a8a" />' +
+            '</svg>';
 
-            '<table class="table">' +
-            '  <thead><tr>' +
-            '    <th class="text-center" style="width: 5%">NO</th>' +
-            '    <th style="width: 50%">DESCRIPTION</th>' +
-            '    <th class="text-center" style="width: 10%">QTY</th>' +
-            '    <th class="text-end" style="width: 15%">PRICE</th>' +
-            '    <th class="text-end" style="width: 20%">TOTAL</th>' +
-            '  </tr></thead>' +
-            '  <tbody>' + (itemRows || '<tr><td colspan="5" class="text-center">No items</td></tr>') + '</tbody>' +
-            '</table>' +
+        return topWaveSvg +
             
-            '<div class="row mb-5">' +
-            '  <div class="col-6"></div>' +
-            '  <div class="col-6">' +
-            '    <div class="d-flex justify-content-end mb-2">' +
-            '      <div style="width: 120px;" class="text-end section-title">Sub Total :</div>' +
-            '      <div style="width: 120px;" class="text-end">' + formatMoney(invoice.subTotal) + '</div>' +
-            '    </div>' +
-            '    <div class="d-flex justify-content-end mb-4">' +
-            '      <div style="width: 120px;" class="text-end section-title">Tax :</div>' +
-            '      <div style="width: 120px;" class="text-end">' + formatMoney(invoice.taxAmount || invoice.totalTax) + '</div>' +
-            '    </div>' +
+            // High-resolution logo overlay inside top blue polygon
+            '<div class="header-overlay-text" style="position: absolute; top: 15px; left: 30px; z-index: 10; display: flex; align-items: center; gap: 15px;">' +
+            '  <img src="/images/company-logo.png" alt="Company Logo" style="height: 55px; width: auto; object-fit: contain; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));" />' +
+            '  <div>' +
+            '    <div style="font-weight: 800; font-size: 22px; color: #ffffff !important; letter-spacing: 0.5px; line-height: 1.1;">VMR POWER TOOLS</div>' +
+            '    <div style="font-weight: 500; font-size: 11px; color: #ffffff !important; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase;">Quality & Reliability</div>' +
             '  </div>' +
+            '</div>' +
+            
+            '<div class="text-end" style="position: absolute; top: 15px; right: 40px; z-index: 10;">' +
+            '  <div style="font-size: 38px; font-weight: 800; color: #1e3a8a; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 2px;">' + billTitle + '</div>' +
+            '  <div style="font-size: 13px; color: #475569;"><strong>Invoice Number:</strong> #' + invoice.invoiceNumber + '</div>' +
+            '  <div style="font-size: 13px; color: #475569;"><strong>Invoice Date:</strong> ' + formatDate(invoice.invoiceDate) + '</div>' +
             '</div>' +
 
-            '<div class="row mb-4 align-items-center">' +
-            '  <div class="col-6">' +
-            '    <div class="blue-box mb-3">PAYMENT METHOD :</div>' +
-            '    <div>Bank Name : ' + (company.bankDetails ? company.bankDetails.split(',')[0] : 'N/A') + '</div>' +
-            '    <div>Account Number : ' + (company.bankDetails ? company.bankDetails : 'N/A') + '</div>' +
+            '<div class="invoice-wrapper" style="padding-top: 170px; padding-bottom: 30px;">' +
+            '  <div class="row" style="margin-top: 15px; margin-bottom: 45px; padding: 0 10px;">' +
+            '    <div class="col-6">' +
+            '      <div class="text-uppercase small text-muted font-weight-bold mb-2" style="color: #1e3a8a !important; letter-spacing: 0.5px;">Invoice To:</div>' +
+            '      <div class="fw-bold text-dark fs-5 mb-2">' + clientDetails.name + '</div>' +
+            '      <div class="text-muted" style="line-height: 1.6; font-size: 13px;">' +
+            '        ' + clientAddress + '<br/>' +
+            (clientDetails.phone ? '        Phone: ' + clientDetails.phone + '<br/>' : '') +
+            (clientDetails.email ? '        Email: ' + clientDetails.email + '<br/>' : '') +
+            (clientDetails.gst ? '        GSTIN: ' + clientDetails.gst : '') +
+            '      </div>' +
+            '    </div>' +
+            '    <div class="col-6 text-end">' +
+            '      <div class="text-uppercase small text-muted font-weight-bold mb-2" style="color: #1e3a8a !important; letter-spacing: 0.5px;">Invoice From:</div>' +
+            '      <div class="fw-bold text-dark fs-5 mb-2">VMR Power Tools</div>' +
+            '      <div class="text-muted" style="line-height: 1.6; font-size: 13px;">' +
+            '        ' + companyAddress + '<br/>' +
+            (company.phone ? '        Phone: ' + company.phone + '<br/>' : '') +
+            (company.email ? '        Email: ' + company.email + '<br/>' : '') +
+            (company.gstNumber ? '        GSTIN: ' + company.gstNumber : '') +
+            '      </div>' +
+            '    </div>' +
             '  </div>' +
-            '  <div class="col-6">' +
-            '    <div class="d-flex justify-content-end align-items-center">' +
-            '      <div class="blue-box" style="margin-right: 15px;">GRAND TOTAL :</div>' +
-            '      <div class="blue-box" style="min-width: 105px; text-align: right;">' + formatMoney(invoice.grandTotal) + '</div>' +
+
+            '  <table class="table-custom" style="margin-top: 35px; margin-bottom: 35px;">' +
+            '    <thead><tr>' +
+            '      <th class="text-center" style="width: ' + tableWidthSL + '">NO.</th>' +
+            '      <th style="width: ' + tableWidthDesc + '">PRODUCT DESCRIPTION</th>' +
+            '      <th class="text-center" style="width: ' + tableWidthQty + '">QUANTITY</th>' +
+            '      <th class="text-end" style="width: ' + tableWidthPrice + '">PRICE</th>' +
+            tableHeaderGST +
+            '      <th class="text-end" style="width: ' + tableWidthTotal + '">TOTAL</th>' +
+            '    </tr></thead>' +
+            '    <tbody>' + (itemRows || '<tr><td colspan="' + (showGST ? 6 : 5) + '" class="text-center">No items</td></tr>') + '</tbody>' +
+            '  </table>' +
+
+            '  <div class="row mt-5" style="padding-top: 15px;">' +
+            '    <div class="col-7">' +
+            '    </div>' +
+            '    <div class="col-5">' +
+            '      <div class="d-flex justify-content-between mb-2">' +
+            '        <span class="text-muted fw-bold small">Subtotal:</span>' +
+            '        <span class="fw-semibold text-dark">' + formatMoney(invoice.subTotal) + '</span>' +
+            '      </div>' +
+            (showGST ?
+            ('      <div class="d-flex justify-content-between mb-3">' +
+            '        <span class="text-muted fw-bold small">Tax (GST):</span>' +
+            '        <span class="fw-semibold text-dark">' + formatMoney(invoice.taxAmount) + '</span>' +
+            '      </div>') : '') +
+            '      <div class="d-flex justify-content-between align-items-center total-badge-solid">' +
+            '        <span>Total:</span>' +
+            '        <span>' + formatMoney(invoice.grandTotal) + '</span>' +
+            '      </div>' +
             '    </div>' +
             '  </div>' +
             '</div>' +
-            
-            '<h5 class="fw-bold mt-5 mb-4">Thank you for business with us!</h5>' +
-            
-            '<div class="row mt-4">' +
-            '  <div class="col-6">' +
-            '    <div class="fw-bold mb-2">Term and Conditions :</div>' +
-            '    <p class="text-muted small" style="max-width: 300px;">' + (company.billFooterNote || 'Please send payment within 30 days of receiving this invoice. There will be 10% interest charge per month on late invoice.') + '</p>' +
+
+            // Dynamic footer container with terms on left, signature on right
+            '<div class="invoice-footer" style="position: relative; min-height: 120px; width: 100%; page-break-inside: avoid; margin-top: 50px; border-top: 1px solid #cbd5e1; padding-top: 20px;">' +
+            '  <div style="position: absolute; top: 20px; left: 40px; width: 60%;">' +
+            '    <div class="fw-bold text-dark mb-1" style="font-size: 13px; color: #1e3a8a !important;">Terms & Conditions:</div>' +
+            '    <div class="text-muted" style="font-size: 12px; line-height: 1.4; margin-bottom: 12px;">Payment Terms: Spot Payment (Due Immediately upon Receipt)</div>' +
+            '    <div class="fw-bold" style="font-size: 15px; color: #475569; letter-spacing: 0.5px;">Thank You For Your Business</div>' +
             '  </div>' +
-            '  <div class="col-6">' +
-            '    <div class="signature-area">' +
-            '      <div class="mb-1" style="font-family: cursive; font-size: 20px; color: #555;">' + (company.companyName || 'Company') + '</div>' +
-            '      <div class="signature-name">' + (company.companyName || 'Authorized Signatory') + '</div>' +
-            '      <div class="signature-role">Administrator</div>' +
+            '  <div style="position: absolute; top: 20px; right: 40px; text-align: right; width: 30%;">' +
+            '    <div class="signature-font" style="margin-bottom: 5px;">Vinoth Kumar R</div>' +
+            '    <div style="display: inline-block; width: 150px; border-top: 1px solid #cbd5e1; padding-top: 5px;" class="small text-muted font-weight-bold text-uppercase text-center">' +
+            '      Authorized Signatory' +
             '    </div>' +
             '  </div>' +
-            '</div>' +
-            
-            '<div class="bottom-border"></div>' +
-            '<div class="footer-contact">' +
-            '  <div>' + (company.phone || 'N/A') + '</div>' +
-            '  <div>' + (company.email || 'N/A') + '</div>' +
-            '  <div>' + (addressParts || 'N/A') + '</div>' +
             '</div>';
     }
 

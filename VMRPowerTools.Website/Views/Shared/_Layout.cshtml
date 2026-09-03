@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth overflow-x-hidden">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - VMR Power Tools</title>
+    
+    <!-- Dynamic SEO Optimization -->
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "Premium quality industrial power tools, demolition hammers, drilling machines, angle grinders, and original spinner spares from VMR Power Tools.")" />
+    <meta name="keywords" content="@(ViewData["MetaKeywords"] ?? "VMR, Power Tools, Industrial Equipment, Demolition Hammers, Spares Calibration, Chennai, SmartERP Sync")" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="@(ViewData["CanonicalUrl"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    
+    <!-- Open Graph (Facebook / LinkedIn) -->
+    <meta property="og:type" content="@(ViewData["OGType"] ?? "website")" />
+    <meta property="og:title" content="@(ViewData["OGTitle"] ?? ViewData["Title"] ?? "VMR Power Tools")" />
+    <meta property="og:description" content="@(ViewData["OGDescription"] ?? ViewData["MetaDescription"] ?? "Premium quality industrial power tools.")" />
+    <meta property="og:image" content="@(ViewData["OGImage"] ?? "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=400")" />
+    <meta property="og:url" content="@(ViewData["CanonicalUrl"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    <meta property="og:site_name" content="VMR Power Tools" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@(ViewData["OGTitle"] ?? ViewData["Title"] ?? "VMR Power Tools")" />
+    <meta name="twitter:description" content="@(ViewData["OGDescription"] ?? ViewData["MetaDescription"] ?? "Premium quality industrial power tools.")" />
+    <meta name="twitter:image" content="@(ViewData["OGImage"] ?? "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=400")" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,900;1,900&display=swap" rel="stylesheet" />
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- Bootstrap CSS (compatibility fallback) -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#FF5C00',
+                            glow: 'rgba(255, 92, 0, 0.45)',
+                            black: '#050505',
+                            grey: '#121212',
+                            silver: '#A1A1AA',
+                            dark: '#1C1C1E',
+                            cardBg: '#0b0b0d',
+                            border: '#1f1f23'
+                        }
+                    },
+                    fontFamily: {
+                        syne: ['Syne', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                        montserrat: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom theme & site css -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/VMRPowerTools.Website.styles.css" asp-append-version="true" />
+
+    <!-- Custom Cursor & Scroll styling -->
+    <style>
+        .custom-cursor {
+            width: 8px;
+            height: 8px;
+            background: #FF5C00;
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+        .custom-cursor-glow {
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(255, 92, 0, 0.4);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: transform 0.08s cubic-bezier(0.23, 1, 0.32, 1), width 0.3s, height 0.3s, border-color 0.3s;
+        }
+        .custom-cursor-hover {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 92, 0, 0.25);
+        }
+        .custom-cursor-glow-hover {
+            width: 60px;
+            height: 60px;
+            border-color: #FF5C00;
+            background: rgba(255, 92, 0, 0.05);
+        }
+        body {
+            background-color: #050505 !important;
+            color: #E5E7EB;
+        }
+        
+        /* Lenis smooth scroll adjustments */
+        html.lenis {
+            height: auto;
+        }
+        .lenis-smooth {
+            scroll-behavior: auto;
+        }
+        .lenis-smooth [data-lenis-prevent] {
+            overscroll-behavior: contain;
+        }
+        .lenis-stopped {
+            overflow: hidden;
+        }
+        .lenis-scrolling iframe {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-brand-black text-gray-200 overflow-x-hidden">
+    
+    <!-- Custom Cursor -->
+    <div class="custom-cursor hidden md:block" id="customCursor"></div>
+    <div class="custom-cursor-glow hidden md:block" id="customCursorGlow"></div>
+
+    <!-- Global Navigation -->
+    <partial name="_Navigation" />
+    
+    <!-- Main Content Wrapper -->
+    <main role="main" class="w-full">
+        @RenderBody()
+    </main>
+
+    <!-- Global Footer -->
+    <partial name="_Footer" />
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Three.js + OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://unpkg.com/@@studio-freight/lenis@1.0.29/dist/lenis.min.js"></script>
+
+    <!-- Global site.js -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

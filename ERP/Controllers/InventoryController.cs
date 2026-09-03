@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Filters;
 using ERP.Interfaces;
 using ERP.Models;
 using ERP.ViewModels;
@@ -7,6 +8,7 @@ using ERP.ViewModels;
 namespace ERP.Controllers;
 
 [Authorize]
+[Permission("Inventory", "View")]
 [Route("Inventory")]
 public class InventoryController : Controller
 {
@@ -41,6 +43,13 @@ public class InventoryController : Controller
         };
     }
 
+    private Dictionary<string, string> GetModelStateErrors() =>
+        ModelState.Where(x => x.Value?.Errors.Count > 0)
+                  .ToDictionary(
+                      k => k.Key,
+                      v => v.Value!.Errors.First().ErrorMessage
+                  );
+
     // --- Stock Opening ---
     [HttpGet("StockOpening")]
     public async Task<IActionResult> StockOpening()
@@ -52,9 +61,21 @@ public class InventoryController : Controller
     [HttpPost("SaveStockOpening")]
     public async Task<IActionResult> SaveStockOpening(int productId, decimal quantity)
     {
-        await _inventoryService.UpdateOpeningStockAsync(productId, quantity);
-        TempData["Success"] = "Opening Stock updated successfully.";
-        return RedirectToAction(nameof(StockOpening));
+        try
+        {
+            await _inventoryService.UpdateOpeningStockAsync(productId, quantity);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(ApiResponse.Ok("Opening Stock updated successfully."));
+            TempData["Success"] = "Opening Stock updated successfully.";
+            return RedirectToAction(nameof(StockOpening));
+        }
+        catch (Exception ex)
+        {
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(ApiResponse.Fail(ex.Message));
+            TempData["Error"] = ex.Message;
+            return RedirectToAction(nameof(StockOpening));
+        }
     }
 
     // --- Stock Transfer ---
@@ -68,19 +89,27 @@ public class InventoryController : Controller
     [HttpPost("SaveStockTransfer")]
     public async Task<IActionResult> SaveStockTransfer([FromBody] StockTransfer transfer)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _inventoryService.SaveStockTransferAsync(transfer);
-            return Json(new { success = true, message = "Stock Transfer saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data." });
+
+        try
+        {
+            var saved = await _inventoryService.SaveStockTransferAsync(transfer);
+            return Json(ApiResponse.Ok("Stock Transfer saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeleteStockTransfer")]
     public async Task<IActionResult> DeleteStockTransfer(int id)
     {
-        await _inventoryService.DeleteStockTransferAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _inventoryService.DeleteStockTransferAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     // --- Stock Adjustment ---
@@ -94,19 +123,27 @@ public class InventoryController : Controller
     [HttpPost("SaveStockAdjustment")]
     public async Task<IActionResult> SaveStockAdjustment([FromBody] StockAdjustment adjustment)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _inventoryService.SaveStockAdjustmentAsync(adjustment);
-            return Json(new { success = true, message = "Stock Adjustment saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data." });
+
+        try
+        {
+            var saved = await _inventoryService.SaveStockAdjustmentAsync(adjustment);
+            return Json(ApiResponse.Ok("Stock Adjustment saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeleteStockAdjustment")]
     public async Task<IActionResult> DeleteStockAdjustment(int id)
     {
-        await _inventoryService.DeleteStockAdjustmentAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _inventoryService.DeleteStockAdjustmentAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     // --- Physical Stock Verification ---
@@ -120,18 +157,26 @@ public class InventoryController : Controller
     [HttpPost("SavePhysicalVerification")]
     public async Task<IActionResult> SavePhysicalVerification([FromBody] PhysicalStockVerification verification)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _inventoryService.SavePhysicalStockVerificationAsync(verification);
-            return Json(new { success = true, message = "Physical stock verification saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data." });
+
+        try
+        {
+            var saved = await _inventoryService.SavePhysicalStockVerificationAsync(verification);
+            return Json(ApiResponse.Ok("Physical stock verification saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeletePhysicalVerification")]
     public async Task<IActionResult> DeletePhysicalVerification(int id)
     {
-        await _inventoryService.DeletePhysicalStockVerificationAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _inventoryService.DeletePhysicalStockVerificationAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 }

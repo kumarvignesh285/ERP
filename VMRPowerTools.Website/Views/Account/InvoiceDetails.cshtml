@@ -1,0 +1,145 @@
+@model SalesInvoice
+@{
+    ViewData["Title"] = $"Invoice - {Model.InvoiceNumber}";
+}
+
+<div class="bg-brand-black min-h-screen py-5">
+<div class="container mx-auto px-4 md:px-8 max-w-5xl">
+    <!-- Action buttons for printing -->
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <a asp-action="Invoices" class="btn-magnetic px-3 py-1.5 border border-zinc-800 text-white font-syne uppercase tracking-wider text-[10px] text-decoration-none" style="border-radius: 4px !important;"><i class="fa-solid fa-arrow-left me-2"></i> Back to Invoices</a>
+        <button class="btn-magnetic btn btn-primary bg-brand-orange border-brand-orange font-syne font-bold uppercase tracking-wider px-3 py-1.5" onclick="window.print()" style="border-radius: 4px !important; color: #ffffff;"><i class="fa-solid fa-print me-2"></i> Print Invoice</button>
+    </div>
+
+    <!-- Commercial Invoice Sheet -->
+    <div class="invoice-sheet glass-panel-custom p-4 p-md-5">
+        <!-- Header -->
+        <div class="row align-items-center mb-5">
+            <div class="col-sm-6">
+                <h2 class="font-weight-bold text-white mb-1 font-syne">VMR Power Tools</h2>
+                <span class="fs-8 text-zinc-500 uppercase tracking-wider">Authorized Spares & Spinnery Hub</span>
+                <p class="fs-7 text-zinc-400 mt-2 mb-0">
+                    Guindy Industrial Estate,<br>
+                    Chennai, Tamil Nadu - 600032<br>
+                    GSTIN: 33AAFCD9876Q1Z2
+                </p>
+            </div>
+            <div class="col-sm-6 text-sm-end mt-4 mt-sm-0">
+                <h1 class="text-uppercase tracking-wide text-brand-orange mb-2 font-weight-bold font-syne">Invoice</h1>
+                <span class="fs-7 text-zinc-500 d-block">Invoice Code:</span>
+                <strong class="text-white fs-5 font-syne">@Model.InvoiceNumber</strong>
+                <span class="fs-7 text-zinc-400 d-block mt-2">Date: @Model.InvoiceDate.ToString("dd MMM yyyy")</span>
+            </div>
+        </div>
+
+        <hr class="my-4 border-white/5">
+
+        <!-- Customer & Order details -->
+        <div class="row mb-5 g-4 fs-7">
+            <div class="col-sm-6">
+                <h6 class="font-weight-bold text-uppercase text-zinc-500 tracking-wider fs-8 mb-2">Billed To:</h6>
+                @if (Model.Customer != null)
+                {
+                    <h5 class="font-weight-semibold text-white mb-1 font-syne">@Model.Customer.CustomerName</h5>
+                    <p class="text-zinc-400 mb-0">
+                        @Model.Customer.Address<br>
+                        @Model.Customer.City, @Model.Customer.State - @Model.Customer.Pincode<br>
+                        Phone: @Model.Customer.MobileNumber<br>
+                        Email: @Model.Customer.Email
+                    </p>
+                }
+            </div>
+            <div class="col-sm-6 text-sm-end">
+                <h6 class="font-weight-bold text-uppercase text-zinc-500 tracking-wider fs-8 mb-2">Billing Details:</h6>
+                <p class="text-zinc-400 mb-0">
+                    <strong>Payment Method:</strong> @Model.PaymentTerms<br>
+                    <strong>ERP Reference:</strong> @Model.ReferenceNumber<br>
+                    <strong>Due Date:</strong> @(Model.DueDate.HasValue ? Model.DueDate.Value.ToString("dd MMM yyyy") : "Due on receipt")<br>
+                    <strong>Status:</strong> <span class="badge bg-green-500/10 border border-green-500/20 text-green-400 px-2 py-1" style="border-radius: 4px;">@Model.Status</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-glass align-middle fs-7">
+                <thead>
+                    <tr class="text-zinc-500 font-weight-bold border-bottom-2">
+                        <th>Description</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-end">Rate</th>
+                        <th class="text-end">Tax %</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr class="border-b border-white/5">
+                            <td>
+                                <div class="font-weight-semibold text-white">@item.ProductName</div>
+                                <span class="fs-8 text-zinc-500">HSN: @(item.HSNCode ?? "8467")</span>
+                            </td>
+                            <td class="text-center text-zinc-300">@item.Quantity.ToString("N0")</td>
+                            <td class="text-end text-zinc-300">₹@item.Rate.ToString("N2")</td>
+                            <td class="text-end text-zinc-300">@item.TaxPercentage.ToString("G29")%</td>
+                            <td class="text-end font-weight-semibold text-white">₹@item.Amount.ToString("N2")</td>
+                        </tr>
+                    }
+                    <tr class="border-top-0">
+                        <td colspan="4" class="text-end text-zinc-500 py-1">Subtotal:</td>
+                        <td class="text-end font-weight-semibold text-white py-1">₹@Model.SubTotal.ToString("N2")</td>
+                    </tr>
+                    @if (Model.DiscountAmount > 0)
+                    {
+                        <tr>
+                            <td colspan="4" class="text-end text-success py-1">Discount:</td>
+                            <td class="text-end font-weight-semibold text-success py-1">-₹@Model.DiscountAmount.ToString("N2")</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td colspan="4" class="text-end text-zinc-500 py-1">Tax Amount:</td>
+                        <td class="text-end font-weight-semibold text-white py-1">₹@Model.TaxAmount.ToString("N2")</td>
+                    </tr>
+                    <tr class="border-t border-white/5 fs-5 font-weight-bold">
+                        <td colspan="4" class="text-end pt-3 text-white">Grand Total:</td>
+                        <td class="text-end text-brand-orange pt-3">₹@Model.GrandTotal.ToString("N2")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer notes -->
+        <div class="mt-5 pt-3 border-t border-white/5 text-center text-zinc-500 fs-8">
+            <p class="mb-1">This invoice is dynamically generated from SmartERP matching website transaction references.</p>
+            <strong class="text-white">Thank you for partnering with VMR Power Tools!</strong>
+        </div>
+    </div>
+</div>
+</div>
+
+<style>
+    @@media print {
+        body, .bg-brand-black {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+        .container {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+        .invoice-sheet, .glass-panel-custom {
+            border: 0 !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            background: none !important;
+        }
+        .text-white, .text-zinc-300, .text-zinc-400, .text-brand-orange, h2, h5, strong, td, th {
+            color: #000000 !important;
+        }
+        hr, .border-b, .border-t {
+            border-color: #e2e8f0 !important;
+        }
+    }
+</style>

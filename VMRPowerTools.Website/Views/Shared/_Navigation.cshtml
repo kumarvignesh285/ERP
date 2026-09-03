@@ -1,0 +1,343 @@
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+@inject ICartService CartService
+@{
+    var cartSummary = await CartService.GetCartAsync();
+    var itemCount = cartSummary?.Items?.Sum(i => i.Quantity) ?? 0;
+    
+    // Controller & Action detection for active nav highlight
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+
+<!-- 72px Sticky Header -->
+<header id="site-header" class="site-header fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 header-at-top flex items-center no-print">
+    <div class="container mx-auto px-4 md:px-6 max-w-[1400px] flex items-center justify-between h-full gap-2 md:gap-4">
+        
+        <!-- LEFT: Brand Logo (Vector emblem + HTML text, guaranteed zero overlap) -->
+        <a class="flex items-center gap-2.5 shrink-0 hover:opacity-90 transition-opacity" asp-controller="Home" asp-action="Index">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-8 h-8 shrink-0">
+                <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" fill="none" stroke="#FF5C00" stroke-width="8" class="orange-glow-sm"/>
+                <circle cx="50" cy="50" r="16" fill="#FF5C00"/>
+                <path d="M 50 35 L 50 65 M 35 50 L 65 50" stroke="#050505" stroke-width="4"/>
+            </svg>
+            <div class="flex items-baseline font-syne leading-none">
+                <span class="text-white font-extrabold text-xl tracking-tighter">VMR</span>
+                <span class="text-brand-orange font-extrabold text-xs tracking-widest ml-1 uppercase">TOOLS</span>
+            </div>
+        </a>
+
+        <!-- CENTER MENU: Desktop Navigation Links (Home, Products + Mega Menu, Dealers, About, Contact) -->
+        <nav class="hidden lg:flex items-center gap-6 xl:gap-8 font-syne text-[11px] xl:text-xs font-extrabold uppercase tracking-wider">
+            
+            <!-- Home -->
+            <a asp-controller="Home" asp-action="Index" class="nav-link-item py-1.5 whitespace-nowrap @(currentController == "Home" && currentAction == "Index" ? "active" : "")">
+                Home
+            </a>
+
+            <!-- Products (Products Mega Menu Trigger - Covers All Categories On Hover & Direct Catalog Link) -->
+            <div class="relative mega-menu-trigger py-1.5 whitespace-nowrap">
+                <a asp-controller="Product" asp-action="Index" class="nav-link-item flex items-center gap-1 cursor-pointer @(currentController == "Product" ? "active" : "")">
+                    Products <i class="fa-solid fa-chevron-down text-[8px] opacity-70"></i>
+                </a>
+
+                <!-- PRODUCTS MEGA MENU PANEL -->
+                <div class="mega-menu-wrapper">
+                    <div class="mega-menu-card p-6">
+                        <div class="flex items-center justify-between pb-4 mb-4 border-b border-white/10">
+                            <div>
+                                <h4 class="font-syne font-extrabold text-white text-sm tracking-wider uppercase">INDUSTRIAL EQUIPMENT CATALOG</h4>
+                                <p class="text-zinc-400 font-inter text-[11px] font-normal">Explore professional grade power machinery and original spares.</p>
+                            </div>
+                            <a asp-controller="Product" asp-action="Index" class="text-brand-orange hover:text-white font-syne text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+                                View Full Catalog <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                            
+                            <!-- 1. Chainsaws -->
+                            <a asp-controller="Product" asp-action="Index" asp-route-search="Chainsaw" class="mega-menu-item p-3 rounded-xl flex items-start gap-3 group">
+                                <span class="text-2xl shrink-0 group-hover:scale-110 transition-transform">🪚</span>
+                                <div>
+                                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Chainsaws</h5>
+                                    <p class="text-zinc-400 font-inter text-[10px] leading-tight">Heavy duty timber logging & wood saws.</p>
+                                </div>
+                            </a>
+
+                            <!-- 2. Brush Cutters -->
+                            <a asp-controller="Product" asp-action="Index" asp-route-search="Brush Cutter" class="mega-menu-item p-3 rounded-xl flex items-start gap-3 group">
+                                <span class="text-2xl shrink-0 group-hover:scale-110 transition-transform">🌿</span>
+                                <div>
+                                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Brush Cutters</h5>
+                                    <p class="text-zinc-400 font-inter text-[10px] leading-tight">High torque grass trimmers & land clearing.</p>
+                                </div>
+                            </a>
+
+                            <!-- 3. Pressure Washers -->
+                            <a asp-controller="Product" asp-action="Index" asp-route-search="Pressure Washer" class="mega-menu-item p-3 rounded-xl flex items-start gap-3 group">
+                                <span class="text-2xl shrink-0 group-hover:scale-110 transition-transform">💧</span>
+                                <div>
+                                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Pressure Washers</h5>
+                                    <p class="text-zinc-400 font-inter text-[10px] leading-tight">High pressure industrial cleaning systems.</p>
+                                </div>
+                            </a>
+
+                            <!-- 4. Water Pumps -->
+                            <a asp-controller="Product" asp-action="Index" asp-route-search="Water Pump" class="mega-menu-item p-3 rounded-xl flex items-start gap-3 group">
+                                <span class="text-2xl shrink-0 group-hover:scale-110 transition-transform">🌊</span>
+                                <div>
+                                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Water Pumps</h5>
+                                    <p class="text-zinc-400 font-inter text-[10px] leading-tight">Agricultural & site dewatering pumps.</p>
+                                </div>
+                            </a>
+
+                            <!-- 5. Generators -->
+                            <a asp-controller="Product" asp-action="Index" asp-route-search="Generator" class="mega-menu-item p-3 rounded-xl flex items-start gap-3 group">
+                                <span class="text-2xl shrink-0 group-hover:scale-110 transition-transform">⚡</span>
+                                <div>
+                                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Generators</h5>
+                                    <p class="text-zinc-400 font-inter text-[10px] leading-tight">Heavy duty silent power backup units.</p>
+                                </div>
+                            </a>
+
+                            <!-- 6. Accessories -->
+                            <a asp-controller="Product" asp-action="Index" asp-route-search="Accessories" class="mega-menu-item p-3 rounded-xl flex items-start gap-3 group">
+                                <span class="text-2xl shrink-0 group-hover:scale-110 transition-transform">🧰</span>
+                                <div>
+                                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Accessories</h5>
+                                    <p class="text-zinc-400 font-inter text-[10px] leading-tight">Blades, chains & maintenance kits.</p>
+                                </div>
+                            </a>
+
+                            <!-- 7. Safety Equipment -->
+                            <a asp-controller="Product" asp-action="Index" asp-route-search="Safety" class="mega-menu-item p-3 rounded-xl flex items-start gap-3 group">
+                                <span class="text-2xl shrink-0 group-hover:scale-110 transition-transform">🛡️</span>
+                                <div>
+                                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Safety Gear</h5>
+                                    <p class="text-zinc-400 font-inter text-[10px] leading-tight">Helmets, gloves & protective suits.</p>
+                                </div>
+                            </a>
+
+                            <!-- 8. New Arrivals -->
+                            <a asp-controller="Product" asp-action="Index" asp-route-sortOrder="newest" class="mega-menu-item p-3 rounded-xl flex items-start gap-3 group">
+                                <span class="text-2xl shrink-0 group-hover:scale-110 transition-transform">🔥</span>
+                                <div>
+                                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">New Arrivals</h5>
+                                    <p class="text-zinc-400 font-inter text-[10px] leading-tight">Latest 2026 brushless technology.</p>
+                                </div>
+                            </a>
+
+                            <!-- 9. Best Sellers -->
+                            <a asp-controller="Product" asp-action="Index" asp-route-sortOrder="popular" class="mega-menu-item p-3 rounded-xl flex items-start gap-3 group">
+                                <span class="text-2xl shrink-0 group-hover:scale-110 transition-transform">⭐</span>
+                                <div>
+                                    <h5 class="text-white font-syne font-bold text-xs uppercase group-hover:text-brand-orange transition-colors">Best Sellers</h5>
+                                    <p class="text-zinc-400 font-inter text-[10px] leading-tight">Top rated job site equipment.</p>
+                                </div>
+                            </a>
+
+                            <!-- 10. Featured Products -->
+                            <a asp-controller="Product" asp-action="Index" asp-route-featured="true" class="mega-menu-item p-3 rounded-xl flex items-start gap-3 group border border-brand-orange/20 bg-brand-orange/5">
+                                <span class="text-2xl shrink-0 group-hover:scale-110 transition-transform">🏆</span>
+                                <div>
+                                    <h5 class="text-brand-orange font-syne font-bold text-xs uppercase">Featured Tools</h5>
+                                    <p class="text-zinc-300 font-inter text-[10px] leading-tight">Flagship industrial machinery.</p>
+                                </div>
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dealers -->
+            <a asp-controller="Home" asp-action="Contact" asp-route-subject="Dealer Enquiry" class="nav-link-item py-1.5 whitespace-nowrap">
+                Dealers
+            </a>
+
+            <!-- About -->
+            <a asp-controller="Home" asp-action="About" class="nav-link-item py-1.5 whitespace-nowrap @(currentController == "Home" && currentAction == "About" ? "active" : "")">
+                About
+            </a>
+
+            <!-- Contact -->
+            <a asp-controller="Home" asp-action="Contact" class="nav-link-item py-1.5 whitespace-nowrap @(currentController == "Home" && currentAction == "Contact" ? "active" : "")">
+                Contact
+            </a>
+
+        </nav>
+
+        <!-- RIGHT SIDE: Expanding Search, Wishlist, Cart, Account -->
+        <div class="flex items-center gap-2.5 xl:gap-3.5 shrink-0">
+            
+            <!-- Expanding Search Bar -->
+            <form asp-controller="Product" asp-action="Index" method="get" class="expand-search-container group relative flex items-center">
+                <i class="fa-solid fa-magnifying-glass absolute left-2.5 text-zinc-400 text-xs pointer-events-none group-hover:text-brand-orange transition-colors"></i>
+                <input type="text" name="search" placeholder="Search..." class="expand-search-input font-inter" aria-label="Search">
+            </form>
+
+            <!-- Wishlist -->
+            <a href="javascript:void(0)" onclick="alert('Wishlist')" class="relative text-zinc-300 hover:text-white transition-colors flex items-center justify-center w-8 h-8 border border-white/10 rounded-full hover:border-brand-orange hover:bg-brand-orange/10" title="Wishlist">
+                <i class="fa-regular fa-heart text-xs"></i>
+                <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-zinc-800 text-[8px] font-bold text-brand-orange border border-zinc-950">
+                    0
+                </span>
+            </a>
+
+            <!-- Cart (Item count display) -->
+            <a asp-controller="Cart" asp-action="Index" class="relative text-zinc-300 hover:text-white transition-colors flex items-center justify-center w-8 h-8 border border-white/10 rounded-full hover:border-brand-orange hover:bg-brand-orange/10" title="Shopping Cart">
+                <i class="fa-solid fa-cart-shopping text-xs"></i>
+                @if (itemCount > 0)
+                {
+                    <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-brand-orange text-[8px] font-bold text-white border border-zinc-950">
+                        @itemCount
+                    </span>
+                }
+            </a>
+
+            <!-- Account Portal -->
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div class="dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle flex items-center gap-1 py-1 px-2.5 border border-zinc-700 hover:border-brand-orange hover:bg-brand-orange/5 text-white font-syne text-[11px] uppercase tracking-wider font-bold rounded-lg" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-regular fa-user text-brand-orange text-xs"></i> <span class="hidden xl:inline">@User.Identity?.Name</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border border-white/10 mt-2 p-2 bg-[#0b0b0d] text-white dropdown-menu-dark-custom rounded-lg" aria-labelledby="userMenuButton">
+                        <li>
+                            <a class="dropdown-item py-2 px-3 text-zinc-300 hover:text-white rounded text-xs tracking-wider" asp-controller="Account" asp-action="Profile">
+                                <i class="fa-solid fa-user-gear me-2 text-brand-orange"></i> Account Profile
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider bg-zinc-800 my-1"></li>
+                        <li>
+                            <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="dropdown-item py-2 px-3 text-red-400 hover:bg-red-500/10 rounded text-xs tracking-wider bg-transparent border-0 w-full text-start">
+                                    <i class="fa-solid fa-right-from-bracket me-2"></i> Sign Out
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <div class="hidden sm:flex items-center gap-2 shrink-0">
+                    <a class="text-zinc-300 hover:text-white font-syne text-[11px] uppercase font-bold transition-colors px-1.5 py-1 whitespace-nowrap" asp-controller="Account" asp-action="Login">Sign In</a>
+                    <a class="px-3.5 py-1.5 bg-brand-orange hover:bg-orange-600 text-white font-syne text-[11px] uppercase font-extrabold transition-all rounded-lg shadow-md shrink-0 whitespace-nowrap" asp-controller="Account" asp-action="Register">Register</a>
+                </div>
+            }
+
+            <!-- Mobile Drawer Toggle Button -->
+            <button id="mobile-drawer-toggle" class="lg:hidden text-white p-1.5 border border-white/10 rounded-lg hover:border-brand-orange transition-colors" aria-label="Toggle Navigation Drawer">
+                <i class="fa-solid fa-bars fs-6"></i>
+            </button>
+
+        </div>
+    </div>
+</header>
+
+<!-- Push main content below the 72px fixed header -->
+<div class="h-[72px]"></div>
+
+<!-- MOBILE FULL-SCREEN ANIMATED NAVIGATION DRAWER -->
+<div id="mobile-drawer" class="mobile-drawer-overlay p-6 flex flex-col justify-between">
+    <div>
+        <div class="flex items-center justify-between pb-6 border-b border-white/10 mb-8">
+            <div class="flex items-center gap-2 font-syne leading-none">
+                <span class="text-white font-extrabold text-2xl tracking-tighter">VMR</span>
+                <span class="text-brand-orange font-extrabold text-sm tracking-widest uppercase">TOOLS</span>
+            </div>
+            <button id="mobile-drawer-close" class="text-white text-2xl p-2 hover:text-brand-orange">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <nav class="flex flex-col gap-5 font-syne text-lg font-extrabold uppercase tracking-wider">
+            <a asp-controller="Home" asp-action="Index" class="text-white hover:text-brand-orange py-1 flex items-center gap-3">
+                <i class="fa-solid fa-house text-brand-orange text-base"></i> Home
+            </a>
+            <a asp-controller="Product" asp-action="Index" class="text-white hover:text-brand-orange py-1 flex items-center gap-3">
+                <i class="fa-solid fa-boxes-stacked text-brand-orange text-base"></i> Products
+            </a>
+            <a asp-controller="Home" asp-action="Contact" asp-route-subject="Dealer Enquiry" class="text-white hover:text-brand-orange py-1 flex items-center gap-3">
+                <i class="fa-solid fa-store text-brand-orange text-base"></i> Dealers
+            </a>
+            <a asp-controller="Home" asp-action="About" class="text-white hover:text-brand-orange py-1 flex items-center gap-3">
+                <i class="fa-solid fa-building text-brand-orange text-base"></i> About
+            </a>
+            <a asp-controller="Home" asp-action="Contact" class="text-white hover:text-brand-orange py-1 flex items-center gap-3">
+                <i class="fa-solid fa-envelope text-brand-orange text-base"></i> Contact
+            </a>
+        </nav>
+    </div>
+
+    <!-- Drawer Account & Contact details -->
+    <div class="pt-6 border-t border-white/10 flex flex-col gap-4">
+        @if (!SignInManager.IsSignedIn(User))
+        {
+            <div class="grid grid-cols-2 gap-3">
+                <a asp-controller="Account" asp-action="Login" class="py-3 bg-zinc-900 border border-zinc-700 text-center text-white font-syne text-xs font-bold uppercase rounded-xl">Sign In</a>
+                <a asp-controller="Account" asp-action="Register" class="py-3 bg-brand-orange text-center text-white font-syne text-xs font-extrabold uppercase rounded-xl">Register</a>
+            </div>
+        }
+        else
+        {
+            <a asp-controller="Account" asp-action="Profile" class="py-3 bg-zinc-900 border border-zinc-700 text-center text-white font-syne text-xs font-bold uppercase rounded-xl flex items-center justify-center gap-2">
+                <i class="fa-solid fa-user text-brand-orange"></i> Account Portal
+            </a>
+        }
+    </div>
+</div>
+
+<!-- STICKY BOTTOM ACTIONS FOR MOBILE -->
+<div class="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-zinc-950/95 backdrop-blur-xl border-t border-white/10 z-40 flex items-center justify-around py-2 shadow-2xl">
+    <a asp-controller="Product" asp-action="Index" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-brand-orange transition-colors">
+        <i class="fa-solid fa-magnifying-glass text-base"></i>
+        <span class="font-syne text-[9px] uppercase font-bold">Search</span>
+    </a>
+    <a asp-controller="Cart" asp-action="Index" class="relative flex flex-col items-center gap-1 text-zinc-400 hover:text-brand-orange transition-colors">
+        <i class="fa-solid fa-cart-shopping text-base"></i>
+        @if (itemCount > 0)
+        {
+            <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-brand-orange text-[8px] font-bold text-white">
+                @itemCount
+            </span>
+        }
+        <span class="font-syne text-[9px] uppercase font-bold">Cart</span>
+    </a>
+    <a href="javascript:void(0)" onclick="alert('Wishlist')" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-brand-orange transition-colors">
+        <i class="fa-regular fa-heart text-base"></i>
+        <span class="font-syne text-[9px] uppercase font-bold">Wishlist</span>
+    </a>
+    <a asp-controller="Account" asp-action="Profile" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-brand-orange transition-colors">
+        <i class="fa-regular fa-user text-base"></i>
+        <span class="font-syne text-[9px] uppercase font-bold">Profile</span>
+    </a>
+</div>
+
+<!-- HEADER INTERACTION SCRIPT -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const header = document.getElementById("site-header");
+        
+        // Header scroll handler: transparent at top, glassmorphic after scroll
+        window.addEventListener("scroll", function () {
+            if (window.scrollY > 20) {
+                header.classList.remove("header-at-top");
+                header.classList.add("header-scrolled");
+            } else {
+                header.classList.remove("header-scrolled");
+                header.classList.add("header-at-top");
+            }
+        });
+
+        // Mobile drawer handlers
+        const drawerToggle = document.getElementById("mobile-drawer-toggle");
+        const drawerClose = document.getElementById("mobile-drawer-close");
+        const drawer = document.getElementById("mobile-drawer");
+
+        drawerToggle?.addEventListener("click", () => drawer?.classList.add("open"));
+        drawerClose?.addEventListener("click", () => drawer?.classList.remove("open"));
+    });
+</script>

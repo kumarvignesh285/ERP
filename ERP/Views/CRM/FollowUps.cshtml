@@ -28,14 +28,14 @@
                     {
                         foreach (var item in Model.Items)
                         {
-                            <tr>
+                            <tr id="row-@item.Id">
                                 <td>@item.FollowUpDate.ToString("dd-MM-yyyy HH:mm")</td>
                                 <td>@(item.Lead?.LeadName)</td>
                                 <td><span class="badge bg-secondary">@item.FollowUpType</span></td>
                                 <td>@item.Remarks</td>
                                 <td>@(item.NextFollowUpDate?.ToString("dd-MM-yyyy"))</td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteFollowUp(@item.Id)"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteFollowUp(@item.Id)" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </td>
                             </tr>
                         }
@@ -53,12 +53,12 @@
                 <h5 class="modal-title">Record Follow-up</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveFollowUp" method="post">
+            <form asp-action="SaveFollowUp" method="post" id="followupForm">
                 <div class="modal-body">
                     <input type="hidden" name="Id" id="Id" value="0" />
                     <div class="mb-3">
                         <label class="form-label">Lead *</label>
-                        <select name="LeadId" class="form-select" required>
+                        <select name="LeadId" id="LeadId" class="form-select" required>
                             <option value="">Select Lead</option>
                             @if(leads.Any())
                             {
@@ -71,28 +71,28 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Follow Up Date *</label>
-                        <input type="datetime-local" name="FollowUpDate" class="form-control" required />
+                        <input type="datetime-local" name="FollowUpDate" id="FollowUpDate" class="form-control" required />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Type</label>
-                        <select name="FollowUpType" class="form-select">
-                            <option>Call</option>
-                            <option>Email</option>
-                            <option>Meeting</option>
+                        <select name="FollowUpType" id="FollowUpType" class="form-select">
+                            <option value="Call">Call</option>
+                            <option value="Email">Email</option>
+                            <option value="Meeting">Meeting</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Notes *</label>
-                        <textarea name="Remarks" class="form-control" rows="2" required></textarea>
+                        <textarea name="Remarks" id="Remarks" class="form-control" rows="2" required></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Next Follow Up Date</label>
-                        <input type="date" name="NextFollowUpDate" class="form-control" />
+                        <input type="date" name="NextFollowUpDate" id="NextFollowUpDate" class="form-control" />
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Follow-up</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save Follow-up</button>
                 </div>
             </form>
         </div>
@@ -101,22 +101,25 @@
 
 @section Scripts {
     <script>
+        var followupModal;
+        $(function () {
+            followupModal = new bootstrap.Modal(document.getElementById('followupModal'));
+
+            $('#followupForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    modal: followupModal,
+                    reloadPage: true
+                });
+            });
+        });
+
         function deleteFollowUp(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this record?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/CRM/DeleteFollowUp', { id: id }, function(res) {
-                        if (res.success) {
-                            location.reload();
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/CRM/DeleteFollowUp',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this follow-up record?'
             });
         }
     </script>

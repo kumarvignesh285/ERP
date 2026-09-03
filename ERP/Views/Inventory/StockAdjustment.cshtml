@@ -5,15 +5,18 @@
 
 <div id="listView">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-sliders me-2"></i> Stock Adjustments</h4>
-        <button class="btn btn-primary" onclick="showForm()"><i class="fa-solid fa-plus me-1"></i> New Adjustment</button>
+        <div>
+            <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-sliders me-2"></i> Stock Adjustments</h4>
+            <p class="text-muted small m-0 mt-1">Reconcile inventory discrepancies, record stock additions or damage write-offs</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" onclick="showForm()"><i class="fa-solid fa-plus me-1.5"></i> New Stock Adjustment</button>
     </div>
 
-    <div class="card">
+    <div class="card shadow-sm border-0">
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover datatable align-middle">
-                    <thead>
+                    <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                         <tr>
                             <th>Adjustment No</th>
                             <th>Date</th>
@@ -27,23 +30,23 @@
                         @foreach (var a in Model.Items)
                         {
                             <tr id="row-@a.Id">
-                                <td class="font-weight-bold">@a.AdjustmentNumber</td>
+                                <td class="fw-bold text-primary">@a.AdjustmentNumber</td>
                                 <td>@a.AdjustmentDate.ToString("dd-MM-yyyy")</td>
-                                <td>@a.Warehouse?.WarehouseName</td>
+                                <td class="fw-semibold text-dark"><i class="fa-solid fa-warehouse text-muted me-1.5 fs-8"></i>@a.Warehouse?.WarehouseName</td>
                                 <td>
                                     @if (a.AdjustmentType == "Addition")
                                     {
-                                        <span class="badge bg-success">Addition</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold"><i class="fa-solid fa-plus me-1"></i>Addition</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-danger">Deduction</span>
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold"><i class="fa-solid fa-minus me-1"></i>Deduction</span>
                                     }
                                 </td>
-                                <td>@a.Remarks</td>
+                                <td class="fs-8 text-muted">@a.Remarks</td>
                                 <td class="text-center no-print">
                                     <div class="btn-group">
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteAdjustment(@a.Id)"><i class="fa-solid fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteAdjustment(@a.Id)" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -57,34 +60,42 @@
 
 <div id="formView" style="display:none">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-plus me-2"></i> Create Stock Adjustment</h4>
-        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</button>
+        <h4 class="m-0 fw-bold text-primary" id="formTitle"><i class="fa-solid fa-plus me-2"></i> Create Stock Adjustment</h4>
+        <button class="btn btn-outline-secondary" onclick="hideForm()"><i class="fa-solid fa-arrow-left me-1.5"></i> Back to List</button>
     </div>
 
-    <div class="card">
-        <div class="card-body">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
             <form id="adjustmentForm">
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Adjustment Number *</label>
-                        <input type="text" id="AdjustmentNumber" class="form-control" required />
+                <input type="hidden" id="Id" name="Id" value="0" />
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <label class="form-label fw-semibold text-dark">Adjustment Number <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-hashtag text-muted"></i></span>
+                            <input type="text" id="AdjustmentNumber" class="form-control border-start-0 fw-bold" required readonly />
+                        </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Adjustment Date *</label>
-                        <input type="date" id="AdjustmentDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <label class="form-label fw-semibold text-dark">Adjustment Date <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-calendar text-muted"></i></span>
+                            <input type="date" id="AdjustmentDate" class="form-control border-start-0" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Warehouse *</label>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <label class="form-label fw-semibold text-dark">Warehouse <span class="text-danger">*</span></label>
                         <select id="WarehouseId" class="form-select select2" required>
                             <option value="">Select Warehouse</option>
-                            @foreach (var wh in Model.Warehouses)
+                            @foreach (var w in Model.Warehouses)
                             {
-                                <option value="@wh.Id">@wh.WarehouseName</option>
+                                <option value="@w.Id">@w.WarehouseName (@w.WarehouseCode)</option>
                             }
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Adjustment Type *</label>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <label class="form-label fw-semibold text-dark">Adjustment Type <span class="text-danger">*</span></label>
                         <select id="AdjustmentType" class="form-select" required>
                             <option value="Addition">Addition (+)</option>
                             <option value="Deduction">Deduction (-)</option>
@@ -92,36 +103,38 @@
                     </div>
                 </div>
 
-                <hr />
+                <hr class="my-4" />
 
-                <h5>Line Items</h5>
-                <div class="table-responsive mb-3">
-                    <table class="table table-bordered align-middle" id="itemsTable">
-                        <thead class="table-light">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="m-0 fw-bold text-dark"><i class="fa-solid fa-boxes-stacked me-2 text-primary"></i> Adjustment Line Items</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Item Row</button>
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle shadow-sm" id="itemsTable">
+                        <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                             <tr>
-                                <th style="width: 50%">Product *</th>
-                                <th style="width: 20%">Quantity *</th>
-                                <th style="width: 20%">Purchase Rate *</th>
-                                <th style="width: 10%" class="text-center">Action</th>
+                                <th>Product *</th>
+                                <th class="w-150px">Adjustment Qty *</th>
+                                <th class="w-200px">Reason / Notes</th>
+                                <th class="w-60px text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
+                            <!-- Dynamic rows -->
                         </tbody>
                     </table>
                 </div>
 
                 <div class="mb-4">
-                    <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
+                    <label class="form-label fw-semibold text-dark">Remarks</label>
+                    <textarea id="Remarks" class="form-control" rows="2" placeholder="Reason for adjustment..."></textarea>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label font-weight-semibold">Remarks / Reason *</label>
-                    <textarea id="Remarks" class="form-control" rows="2" required></textarea>
-                </div>
-
-                <div class="text-end">
-                    <button type="button" class="btn btn-secondary me-2" onclick="hideForm()">Cancel</button>
-                    <button type="button" class="btn btn-primary px-4" onclick="saveAdjustment()">Save Adjustment</button>
+                <!-- Sticky Bottom Actions Bar -->
+                <div class="d-flex justify-content-end gap-2 border-top pt-3 sticky-bottom bg-white">
+                    <button type="button" class="btn btn-secondary px-3" onclick="hideForm()">Cancel</button>
+                    <button type="button" class="btn btn-primary px-4 shadow-sm" onclick="saveAdjustment()"><i class="fa-solid fa-floppy-disk me-1.5"></i> Save Stock Adjustment</button>
                 </div>
             </form>
         </div>
@@ -131,6 +144,20 @@
 @section Scripts {
     <script>
         var productsList = @Json.Serialize(Model.ProductLookups);
+        if (productsList) {
+            productsList = productsList.map(function(p) {
+                return {
+                    id: window.getVal(p, 'id'),
+                    productCode: window.getVal(p, 'productCode'),
+                    productName: window.getVal(p, 'productName'),
+                    salesPrice: window.getVal(p, 'salesPrice'),
+                    purchasePrice: window.getVal(p, 'purchasePrice'),
+                    gstPercentage: window.getVal(p, 'gstPercentage'),
+                    categoryId: window.getVal(p, 'categoryId'),
+                    currentStock: window.getVal(p, 'currentStock')
+                };
+            });
+        }
 
         function showForm() {
             $('#listView').hide();
@@ -149,14 +176,23 @@
 
         function addRow() {
             var catOptionsHtml = '<option value="">All Categories</option>';
-            var categoriesList = @Json.Serialize(Model.Categories);
+            var categoriesList = @Json.Serialize(Model.Categories.Select(c => new { id = c.Id, categoryName = c.CategoryName }));
+            if (categoriesList) {
+                categoriesList = categoriesList.map(function(c) {
+                    return {
+                        id: window.getVal(c, 'id'),
+                        categoryName: window.getVal(c, 'categoryName')
+                    };
+                });
+            }
             categoriesList.forEach(function(c) {
                 catOptionsHtml += `<option value="${c.id}">${c.categoryName}</option>`;
             });
 
             var optionsHtml = '<option value="">Select Product</option>';
             productsList.forEach(function(p) {
-                optionsHtml += `<option value="${p.id}">${p.productName}</option>`;
+                var optionText = `${p.productName} (${p.productCode}) | Stock: ${p.currentStock || 0} | Cost: ₹${(p.purchasePrice || 0).toFixed(2)} | GST: ${p.gstPercentage || 0}%`;
+                optionsHtml += `<option value="${p.id}">${optionText}</option>`;
             });
 
             var rowHtml = `
@@ -185,10 +221,28 @@
             var $row = $(rowHtml);
             $('#itemsTable tbody').append($row);
             window.initializeSelect2($row.find('.select2-row'));
+            window.initializeSelect2($row.find('.select2-category'));
         }
 
         function removeRow(btn) {
             $(btn).closest('tr').remove();
+        }
+
+        function onCategorySelect(select) {
+            var catId = $(select).val();
+            var $row = $(select).closest('tr');
+            var $prodSelect = $row.find('.select2-row');
+            
+            $prodSelect.empty();
+            $prodSelect.append('<option value="">Select Product</option>');
+            
+            productsList.forEach(function(p) {
+                if (!catId || p.categoryId == catId) {
+                    var optionText = `${p.productName} (${p.productCode}) | Stock: ${p.currentStock || 0} | Cost: ₹${(p.purchasePrice || 0).toFixed(2)} | GST: ${p.gstPercentage || 0}%`;
+                    $prodSelect.append(`<option value="${p.id}">${optionText}</option>`);
+                }
+            });
+            $prodSelect.trigger('change');
         }
 
         function onProductSelect(select) {
@@ -221,13 +275,25 @@
             var whId = $('#WarehouseId').val();
             var remarks = $('#Remarks').val();
 
-            if (!whId || !remarks || items.length === 0 || !isValid) {
-                Swal.fire('Error!', 'Please fill all required fields.', 'error');
+            if (!whId) {
+                ErpApp.notify('Please select a warehouse.', 'warning', 'Validation Error');
+                $('#WarehouseId').focus();
+                return;
+            }
+
+            if (!remarks) {
+                ErpApp.notify('Please provide a reason / remarks for stock adjustment.', 'warning', 'Validation Error');
+                $('#Remarks').focus();
+                return;
+            }
+
+            if (!isValid || items.length === 0) {
+                ErpApp.notify('Please add at least one line item with a valid product and quantity.', 'warning', 'Line Items Required');
                 return;
             }
 
             var adjustment = {
-                id: 0,
+                id: parseInt($('#Id').val()) || 0,
                 adjustmentNumber: $('#AdjustmentNumber').val(),
                 adjustmentDate: $('#AdjustmentDate').val(),
                 warehouseId: parseInt(whId),
@@ -236,36 +302,39 @@
                 items: items
             };
 
+            var $btn = $('#btnSaveAdjustment, [onclick="saveAdjustment()"]').first();
+            ErpApp.setButtonLoading($btn, true, 'Applying Stock Adjustment...');
+
             $.ajax({
                 url: '/Inventory/SaveStockAdjustment',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(adjustment),
                 success: function(res) {
-                    if (res.success) {
-                        Swal.fire('Success!', res.message, 'success').then(() => { location.reload(); });
+                    ErpApp.setButtonLoading($btn, false);
+                    if (res && res.success) {
+                        ErpApp.notify(res.message || 'Stock Adjustment applied successfully.', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        ErpApp.notify(res.message || 'Failed to apply stock adjustment.', 'error');
+                        if (res.errors) ErpApp.showFieldErrors('#adjustmentForm', res.errors);
                     }
+                },
+                error: function(xhr) {
+                    ErpApp.setButtonLoading($btn, false);
+                    var msg = xhr.responseJSON?.message || 'Failed to save stock adjustment.';
+                    ErpApp.notify(msg, 'error');
                 }
             });
         }
 
         function deleteAdjustment(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this adjustment? This will revert stocks!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Inventory/DeleteStockAdjustment', { id: id }, function(res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Adjustment deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Inventory/DeleteStockAdjustment',
+                id: id,
+                rowElement: '#row-' + id,
+                title: 'Delete Stock Adjustment?',
+                message: 'This will revert adjusted stock quantities! This action cannot be undone.'
             });
         }
     </script>

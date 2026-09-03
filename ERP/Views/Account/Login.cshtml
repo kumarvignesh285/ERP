@@ -18,264 +18,240 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-            :root {
-                --primary: #2563eb;
-                --primary-hover: #1d4ed8;
-                --background: #f4f7fb;
-                --card: #ffffff;
-                --border: #e2e8f0;
-                --text: #1e293b;
-                --text-muted: #64748b;
-            }
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --background: #f1f5f9;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+        }
 
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-            body {
-                font-family: 'Inter', sans-serif;
-                min-height: 100vh;
-                background: var(--background);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 20px;
-                overflow: hidden;
-                position: relative;
-            }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: radial-gradient(circle at 10% 20%, rgba(219, 234, 254, 0.6) 0%, rgba(241, 245, 249, 1) 90%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            color: var(--text);
+        }
 
-                body::before {
-                    content: '';
-                    position: absolute;
-                    width: 500px;
-                    height: 500px;
-                    background: #dbeafe;
-                    border-radius: 50%;
-                    top: -250px;
-                    right: -250px;
-                    z-index: 0;
-                }
+        .login-wrapper {
+            width: min(100%, 1050px);
+            margin: 1rem auto;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+            border: 1px solid var(--border);
+        }
 
-                body::after {
-                    content: '';
-                    position: absolute;
-                    width: 450px;
-                    height: 450px;
-                    background: #e0f2fe;
-                    border-radius: 50%;
-                    bottom: -200px;
-                    left: -200px;
-                    z-index: 0;
-                }
-
+        @@media (min-width: 992px) {
             .login-wrapper {
-                width: 100%;
-                max-width: 1100px;
-                display: flex;
-                background: white;
-                border-radius: 24px;
-                overflow: hidden;
-                box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-                position: relative;
-                z-index: 1;
+                flex-direction: row;
             }
+        }
 
+        .login-info {
+            flex: 1;
+            background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+            color: #ffffff;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        @@media (min-width: 768px) {
             .login-info {
-                flex: 1;
-                background: linear-gradient(135deg,#2563eb,#3b82f6);
-                color: white;
-                padding: 60px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
+                padding: 3rem 2.5rem;
             }
+        }
 
-            .brand-header {
-                display: flex;
-                align-items: center;
-                gap: 16px;
-                margin-bottom: 40px;
+        @@media (min-width: 992px) {
+            .login-info {
+                padding: 4rem 3.5rem;
             }
+        }
 
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .brand-logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            height: 48px;
+            width: 48px;
+            min-width: 48px;
+            overflow: hidden;
+        }
+
+        @@media (min-width: 768px) {
             .brand-logo-container {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: #ffffff;
+                height: 56px;
+                width: 56px;
+                min-width: 56px;
                 border-radius: 16px;
-                padding: 10px;
-                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.3);
-                height: 58px;
-                width: 58px;
-                min-width: 58px;
-                overflow: hidden;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
             }
+        }
 
-            .brand-logo-container:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-            }
+        .brand-logo-image {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
 
-            .brand-logo-image {
-                max-height: 100%;
-                max-width: 100%;
-                object-fit: contain;
-            }
+        .brand-logo-container.fallback-logo {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
 
-            .brand-logo-container.fallback-logo {
-                background: rgba(255, 255, 255, 0.15);
-                backdrop-filter: blur(12px);
-                color: #ffffff;
-                border: 1px solid rgba(255, 255, 255, 0.25);
-            }
+        .brand-logo-svg {
+            width: 28px;
+            height: 28px;
+        }
 
-            .brand-logo-svg {
-                width: 32px;
-                height: 32px;
-            }
+        .brand-details {
+            display: flex;
+            flex-direction: column;
+        }
 
-            .brand-details {
-                display: flex;
-                flex-direction: column;
-            }
+        .brand-name {
+            font-size: clamp(1.25rem, 3vw, 1.6rem);
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
 
-            .brand-name {
-                font-size: 26px;
-                font-weight: 800;
-                color: #ffffff;
-                margin: 0;
-                line-height: 1.1;
-                letter-spacing: -0.02em;
-            }
+        .brand-tagline {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.75);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-top: 2px;
+        }
 
-            .brand-tagline {
-                font-size: 11px;
-                font-weight: 600;
-                color: rgba(255, 255, 255, 0.75);
-                text-transform: uppercase;
-                letter-spacing: 0.15em;
-                margin-top: 4px;
-            }
+        .login-info h1 {
+            font-size: clamp(1.75rem, 4vw, 2.75rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            letter-spacing: -0.03em;
+        }
 
-            .login-info h1 {
-                font-size: 48px;
-                font-weight: 800;
-                margin-bottom: 20px;
-            }
+        .login-info p {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            line-height: 1.6;
+            opacity: .9;
+            margin: 0;
+        }
 
-            .login-info p {
-                font-size: 18px;
-                line-height: 1.8;
-                opacity: .9;
-            }
+        .login-form-container {
+            width: 100%;
+            padding: 2rem 1.5rem;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-            .feature-box {
-                margin-top: 40px;
-            }
-
-            .feature-item {
-                margin-bottom: 15px;
-                font-size: 16px;
-            }
-
+        @@media (min-width: 768px) {
             .login-form-container {
-                width: 450px;
-                padding: 60px 50px;
-                background: white;
+                padding: 3rem 2.5rem;
             }
+        }
 
-                .login-form-container h3 {
-                    color: var(--text);
-                    font-weight: 700;
-                    margin-bottom: 10px;
-                }
-
-                .login-form-container p {
-                    color: var(--text-muted);
-                    margin-bottom: 30px;
-                }
-
-            .form-label {
-                font-size: 14px;
-                font-weight: 600;
-                color: var(--text);
+        @@media (min-width: 992px) {
+            .login-form-container {
+                width: 460px;
+                min-width: 460px;
+                padding: 4rem 3.5rem;
             }
+        }
 
-            .form-control {
-                height: 52px;
-                border-radius: 12px;
-                border: 1px solid var(--border);
-                padding-left: 45px;
-                font-size: 15px;
-            }
+        .login-form-container h3 {
+            color: var(--text);
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-size: 1.5rem;
+        }
 
-                .form-control:focus {
-                    border-color: var(--primary);
-                    box-shadow: 0 0 0 4px rgba(37,99,235,.15);
-                }
+        .login-form-container p {
+            color: var(--text-muted);
+            margin-bottom: 1.75rem;
+            font-size: 0.875rem;
+        }
 
-            .input-icon {
-                position: absolute;
-                left: 15px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #94a3b8;
-            }
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
 
-            .btn-login {
-                height: 52px;
-                background: var(--primary);
-                border: none;
-                border-radius: 12px;
-                color: white;
-                font-weight: 600;
-                width: 100%;
-                transition: .3s;
-            }
+        .form-control {
+            height: 48px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding-left: 45px;
+            font-size: 0.925rem;
+            width: 100%;
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
+        }
 
-                .btn-login:hover {
-                    background: var(--primary-hover);
-                }
+        .form-control:focus {
+            background-color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3.5px rgba(37, 99, 235, 0.15);
+        }
 
-            .demo-box {
-                margin-top: 25px;
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                padding: 15px;
-                text-align: center;
-                color: var(--text-muted);
-            }
+        .btn-primary {
+            height: 48px;
+            background-color: var(--primary);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
 
-            @@media(max - width:991px) {
-                .login-wrapper {
-                    flex-direction: column;
-                }
-
-                .login-form-container {
-                    width: 100%;
-                }
-
-                .login-info {
-                    padding: 40px;
-                    text-align: center;
-                }
-
-                    .login-info h1 {
-                        font-size: 34px;
-                    }
-            }
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
-    <div class="bg-shape shape-1"></div>
-    <div class="bg-shape shape-2"></div>
-
     <div class="login-wrapper">
+        <!-- Responsive Branding Panel -->
         <div class="login-info">
             <div class="brand-header">
                 @if (!string.IsNullOrEmpty(logoPath))
@@ -299,60 +275,51 @@
                     <span class="brand-tagline">Enterprise Platform</span>
                 </div>
             </div>
-            <h1>Enterprise<br />Intelligence.</h1>
-            <p>Welcome back to your comprehensive ERP workspace. Manage your entire business operations from a single, intelligent platform.</p>
+            <h1>Enterprise<br class="d-none d-md-inline" /> Intelligence.</h1>
+            <p>Welcome back to your workspace. Manage sales, inventory, accounts, and reports from a unified platform.</p>
         </div>
 
+        <!-- Responsive Login Form Panel -->
         <div class="login-form-container">
-            <div class="text-center mb-5 d-lg-none">
-                <h3 class="fw-bold mb-0">Sign In</h3>
-                <p class="text-muted small">to continue to @companyName</p>
-            </div>
-            <div class="mb-4 d-none d-lg-block">
-                <h3 class="fw-bold mb-1">Sign In</h3>
-                <p class="text-muted small">Access your workspace</p>
+            <div>
+                <h3>Sign In</h3>
+                <p>Enter your credentials to access your ERP dashboard</p>
             </div>
 
             <form method="post" action="/Account/Login?returnUrl=@Model.ReturnUrl">
                 @Html.AntiForgeryToken()
                 <div class="text-danger mb-3 small" asp-validation-summary="ModelOnly" role="alert"></div>
 
-                <div class="mb-4">
-                    <label class="form-label">Email Address</label>
+                <div class="mb-3">
+                    <label class="form-label">Username / Email</label>
                     <div class="position-relative">
-                        <i class="fa-regular fa-envelope position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                        <input name="email" type="email" class="form-control ps-5" placeholder="name@company.com" required />
+                        <i class="fa-solid fa-user position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                        <input name="email" type="text" class="form-control ps-5" placeholder="Enter username or email" required autocomplete="username" />
                     </div>
                 </div>
 
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="form-label">Password</label>
                     <div class="position-relative">
                         <i class="fa-solid fa-lock position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                        <input name="password" type="password" class="form-control ps-5" placeholder="••••••••" required />
+                        <input name="password" type="password" class="form-control ps-5" placeholder="Enter password" required autocomplete="current-password" />
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="rememberMe" value="true" id="rememberMe" />
-                        <label class="form-check-label user-select-none" for="rememberMe">
-                            Remember me
+                        <label class="form-check-label user-select-none small text-muted fw-medium" for="rememberMe">
+                            Remember me on this device
                         </label>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100">
+                <button type="submit" class="btn btn-primary shadow-sm">
                     Sign In <i class="fa-solid fa-arrow-right ms-2"></i>
                 </button>
             </form>
-
-            <div class="demo-credentials text-center mt-4">
-                <strong>Demo Access:</strong><br />
-                <span class="opacity-75">admin@smarterp.com / Admin@123</span>
-            </div>
         </div>
     </div>
 </body>
 </html>
-

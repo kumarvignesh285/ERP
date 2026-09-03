@@ -2,8 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ERP.Models;
 
-public class Category : BaseEntity
+public class Category : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(100)]
     public string CategoryName { get; set; } = string.Empty;
     [MaxLength(500)]

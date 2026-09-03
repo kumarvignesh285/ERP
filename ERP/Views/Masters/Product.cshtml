@@ -3,20 +3,58 @@
     ViewData["Title"] = "Product Master";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-box-open me-2"></i> Products List</h4>
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
-        <a href="/Masters/DownloadProductTemplate" class="btn btn-outline-secondary me-2"><i class="fa-solid fa-file-excel me-1"></i> Download Excel Template</a>
-        <button class="btn btn-outline-primary me-2" onclick="openUploadModal()"><i class="fa-solid fa-upload me-1"></i> Bulk Upload</button>
-        <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Product</button>
+        <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-box-open me-2"></i> Product Master</h4>
+        <p class="text-muted small m-0 mt-1">Manage product catalog, pricing, GST rates, stock levels, and bulk imports</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-danger" onclick="clearAllProductData()"><i class="fa-solid fa-trash-can me-1.5"></i> Clear All Data</button>
+        <a href="/Masters/DownloadProductTemplate" class="btn btn-outline-secondary"><i class="fa-solid fa-file-excel me-1.5"></i> Excel Template</a>
+        <button class="btn btn-outline-primary" onclick="openUploadModal()"><i class="fa-solid fa-file-import me-1.5"></i> Bulk Import</button>
+        <button class="btn btn-primary shadow-sm" onclick="openModal()"><i class="fa-solid fa-plus me-1.5"></i> Add Product</button>
     </div>
 </div>
 
-<div class="card">
+<!-- Filters Row -->
+<div class="card mb-3 no-print shadow-sm border-0">
+    <div class="card-body p-3">
+        <div class="row g-3 align-items-center">
+            <div class="col-12 col-md-4">
+                <label class="form-label fw-semibold mb-1 small text-muted">Category</label>
+                <select id="filterCategory" class="form-select form-select-sm select2">
+                    <option value="">All Categories</option>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <option value="@cat.CategoryName">@cat.CategoryName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label fw-semibold mb-1 small text-muted">Brand</label>
+                <select id="filterBrand" class="form-select form-select-sm select2">
+                    <option value="">All Brands</option>
+                    @foreach (var b in Model.Brands)
+                    {
+                        <option value="@b.BrandName">@b.BrandName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-4 d-flex gap-2 align-self-end">
+                <button class="btn btn-sm btn-primary w-100" onclick="applyFilters()"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetFilters()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Datatable Card -->
+<div class="card shadow-sm border-0">
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover datatable align-middle">
-                <thead>
+                <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                     <tr>
                         <th>Code</th>
                         <th>Name</th>
@@ -26,6 +64,7 @@
                         <th>Unit</th>
                         <th>Purchase Price</th>
                         <th>Sales Price</th>
+                        <th>Created At</th>
                         <th class="text-center no-print">Actions</th>
                     </tr>
                 </thead>
@@ -33,18 +72,28 @@
                     @foreach (var p in Model.Products)
                     {
                         <tr id="row-@p.Id">
-                            <td class="font-weight-semibold">@p.ProductCode</td>
-                            <td>@p.ProductName</td>
-                            <td>@p.Category?.CategoryName</td>
-                            <td>@p.Brand?.BrandName</td>
-                            <td>@p.CurrentStock</td>
+                            <td class="fw-bold text-primary">@p.ProductCode</td>
+                            <td class="fw-semibold text-dark">@p.ProductName</td>
+                            <td><span class="badge bg-light text-secondary border">@(p.Category?.CategoryName ?? "-")</span></td>
+                            <td><span class="badge bg-light text-secondary border">@(p.Brand?.BrandName ?? "-")</span></td>
+                            <td>
+                                @if (p.CurrentStock <= p.MinimumStock)
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold">@p.CurrentStock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold">@p.CurrentStock</span>
+                                }
+                            </td>
                             <td>@p.Unit?.UnitSymbol</td>
                             <td>₹@p.PurchasePrice.ToString("N2")</td>
-                            <td>₹@p.SalesPrice.ToString("N2")</td>
+                            <td class="fw-bold text-dark">₹@p.SalesPrice.ToString("N2")</td>
+                            <td class="fs-8 text-muted">@p.CreatedAt.ToString("dd-MM-yyyy HH:mm")</td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editProductById(@p.Id)"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(@p.Id)"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editProductById(@p.Id)" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(@p.Id)" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </td>
                         </tr>
@@ -56,191 +105,656 @@
 </div>
 
 <!-- Modal Dialog -->
-<div class="modal fade" id="productModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="modalTitle">Add Product</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-box-open me-2"></i> Add Product</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveProduct" method="post" id="productForm">
-                <div class="modal-body">
+            <form asp-action="SaveProduct" method="post" id="productForm" enctype="multipart/form-data">
+                <div class="modal-body p-4">
                     <input type="hidden" id="Id" name="Id" value="0" />
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Product Code *</label>
-                            <input type="text" id="ProductCode" name="ProductCode" class="form-control" required />
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Product Code <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-barcode text-muted"></i></span>
+                                <input type="text" id="ProductCode" name="ProductCode" class="form-control border-start-0" placeholder="e.g. PRD-001" required />
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Product Name *</label>
-                            <input type="text" id="ProductName" name="ProductName" class="form-control" required />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Category</label>
-                            <select id="CategoryId" name="CategoryId" class="form-select select2">
-                                <option value="">Select Category</option>
-                                @foreach (var cat in Model.Categories)
-                                {
-                                    <option value="@cat.Id">@cat.CategoryName</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Brand</label>
-                            <select id="BrandId" name="BrandId" class="form-select select2">
-                                <option value="">Select Brand</option>
-                                @foreach (var b in Model.Brands)
-                                {
-                                    <option value="@b.Id">@b.BrandName</option>
-                                }
-                            </select>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Product Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-box text-muted"></i></span>
+                                <input type="text" id="ProductName" name="ProductName" class="form-control border-start-0" placeholder="Item description" required />
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Unit</label>
-                            <select id="UnitId" name="UnitId" class="form-select select2">
-                                <option value="">Select Unit</option>
-                                @foreach (var u in Model.Units)
-                                {
-                                    <option value="@u.Id">@u.UnitName (@u.UnitSymbol)</option>
-                                }
-                            </select>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Category</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-layer-group text-muted"></i></span>
+                                <select id="CategoryId" name="CategoryId" class="form-select border-start-0 select2">
+                                    <option value="">Select Category</option>
+                                    @foreach (var cat in Model.Categories)
+                                    {
+                                        <option value="@cat.Id">@cat.CategoryName</option>
+                                    }
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Default Warehouse</label>
-                            <select id="WarehouseId" name="WarehouseId" class="form-select select2">
-                                <option value="">Select Warehouse</option>
-                                @foreach (var wh in Model.Warehouses)
-                                {
-                                    <option value="@wh.Id">@wh.WarehouseName</option>
-                                }
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-semibold">Purchase Price *</label>
-                            <input type="number" id="PurchasePrice" name="PurchasePrice" class="form-control" required step="0.01" />
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-semibold">Sales Price *</label>
-                            <input type="number" id="SalesPrice" name="SalesPrice" class="form-control" required step="0.01" />
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-semibold">MRP *</label>
-                            <input type="number" id="MRP" name="MRP" class="form-control" required step="0.01" />
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Brand</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
+                                <select id="BrandId" name="BrandId" class="form-select border-start-0 select2">
+                                    <option value="">Select Brand</option>
+                                    @foreach (var b in Model.Brands)
+                                    {
+                                        <option value="@b.Id">@b.BrandName</option>
+                                    }
+                                </select>
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-semibold">GST % *</label>
-                            <input type="number" id="GSTPercentage" name="GSTPercentage" class="form-control" required value="18" />
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Unit of Measure</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-scale-unbalanced text-muted"></i></span>
+                                <select id="UnitId" name="UnitId" class="form-select border-start-0 select2">
+                                    <option value="">Select Unit</option>
+                                    @foreach (var u in Model.Units)
+                                    {
+                                        <option value="@u.Id">@u.UnitName (@u.UnitSymbol)</option>
+                                    }
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-semibold">Min Stock Alert</label>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Default Warehouse</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-warehouse text-muted"></i></span>
+                                <select id="WarehouseId" name="WarehouseId" class="form-select border-start-0 select2">
+                                    <option value="">Select Warehouse</option>
+                                    @foreach (var wh in Model.Warehouses)
+                                    {
+                                        <option value="@wh.Id">@wh.WarehouseName</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-4">
+                            <label class="form-label fw-semibold text-dark">Purchase Price <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">₹</span>
+                                <input type="number" id="PurchasePrice" name="PurchasePrice" class="form-control border-start-0" required step="0.01" placeholder="0.00" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <label class="form-label fw-semibold text-dark">Sales Price <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">₹</span>
+                                <input type="number" id="SalesPrice" name="SalesPrice" class="form-control border-start-0" required step="0.01" placeholder="0.00" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <label class="form-label fw-semibold text-dark">MRP <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">₹</span>
+                                <input type="number" id="MRP" name="MRP" class="form-control border-start-0" required step="0.01" placeholder="0.00" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-4">
+                            <label class="form-label fw-semibold text-dark">GST % <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-percent text-muted"></i></span>
+                                <input type="number" id="GSTPercentage" name="GSTPercentage" class="form-control border-start-0" required value="18" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <label class="form-label fw-semibold text-dark">Min Stock Alert</label>
                             <input type="number" id="MinimumStock" name="MinimumStock" class="form-control" value="0" />
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-semibold">Reorder Level</label>
+                        <div class="col-12 col-sm-4">
+                            <label class="form-label fw-semibold text-dark">Reorder Level</label>
                             <input type="number" id="ReorderLevel" name="ReorderLevel" class="form-control" value="0" />
                         </div>
                     </div>
+
                     <div class="mb-3">
-                        <label class="form-label font-weight-semibold">Description</label>
-                        <textarea id="Description" name="Description" class="form-control" rows="2"></textarea>
+                        <label class="form-label fw-semibold text-dark">Description</label>
+                        <textarea id="Description" name="Description" class="form-control" rows="2" placeholder="Product specifications, model number..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">Product Attachment (PDF)</label>
+                        <input type="file" id="pdfDocument" name="pdfDocument" class="form-control" accept="application/pdf" />
+                        <div id="existingDocumentDiv" class="mt-2" style="display:none;">
+                            <a id="existingDocumentLink" href="#" target="_blank" class="btn btn-sm btn-outline-info"><i class="fa-solid fa-file-pdf me-1"></i> View Existing Document</a>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div class="modal-footer bg-light border-top py-2 px-4">
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm" id="submitBtn">Save Product</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Upload Modal Dialog -->
-<div class="modal fade" id="uploadModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Bulk Upload Products</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<!-- Upload & Verification Modal Dialog -->
+<div class="modal fade" id="uploadModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-file-import me-2"></i> Import Products (Excel / PDF)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="uploadForm" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <p class="text-muted">Please select a valid <strong>Excel file (.xlsx, .xls)</strong> to import products. Download the template to view the correct columns.</p>
-                    <div class="mb-3">
-                        <label class="form-label font-weight-semibold">Select File (.xlsx, .xls) *</label>
-                        <input type="file" id="excelFile" name="file" class="form-control" accept=".xlsx, .xls" required />
+            <div class="modal-body p-4">
+                <!-- Step 1: Upload File Area -->
+                <div id="uploadFileSection" class="text-center py-4">
+                    <div id="importDropZone" class="border border-2 border-dashed rounded-3 p-5 bg-light mb-3 cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-up text-primary fa-3x mb-3"></i>
+                        <h5 class="fw-bold text-dark">Drag and drop your file here, or click to browse</h5>
+                        <p class="text-muted small mb-0">Supports Excel (.xlsx, .xls) and PDF invoice/purchase documents (.pdf)</p>
                     </div>
-                    <div id="uploadErrors" class="alert alert-danger d-none" style="max-height: 200px; overflow-y: auto;">
-                        <ul class="mb-0" id="errorsList"></ul>
+                    <input type="file" id="importFileSelect" class="d-none" accept=".xlsx,.xls,.pdf" />
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="/Masters/DownloadProductTemplate" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-file-excel me-1"></i> Download Excel Template</a>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary" id="btnUploadSubmit">Upload & Import</button>
+
+                <!-- Step 2: Verification Workspace (hidden initially) -->
+                <div id="verificationSection" class="d-none">
+                    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-3">
+                        <i class="fa-solid fa-circle-info fa-lg me-3 text-info"></i>
+                        <div>
+                            <strong>Product Verification Workspace:</strong> Review and verify the parsed product names and codes below. Missing categories, brands, units, and warehouses will be created automatically in their master databases.
+                        </div>
+                    </div>
+
+                    <!-- Statistics Summary -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-light border-0 shadow-sm">
+                                <div class="card-body p-3 text-center">
+                                    <h6 class="text-muted mb-1 small text-uppercase fw-bold">Total Items</h6>
+                                    <h4 class="m-0 fw-bold text-dark" id="statTotalItems">0</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-light border-0 shadow-sm text-success">
+                                <div class="card-body p-3 text-center">
+                                    <h6 class="text-muted mb-1 small text-uppercase fw-bold">New Products</h6>
+                                    <h4 class="m-0 fw-bold text-success" id="statNewItems">0</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-light border-0 shadow-sm text-primary">
+                                <div class="card-body p-3 text-center">
+                                    <h6 class="text-muted mb-1 small text-uppercase fw-bold">Exact Matches</h6>
+                                    <h4 class="m-0 fw-bold text-primary" id="statExactMatches">0</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-light border-0 shadow-sm text-warning">
+                                <div class="card-body p-3 text-center">
+                                    <h6 class="text-muted mb-1 small text-uppercase fw-bold">Similar Matches</h6>
+                                    <h4 class="m-0 fw-bold text-warning" id="statSimilarMatches">0</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Editable Verification Table -->
+                    <div class="table-responsive shadow-sm rounded border border-light" style="max-height: 450px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0" id="verificationTable" style="min-width: 1850px; font-size: 0.85rem;">
+                            <thead class="table-dark sticky-top">
+                                <tr>
+                                    <th style="width: 4%;">Status</th>
+                                    <th style="width: 7%;">Action</th>
+                                    <th style="width: 8%;">Code *</th>
+                                    <th style="width: 25%;">Product Name *</th>
+                                    <th style="width: 6%;">HSN</th>
+                                    <th style="width: 10%;">Category</th>
+                                    <th style="width: 10%;">Brand</th>
+                                    <th style="width: 6%;">Unit</th>
+                                    <th style="width: 9%;">Warehouse</th>
+                                    <th style="width: 5%;">Qty *</th>
+                                    <th style="width: 6%;">Purchase</th>
+                                    <th style="width: 6%;">Sales</th>
+                                    <th style="width: 6%;">MRP</th>
+                                    <th style="width: 4%;">GST%</th>
+                                    <th style="width: 3%;" class="text-center"><i class="fa-solid fa-trash"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </form>
+            </div>
+            <div class="modal-footer bg-light border-top p-3">
+                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-primary d-none px-3" id="btnBackToUpload" onclick="resetImportModal()"><i class="fa-solid fa-arrow-left me-1"></i> Upload New File</button>
+                <button type="button" class="btn btn-success d-none px-4 fw-bold shadow-sm" id="btnCommitImport" onclick="commitVerifiedImport()"><i class="fa-solid fa-check me-1"></i> Confirm & Import</button>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Datalists for auto-complete suggestions -->
+<datalist id="importCategoriesDatalist"></datalist>
+<datalist id="importBrandsDatalist"></datalist>
+<datalist id="importUnitsDatalist"></datalist>
+<datalist id="importWarehousesDatalist"></datalist>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        function escapeHtml(str) {
+            if (str === undefined || str === null) return '';
+            return str.toString()
+                      .replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
         window.productEditList = @Json.Serialize(Model.ProductEditLookups);
         var bootstrapModal;
         var uploadModal;
-        document.addEventListener("DOMContentLoaded", function () {
+        $(function () {
             bootstrapModal = new bootstrap.Modal(document.getElementById('productModal'));
             uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
 
-            $('#uploadForm').on('submit', function (e) {
+            $('#productForm').on('submit', function (e) {
                 e.preventDefault();
-                var formData = new FormData(this);
-                $('#btnUploadSubmit').prop('disabled', true).text('Uploading...');
-                $('#uploadErrors').addClass('d-none');
-                $('#errorsList').empty();
+                ErpApp.submitForm(this, {
+                    modal: bootstrapModal,
+                    reloadPage: true
+                });
+            });
+
+            // File Upload and Verification Logic
+            var importedProducts = [];
+            var importCategories = [];
+            var importBrands = [];
+            var importUnits = [];
+            var importWarehouses = [];
+
+            // Bind click to the drop zone
+            $('#importDropZone').on('click', function () {
+                $('#importFileSelect').click();
+            });
+
+            // Bind drag-and-drop events
+            $('#importDropZone').on('dragover', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).addClass('bg-primary bg-opacity-10 border-primary');
+            });
+
+            $('#importDropZone').on('dragleave', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('bg-primary bg-opacity-10 border-primary');
+            });
+
+            $('#importDropZone').on('drop', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('bg-primary bg-opacity-10 border-primary');
+
+                var files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    $('#importFileSelect')[0].files = files;
+                    $('#importFileSelect').trigger('change');
+                }
+            });
+
+            $('#importFileSelect').on('change', function (e) {
+                var file = e.target.files[0];
+                if (!file) return;
+
+                var formData = new FormData();
+                formData.append('file', file);
+
+                Swal.fire({
+                    title: 'Analyzing Document...',
+                    html: 'Extracting product information and matching with database, please wait...',
+                    allowOutsideClick: false,
+                    didOpen: function () {
+                        Swal.showLoading();
+                    }
+                });
 
                 $.ajax({
-                    url: '/Masters/BulkUploadProducts',
+                    url: '/Masters/PreviewImport',
                     type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
                     success: function (res) {
-                        $('#btnUploadSubmit').prop('disabled', false).text('Upload & Import');
+                        Swal.close();
                         if (res.success) {
-                            Swal.fire('Success!', res.message, 'success').then(function () {
-                                location.reload();
-                            });
+                            importedProducts = res.items;
+                            importCategories = res.categories || [];
+                            importBrands = res.brands || [];
+                            importUnits = res.units || [];
+                            importWarehouses = res.warehouses || [];
+
+                            // Render Verification Table
+                            renderVerificationTable();
+
+                            // Show workspace sections
+                            $('#uploadFileSection').addClass('d-none');
+                            $('#verificationSection').removeClass('d-none');
+                            $('#btnBackToUpload').removeClass('d-none');
+                            $('#btnCommitImport').removeClass('d-none');
                         } else {
-                            if (res.errors && res.errors.length > 0) {
-                                $('#uploadErrors').removeClass('d-none');
-                                res.errors.forEach(function (err) {
-                                    $('#errorsList').append(`<li>${err}</li>`);
-                                });
-                            } else {
-                                Swal.fire('Error!', res.message || 'Upload failed.', 'error');
-                            }
+                            Swal.fire('Import Error', res.message || 'Failed to parse file.', 'error');
+                            $('#importFileSelect').val('');
                         }
                     },
-                    error: function () {
-                        $('#btnUploadSubmit').prop('disabled', false).text('Upload & Import');
-                        Swal.fire('Error!', 'An error occurred during upload.', 'error');
+                    error: function (xhr, err) {
+                        Swal.close();
+                        Swal.fire('Error', 'An error occurred while uploading and parsing the document.', 'error');
+                        $('#importFileSelect').val('');
                     }
                 });
             });
+
+            function populateDatalist(selector, items) {
+                var dl = $(selector);
+                dl.empty();
+                if (items) {
+                    items.forEach(function (item) {
+                        dl.append(`<option value="${item}"></option>`);
+                    });
+                }
+            }
+
+            window.renderVerificationTable = function () {
+                var tbody = $('#verificationTable tbody');
+                tbody.empty();
+
+                if (importedProducts.length === 0) {
+                    tbody.append('<tr><td colspan="14" class="text-center text-muted py-4">No products found to import.</td></tr>');
+                    updateStats(0, 0, 0, 0);
+                    return;
+                }
+
+                var stats = { total: 0, news: 0, exacts: 0, similars: 0 };
+
+                importedProducts.forEach(function (item, index) {
+                    stats.total++;
+                    var statusBadge = '';
+                    var actionSelect = '';
+
+                    if (item.matchStatus === 'ExactMatch') {
+                        stats.exacts++;
+                        statusBadge = `<span class="badge bg-primary text-uppercase shadow-sm py-1.5 px-2.5" title="Exact match in database"><i class="fa-solid fa-check-double me-1"></i> Match</span>`;
+                        actionSelect = `
+                            <select class="form-select form-select-sm item-action" data-index="${index}">
+                                <option value="UpdateExisting" selected>Update Existing</option>
+                                <option value="CreateNew">Import as New</option>
+                                <option value="Ignore">Skip</option>
+                            </select>`;
+                    } else if (item.matchStatus === 'SimilarMatch') {
+                        stats.similars++;
+                        var escapedSimilar = escapeHtml(item.similarMatchedName);
+                        statusBadge = `<span class="badge bg-warning text-dark text-uppercase shadow-sm py-1.5 px-2.5" title="Similar to: ${escapedSimilar}"><i class="fa-solid fa-triangle-exclamation me-1"></i> Similar</span>
+                                       <div class="small text-muted mt-1" style="font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Ref: ${escapedSimilar}</div>`;
+                        actionSelect = `
+                            <select class="form-select form-select-sm item-action" data-index="${index}">
+                                <option value="UpdateExisting" selected>Update Matched</option>
+                                <option value="CreateNew">Import as New</option>
+                                <option value="Ignore">Skip</option>
+                            </select>`;
+                    } else {
+                        stats.news++;
+                        statusBadge = `<span class="badge bg-success text-uppercase shadow-sm py-1.5 px-2.5"><i class="fa-solid fa-plus me-1"></i> New</span>`;
+                        actionSelect = `
+                            <select class="form-select form-select-sm item-action" data-index="${index}">
+                                <option value="CreateNew" selected>Import</option>
+                                <option value="Ignore">Skip</option>
+                            </select>`;
+                    }
+
+                    // Dynamically build select options for lookup tables
+                    var catOptionsHtml = '';
+                    var catMatched = false;
+                    importCategories.forEach(function(catName) {
+                        var selected = '';
+                        if (item.categoryName && catName.toLowerCase() === item.categoryName.toLowerCase()) {
+                            selected = 'selected';
+                            catMatched = true;
+                        }
+                        catOptionsHtml += `<option value="${catName}" ${selected}>${catName}</option>`;
+                    });
+                    if (!catMatched && item.categoryName) {
+                        catOptionsHtml += `<option value="${item.categoryName}" selected>${item.categoryName} (New)</option>`;
+                    } else if (!item.categoryName) {
+                        catOptionsHtml = `<option value="Power Tools" selected>Power Tools</option>` + catOptionsHtml;
+                    }
+
+                    var brandOptionsHtml = '<option value="">No Brand</option>';
+                    var brandMatched = false;
+                    importBrands.forEach(function(brandName) {
+                        var selected = '';
+                        if (item.brandName && brandName.toLowerCase() === item.brandName.toLowerCase()) {
+                            selected = 'selected';
+                            brandMatched = true;
+                        }
+                        brandOptionsHtml += `<option value="${brandName}" ${selected}>${brandName}</option>`;
+                    });
+                    if (!brandMatched && item.brandName) {
+                        brandOptionsHtml += `<option value="${item.brandName}" selected>${item.brandName} (New)</option>`;
+                    }
+
+                    var unitOptionsHtml = '';
+                    var unitMatched = false;
+                    importUnits.forEach(function(unitSymbol) {
+                        var selected = '';
+                        if (item.unitName && unitSymbol.toLowerCase() === item.unitName.toLowerCase()) {
+                            selected = 'selected';
+                            unitMatched = true;
+                        }
+                        unitOptionsHtml += `<option value="${unitSymbol}" ${selected}>${unitSymbol}</option>`;
+                    });
+                    if (!unitMatched && item.unitName) {
+                        unitOptionsHtml += `<option value="${item.unitName}" selected>${item.unitName} (New)</option>`;
+                    } else if (!item.unitName) {
+                        var defaultUnit = importUnits.length > 0 ? importUnits[0] : "nos";
+                        unitOptionsHtml = `<option value="${defaultUnit}" selected>${defaultUnit}</option>` + unitOptionsHtml;
+                    }
+
+                    var whOptionsHtml = '';
+                    var whMatched = false;
+                    importWarehouses.forEach(function(whName) {
+                        var selected = '';
+                        if (item.warehouseName && whName.toLowerCase() === item.warehouseName.toLowerCase()) {
+                            selected = 'selected';
+                            whMatched = true;
+                        }
+                        whOptionsHtml += `<option value="${whName}" ${selected}>${whName}</option>`;
+                    });
+                    if (!whMatched && item.warehouseName) {
+                        whOptionsHtml += `<option value="${item.warehouseName}" selected>${item.warehouseName} (New)</option>`;
+                    } else if (!item.warehouseName) {
+                        var defaultWh = importWarehouses.length > 0 ? importWarehouses[0] : "Main Warehouse";
+                        whOptionsHtml = `<option value="${defaultWh}" selected>${defaultWh}</option>` + whOptionsHtml;
+                    }
+
+                    var rowHtml = `
+                        <tr data-index="${index}">
+                            <td>${statusBadge}</td>
+                            <td>${actionSelect}</td>
+                            <td><input type="text" class="form-control form-control-sm item-code fw-semibold" value="${escapeHtml(item.productCode)}"></td>
+                            <td><input type="text" class="form-control form-control-sm item-name fw-semibold" value="${escapeHtml(item.productName)}"></td>
+                            <td><input type="text" class="form-control form-control-sm item-hsn" value="${escapeHtml(item.hsnCode)}"></td>
+                            <td>
+                                <select class="form-select form-select-sm item-category">
+                                    ${catOptionsHtml}
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm item-brand">
+                                    ${brandOptionsHtml}
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm item-unit">
+                                    ${unitOptionsHtml}
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm item-warehouse">
+                                    ${whOptionsHtml}
+                                </select>
+                            </td>
+                            <td><input type="number" class="form-control form-control-sm item-qty" value="${item.openingStock || 1}" step="1" min="1"></td>
+                            <td><input type="number" class="form-control form-control-sm item-purchase" value="${item.purchasePrice || 0}" step="0.01"></td>
+                            <td><input type="number" class="form-control form-control-sm item-sales" value="${item.salesPrice || 0}" step="0.01"></td>
+                            <td><input type="number" class="form-control form-control-sm item-mrp" value="${item.mrp || 0}" step="0.01"></td>
+                            <td><input type="number" class="form-control form-control-sm item-gst" value="${item.gstPercentage || 18}"></td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeImportRow(${index})">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(rowHtml);
+                });
+
+                updateStats(stats.total, stats.news, stats.exacts, stats.similars);
+            };
+
+            window.removeImportRow = function (index) {
+                importedProducts.splice(index, 1);
+                renderVerificationTable();
+            };
+
+            function updateStats(total, news, exacts, similars) {
+                $('#statTotalItems').text(total);
+                $('#statNewItems').text(news);
+                $('#statExactMatches').text(exacts);
+                $('#statSimilarMatches').text(similars);
+            }
+
+            window.resetImportModal = function () {
+                $('#importFileSelect').val('');
+                importedProducts = [];
+                $('#uploadFileSection').removeClass('d-none');
+                $('#verificationSection').addClass('d-none');
+                $('#btnBackToUpload').addClass('d-none');
+                $('#btnCommitImport').addClass('d-none');
+                $('#verificationTable tbody').empty();
+            };
+
+            window.commitVerifiedImport = function () {
+                var payload = [];
+                var isValid = true;
+
+                $('#verificationTable tbody tr').each(function () {
+                    var row = $(this);
+                    var idx = parseInt(row.data('index'));
+                    var code = row.find('.item-code').val().trim();
+                    var name = row.find('.item-name').val().trim();
+                    var action = row.find('.item-action').val();
+
+                    if (action === 'Ignore') return;
+
+                    if (!name) {
+                        row.find('.item-name').addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        row.find('.item-name').removeClass('is-invalid');
+                    }
+
+                    payload.push({
+                        productCode: code,
+                        productName: name,
+                        hsnCode: row.find('.item-hsn').val().trim(),
+                        categoryName: row.find('.item-category').val().trim(),
+                        brandName: row.find('.item-brand').val().trim(),
+                        unitName: row.find('.item-unit').val().trim(),
+                        warehouseName: row.find('.item-warehouse').val().trim(),
+                        openingStock: parseFloat(row.find('.item-qty').val()) || 0,
+                        purchasePrice: parseFloat(row.find('.item-purchase').val()) || 0,
+                        salesPrice: parseFloat(row.find('.item-sales').val()) || 0,
+                        mrp: parseFloat(row.find('.item-mrp').val()) || 0,
+                        gstPercentage: parseFloat(row.find('.item-gst').val()) || 0,
+                        existingProductId: importedProducts[idx].existingProductId || importedProducts[idx].ExistingProductId || null,
+                        actionType: action
+                    });
+                });
+
+                if (!isValid) {
+                    Swal.fire('Validation Error', 'Please ensure all active products have a valid Name.', 'warning');
+                    return;
+                }
+
+                if (payload.length === 0) {
+                    Swal.fire('Information', 'No items are selected for import.', 'info');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Importing Products...',
+                    html: `Saving ${payload.length} products to database and auto-generating masters...`,
+                    allowOutsideClick: false,
+                    didOpen: function () {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: '/Masters/CommitImport',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function (res) {
+                        Swal.close();
+                        if (res.success) {
+                            Swal.fire('Import Complete!', res.message, 'success').then(function () {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Import Failed', res.message || 'Failed to save products.', 'error');
+                        }
+                    },
+                    error: function () {
+                        Swal.close();
+                        Swal.fire('Error', 'An error occurred while saving products.', 'error');
+                    }
+                });
+            };
         });
 
         function openUploadModal() {
-            $('#uploadForm')[0].reset();
-            $('#uploadErrors').addClass('d-none');
-            $('#errorsList').empty();
+            resetImportModal();
             uploadModal.show();
         }
 
@@ -254,15 +768,19 @@
         }
 
         function openModal() {
+            ErpApp.clearFieldErrors('#productForm');
             document.getElementById('productForm').reset();
             document.getElementById('Id').value = "0";
             $('#CategoryId, #BrandId, #UnitId, #WarehouseId').val('').trigger('change');
-            document.getElementById('modalTitle').innerText = "Add Product";
+            $('#existingDocumentDiv').hide();
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-box-open me-2"></i> Add Product';
+            document.getElementById('submitBtn').innerText = "Save Product";
             bootstrapModal.show();
         }
 
         function editProductById(id) {
-            var p = window.productEditList.find(function(item) { return item.id === id; });
+            ErpApp.clearFieldErrors('#productForm');
+            var p = window.productEditList.find(function(item) { return window.getVal(item, 'id') === id; });
             if (!p) {
                 Swal.fire('Error!', 'Product details could not be loaded.', 'error');
                 return;
@@ -283,32 +801,61 @@
             document.getElementById('MinimumStock').value = lookupValue(p, 'minimumStock', 'MinimumStock');
             document.getElementById('ReorderLevel').value = lookupValue(p, 'reorderLevel', 'ReorderLevel');
             document.getElementById('Description').value = lookupValue(p, 'description', 'Description') || "";
-            document.getElementById('modalTitle').innerText = "Edit Product";
+            var docPath = lookupValue(p, 'documentPath', 'DocumentPath');
+            if (docPath) {
+                document.getElementById('existingDocumentLink').href = docPath;
+                $('#existingDocumentDiv').show();
+            } else {
+                $('#existingDocumentDiv').hide();
+            }
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square me-2"></i> Edit Product';
+            document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();
         }
 
         function deleteProduct(id) {
+            ErpApp.confirmDelete({
+                url: '/Masters/DeleteProduct',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this product?'
+            });
+        }
+
+        function clearAllProductData() {
             Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this product?",
+                title: 'Are you absolutely sure?',
+                text: "This will delete all products, categories, brands, stock transactions, and invoice/GRN/challan/quotation line items! This action is irreversible.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
+                confirmButtonText: 'Yes, clear all data!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post('/Masters/DeleteProduct', { id: id }, function (res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Product has been deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        } else {
-                            Swal.fire('Error!', 'Failed to delete.', 'error');
+                    Swal.fire({
+                        title: 'Clearing Data...',
+                        html: 'Please wait while we clear the database entries.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
                         }
+                    });
+                    $.post('/Masters/ClearAllProductData', function (res) {
+                        Swal.close();
+                        if (res.success) {
+                            Swal.fire('Cleared!', res.message, 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error!', res.message, 'error');
+                        }
+                    }).fail(function() {
+                        Swal.close();
+                        Swal.fire('Error!', 'An unexpected error occurred.', 'error');
                     });
                 }
             });
         }
     </script>
 }
-
