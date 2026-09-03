@@ -163,7 +163,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
-                    <div class="flex-grow-1" style="max-width: 500px;">
+                    <div class="flex-grow-1 w-100" style="max-width: 500px;">
                         <label class="form-label fw-semibold text-dark">Notes / Terms</label>
                         <textarea id="Notes" class="form-control" rows="3" placeholder="Dispatch & delivery notes..."></textarea>
                     </div>
@@ -407,13 +407,19 @@
             });
 
             var customerId = $('#CustomerId').val();
-            if (!customerId || !$('#ChallanNumber').val() || items.length === 0 || !isValid) {
-                Swal.fire('Error!', 'Please fill all fields.', 'error');
+            if (!customerId) {
+                ErpApp.notify('Please select a customer.', 'warning', 'Validation Error');
+                $('#CustomerId').focus();
+                return;
+            }
+
+            if (!isValid || items.length === 0) {
+                ErpApp.notify('Please fill all required fields and add at least one valid line item.', 'warning', 'Validation Error');
                 return;
             }
 
             var challan = {
-                id: 0,
+                id: parseInt($('#Id').val()) || 0,
                 challanNumber: $('#ChallanNumber').val(),
                 challanDate: $('#ChallanDate').val(),
                 customerId: parseInt(customerId),
@@ -425,37 +431,38 @@
                 withGST: $('#WithGST').is(':checked')
             };
 
+            var $btn = $('#btnSaveChallan, [onclick="saveChallan()"]').first();
+            ErpApp.setButtonLoading($btn, true, 'Saving Delivery Challan...');
+
             $.ajax({
                 url: '/Sales/SaveChallan',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(challan),
                 success: function(res) {
-                    if (res.success) {
-                        Swal.fire('Saved!', res.message, 'success').then(() => { location.reload(); });
+                    ErpApp.setButtonLoading($btn, false);
+                    if (res && res.success) {
+                        ErpApp.notify(res.message || 'Delivery Challan saved successfully.', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        ErpApp.notify(res.message || 'Failed to save delivery challan.', 'error');
+                        if (res.errors) ErpApp.showFieldErrors('#challanForm', res.errors);
                     }
+                },
+                error: function(xhr) {
+                    ErpApp.setButtonLoading($btn, false);
+                    var msg = xhr.responseJSON?.message || 'Failed to save delivery challan.';
+                    ErpApp.notify(msg, 'error');
                 }
             });
         }
 
         function deleteChallan(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this challan?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Sales/DeleteChallan', { id: id }, function(res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Challan deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Sales/DeleteChallan',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this delivery challan?'
             });
         }
     </script>

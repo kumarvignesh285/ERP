@@ -8,7 +8,7 @@ public interface IAccountingService
     Task<List<Voucher>> GetVouchersAsync(string? type = null);
     Task<Voucher?> GetVoucherByIdAsync(int id);
     Task<Voucher> SaveVoucherAsync(Voucher voucher);
-    Task DeleteVoucherAsync(int id);
+    Task<(bool Success, string Message)> DeleteVoucherAsync(int id);
 
     // Financial Statements
     Task<List<LedgerBalance>> GetTrialBalanceAsync();

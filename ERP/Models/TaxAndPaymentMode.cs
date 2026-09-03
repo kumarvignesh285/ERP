@@ -2,8 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ERP.Models;
 
-public class Tax : BaseEntity
+public class Tax : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(50)]
     public string TaxName { get; set; } = string.Empty;
     public decimal TaxPercentage { get; set; }
@@ -16,8 +19,11 @@ public class Tax : BaseEntity
     public decimal? IGSTPercentage { get; set; }
 }
 
-public class PaymentMode : BaseEntity
+public class PaymentMode : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(50)]
     public string ModeName { get; set; } = string.Empty;
     [MaxLength(200)]

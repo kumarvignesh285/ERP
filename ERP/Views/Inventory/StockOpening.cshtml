@@ -37,7 +37,7 @@
                             <td>@p.Unit?.UnitSymbol</td>
                             <td>@p.CurrentStock</td>
                             <td>
-                                <form asp-action="SaveStockOpening" method="post" class="d-flex align-items-center gap-2 m-0">
+                                <form asp-action="SaveStockOpening" method="post" class="d-flex align-items-center gap-2 m-0 stock-opening-form">
                                     <input type="hidden" name="productId" value="@p.Id" />
                                     <input type="number" name="quantity" class="form-control form-control-sm w-100px" value="@p.OpeningStock" step="0.01" required />
                                     <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-save"></i></button>
@@ -53,3 +53,17 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('.stock-opening-form').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    loadingText: 'Saving...',
+                    reloadPage: true
+                });
+            });
+        });
+    </script>
+}

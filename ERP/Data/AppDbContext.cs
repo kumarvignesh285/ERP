@@ -1,14 +1,22 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using ERP.Interfaces;
 using ERP.Models;
 
 namespace ERP.Data;
 
 public class AppDbContext : IdentityDbContext<AppUser>
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    private readonly ICompanyContext? _companyContext;
+
+    public AppDbContext(DbContextOptions<AppDbContext> options, ICompanyContext? companyContext = null) : base(options)
     {
+        _companyContext = companyContext;
     }
+
+    public int? CurrentCompanyId => _companyContext?.CurrentCompanyId;
+    public int ActiveTenantId => _companyContext?.CurrentCompanyId ?? 0;
+    public bool IsSuperAdmin => _companyContext?.IsSuperAdmin ?? false;
 
     public DbSet<Company> Companies { get; set; } = null!;
     public DbSet<Customer> Customers { get; set; } = null!;
@@ -70,6 +78,11 @@ public class AppDbContext : IdentityDbContext<AppUser>
 
     // Permissions
     public DbSet<ScreenPermission> ScreenPermissions { get; set; } = null!;
+
+    // Audit & Security
+    public DbSet<LoginHistory> LoginHistories { get; set; } = null!;
+    public DbSet<UserActivityLog> UserActivityLogs { get; set; } = null!;
+    public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -159,5 +172,139 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .WithMany(x => x.Items)
             .HasForeignKey(x => x.VoucherId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // --- Multi-Company Foundation Configuration ---
+
+        // Unique Company Code
+        builder.Entity<Company>()
+            .HasIndex(c => c.CompanyCode)
+            .IsUnique();
+
+        // Frequently queried tenant-aware composite indexes
+        builder.Entity<Product>().HasIndex(x => new { x.CompanyId, x.ProductCode });
+        builder.Entity<Customer>().HasIndex(x => new { x.CompanyId, x.CustomerCode });
+        builder.Entity<Supplier>().HasIndex(x => new { x.CompanyId, x.SupplierCode });
+        builder.Entity<SalesInvoice>().HasIndex(x => new { x.CompanyId, x.InvoiceNumber });
+        builder.Entity<PurchaseInvoice>().HasIndex(x => new { x.CompanyId, x.InvoiceNumber });
+        builder.Entity<SalesOrder>().HasIndex(x => new { x.CompanyId, x.OrderNumber });
+        builder.Entity<PurchaseOrder>().HasIndex(x => new { x.CompanyId, x.OrderNumber });
+        builder.Entity<Voucher>().HasIndex(x => new { x.CompanyId, x.VoucherNumber });
+
+        // Global Query Filters for company data isolation
+        foreach (var entityType in builder.Model.GetEntityTypes())
+        {
+            if (typeof(ICompanyOwned).IsAssignableFrom(entityType.ClrType))
+            {
+                var method = typeof(AppDbContext)
+                    .GetMethod(nameof(ConfigureCompanyFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                    .MakeGenericMethod(entityType.ClrType);
+
+                method?.Invoke(this, new object[] { builder });
+            }
+        }
+
+        builder.Entity<Notification>().HasQueryFilter(e => (IsSuperAdmin && ActiveTenantId == 0) || e.CompanyId == null || e.CompanyId == ActiveTenantId);
+        builder.Entity<ScreenPermission>().HasQueryFilter(e => (IsSuperAdmin && ActiveTenantId == 0) || e.CompanyId == null || e.CompanyId == ActiveTenantId);
+
+        builder.Entity<LoginHistory>(entity =>
+        {
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.CompanyId);
+            entity.HasIndex(e => e.LoginTime);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.SessionId);
+        });
+
+        builder.Entity<UserActivityLog>(entity =>
+        {
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.ActivityType);
+            entity.HasIndex(e => e.Timestamp);
+        });
+
+        builder.Entity<AuditLog>(entity =>
+        {
+            entity.HasIndex(e => e.CompanyId);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.Timestamp);
+            entity.HasIndex(e => e.Action);
+            entity.HasIndex(e => e.Module);
+            entity.HasIndex(e => e.EntityName);
+            entity.HasQueryFilter(e => (IsSuperAdmin && ActiveTenantId == 0) || e.CompanyId == ActiveTenantId);
+        });
+    }
+
+    private void ConfigureCompanyFilter<TEntity>(ModelBuilder builder) where TEntity : class, ICompanyOwned
+    {
+        builder.Entity<TEntity>().HasQueryFilter(e => (IsSuperAdmin && ActiveTenantId == 0) || e.CompanyId == ActiveTenantId);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ApplyTenantId();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    public override int SaveChanges()
+    {
+        ApplyTenantId();
+        return base.SaveChanges();
+    }
+
+    private void ApplyTenantId()
+    {
+        var currentCompanyId = CurrentCompanyId;
+        if (currentCompanyId.HasValue && currentCompanyId.Value > 0)
+        {
+            foreach (var entry in ChangeTracker.Entries<ICompanyOwned>())
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    // Unconditionally force server-resolved CompanyId to prevent spoofing
+                    entry.Entity.CompanyId = currentCompanyId.Value;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    if (!IsSuperAdmin)
+                    {
+                        // Prevent changing the company assignment of an existing record
+                        entry.Property(x => x.CompanyId).IsModified = false;
+
+                        var originalCompanyId = entry.Property(x => x.CompanyId).OriginalValue;
+                        if (originalCompanyId != currentCompanyId.Value)
+                        {
+                            throw new UnauthorizedAccessException("Tenant security violation: You do not have permission to modify records belonging to another company.");
+                        }
+                    }
+                }
+                else if (entry.State == EntityState.Deleted)
+                {
+                    if (!IsSuperAdmin)
+                    {
+                        var originalCompanyId = entry.Property(x => x.CompanyId).OriginalValue;
+                        if (originalCompanyId != currentCompanyId.Value)
+                        {
+                            throw new UnauthorizedAccessException("Tenant security violation: You do not have permission to delete records belonging to another company.");
+                        }
+                    }
+                }
+            }
+
+            foreach (var entry in ChangeTracker.Entries<Notification>())
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CompanyId = currentCompanyId.Value;
+                }
+            }
+
+            foreach (var entry in ChangeTracker.Entries<ScreenPermission>())
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CompanyId = currentCompanyId.Value;
+                }
+            }
+        }
     }
 }

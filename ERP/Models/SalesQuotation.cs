@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class SalesQuotation : BaseEntity
+public class SalesQuotation : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string QuotationNumber { get; set; } = string.Empty;
     public DateTime QuotationDate { get; set; } = DateTime.Today;

@@ -1,7 +1,7 @@
 @model UserPermissionsPageViewModel
 @{
     ViewData["Title"] = "User Permissions Configuration";
-    
+
     var pageGroups = new Dictionary<string, (string Icon, string[] Pages)>
     {
         { "Masters", ("fa-folder-open text-primary", new[] { "Company Master", "Customer Master", "Supplier Master", "Product Master", "Category Master", "Brand Master", "Unit Master", "Warehouse Master", "Ledger Master", "Employee Master", "Account Groups", "Bank Master", "Tax Settings", "Payment Modes" }) },
@@ -15,11 +15,14 @@
     };
 
     var selectedUser = Model.Users.FirstOrDefault(u => u.Id == Model.SelectedUserId);
-    var isSuperAdmin = selectedUser?.Email == "admin@smarterp.com";
+    var isSuperAdminUser = selectedUser != null && (selectedUser.CompanyId == null || selectedUser.Email?.ToLowerInvariant() == "admin@smarterp.com");
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-user-shield me-2"></i> User Permissions Configuration</h4>
+    <div>
+        <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-user-shield me-2"></i> User Permissions Configuration</h4>
+        <p class="text-muted small m-0 mt-1">Configure fine-grained screen and CRUD operation permissions per user</p>
+    </div>
     <div>
         <a href="/Settings/Users" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-users me-1"></i> User Management</a>
         <a href="/Settings/Roles" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-users-gear me-1"></i> Roles List</a>
@@ -41,43 +44,50 @@
     </div>
 }
 
-<div class="card mb-4">
-    <div class="card-header bg-light border-bottom">
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-light border-bottom py-3">
         <div class="row align-items-center">
             <div class="col-md-4">
-                <label class="form-label font-weight-semibold mb-1 mb-md-0">Select User to Configure Permissions</label>
+                <label class="form-label fw-semibold mb-1 mb-md-0 text-dark">Select User to Configure</label>
             </div>
-            <div class="col-md-6 col-lg-4">
-                <select id="userSelector" class="form-select font-weight-semibold border-primary shadow-sm" style="border-width: 1.5px;">
+            <div class="col-md-6 col-lg-5">
+                <select id="userSelector" class="form-select fw-semibold border-primary shadow-sm">
                     @foreach (var user in Model.Users)
                     {
-                        <!option value="@user.Id" @(user.Id == Model.SelectedUserId ? "selected" : "")>@user.FullName (@user.Email)</!option>
+                        var compTag = user.Company != null ? $" [{user.Company.CompanyCode}]" : "";
+                        <!option value="@user.Id" @(user.Id == Model.SelectedUserId ? "selected" : "")>@user.FullName (@user.Email)@compTag</!option>
                     }
                 </select>
             </div>
+            <div class="col-md-2 text-end">
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-primary" id="btnCheckAll">Select All</button>
+                    <button type="button" class="btn btn-outline-secondary" id="btnUncheckAll">Clear All</button>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <form asp-action="SavePermissions" method="post">
+
+    <form asp-action="SavePermissions" method="post" id="permissionsForm">
         <input type="hidden" name="userId" value="@Model.SelectedUserId" />
-        
+
         <div class="card-body p-0">
-            @if (isSuperAdmin)
+            @if (isSuperAdminUser)
             {
                 <div class="alert alert-warning m-3 border-0 shadow-sm d-flex align-items-center">
                     <i class="fa-solid fa-circle-info fs-4 me-3 text-warning"></i>
                     <div>
-                        <strong>Super Admin User:</strong> Permissions for the Super Admin user are fully unlocked by default and cannot be modified to prevent system lockout.
+                        <strong>Super Admin Account:</strong> Permissions for the system administrator are fully unlocked by default and cannot be restricted to prevent lockout.
                     </div>
                 </div>
             }
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead class="table-light text-uppercase fs-8 text-muted fw-bold">
                         <tr>
                             <th class="ps-4" style="width: 45%;">Screen / Page Name</th>
                             <th class="text-center" style="width: 18%;">View Access</th>
-                            <th class="text-center" style="width: 18%;">Edit & Create</th>
+                            <th class="text-center" style="width: 18%;">Create & Edit</th>
                             <th class="text-center" style="width: 18%;">Delete Access</th>
                         </tr>
                     </thead>
@@ -93,7 +103,7 @@
                             <tr class="table-light fw-bold" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target=".@collapseClass">
                                 <td colspan="4" class="ps-3 py-2 fw-bold text-dark border-bottom">
                                     <i class="fa-solid @groupIcon me-2"></i> @groupName Module
-                                    <span class="badge bg-secondary ms-2 text-white" style="font-size: 0.75rem;">@pages.Length Pages</span>
+                                    <span class="badge bg-secondary ms-2 text-white" style="font-size: 0.75rem;">@pages.Length Screens</span>
                                     <i class="fa-solid fa-chevron-down float-end fs-7 mt-1 me-3 text-muted"></i>
                                 </td>
                             </tr>
@@ -104,7 +114,7 @@
                                 if (i >= 0)
                                 {
                                     var item = Model.Permissions[i];
-                                    
+
                                     <tr class="collapse show @collapseClass">
                                         <td class="ps-5 py-2 text-secondary">
                                             <i class="fa-solid fa-file-lines me-2 text-muted" style="font-size: 0.85rem;"></i> @item.ScreenName
@@ -112,19 +122,19 @@
                                         </td>
                                         <td class="text-center py-2">
                                             <div class="form-check form-switch d-inline-block">
-                                                <input class="form-check-input permission-switch" type="checkbox" name="permissions[@i].CanView" value="true" @(item.CanView ? "checked" : "") @(isSuperAdmin ? "disabled" : "") />
+                                                <input class="form-check-input permission-switch view-switch" type="checkbox" name="permissions[@i].CanView" value="true" @(item.CanView ? "checked" : "") @(isSuperAdminUser ? "disabled" : "") />
                                                 <input type="hidden" name="permissions[@i].CanView" value="false" />
                                             </div>
                                         </td>
                                         <td class="text-center py-2">
                                             <div class="form-check form-switch d-inline-block">
-                                                <input class="form-check-input permission-switch" type="checkbox" name="permissions[@i].CanEdit" value="true" @(item.CanEdit ? "checked" : "") @(isSuperAdmin ? "disabled" : "") />
+                                                <input class="form-check-input permission-switch edit-switch" type="checkbox" name="permissions[@i].CanEdit" value="true" @(item.CanEdit ? "checked" : "") @(isSuperAdminUser ? "disabled" : "") />
                                                 <input type="hidden" name="permissions[@i].CanEdit" value="false" />
                                             </div>
                                         </td>
                                         <td class="text-center py-2">
                                             <div class="form-check form-switch d-inline-block">
-                                                <input class="form-check-input permission-switch" type="checkbox" name="permissions[@i].CanDelete" value="true" @(item.CanDelete ? "checked" : "") @(isSuperAdmin ? "disabled" : "") />
+                                                <input class="form-check-input permission-switch delete-switch" type="checkbox" name="permissions[@i].CanDelete" value="true" @(item.CanDelete ? "checked" : "") @(isSuperAdminUser ? "disabled" : "") />
                                                 <input type="hidden" name="permissions[@i].CanDelete" value="false" />
                                             </div>
                                         </td>
@@ -136,10 +146,10 @@
                 </table>
             </div>
         </div>
-        
+
         <div class="card-footer bg-light text-end py-3">
             <a href="/Settings/Users" class="btn btn-outline-secondary me-2">Cancel</a>
-            <button type="submit" class="btn btn-primary" @(isSuperAdmin ? "disabled" : "")>
+            <button type="submit" class="btn btn-primary shadow-sm" id="submitBtn" @(isSuperAdminUser ? "disabled" : "")>
                 <i class="fa-solid fa-floppy-disk me-1"></i> Save Permissions Matrix
             </button>
         </div>
@@ -149,30 +159,43 @@
 @section Scripts {
     <script>
         $(function () {
-            // Handle user change dropdown
+            $('#permissionsForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    button: '#submitBtn',
+                    loadingText: 'Saving Matrix...',
+                    reloadPage: true
+                });
+            });
+
             $('#userSelector').on('change', function () {
                 var selectedUserId = $(this).val();
                 window.location.href = '/Settings/Permissions?userId=' + encodeURIComponent(selectedUserId);
             });
 
-            // Prevent check if CanView is unchecked, then CanEdit and CanDelete should also uncheck
+            // Auto-align checkboxes
             $('.permission-switch').on('change', function () {
                 var row = $(this).closest('tr');
-                var viewSwitch = row.find('input[name$=".CanView"][type="checkbox"]');
-                var editSwitch = row.find('input[name$=".CanEdit"][type="checkbox"]');
-                var deleteSwitch = row.find('input[name$=".CanDelete"][type="checkbox"]');
+                var viewSwitch = row.find('.view-switch');
+                var editSwitch = row.find('.edit-switch');
+                var deleteSwitch = row.find('.delete-switch');
 
-                if ($(this).attr('name').indexOf('.CanView') !== -1 && !$(this).is(':checked')) {
-                    // If View is turned off, automatically turn off Edit and Delete
+                if ($(this).hasClass('view-switch') && !$(this).is(':checked')) {
                     editSwitch.prop('checked', false);
                     deleteSwitch.prop('checked', false);
-                } else if (($(this).attr('name').indexOf('.CanEdit') !== -1 || $(this).attr('name').indexOf('.CanDelete') !== -1) && $(this).is(':checked')) {
-                    // If Edit or Delete is turned on, automatically turn on View
+                } else if (($(this).hasClass('edit-switch') || $(this).hasClass('delete-switch')) && $(this).is(':checked')) {
                     viewSwitch.prop('checked', true);
                 }
             });
 
-            // Rotate Chevron icon on collapse toggle
+            $('#btnCheckAll').on('click', function () {
+                $('.permission-switch:not(:disabled)').prop('checked', true);
+            });
+
+            $('#btnUncheckAll').on('click', function () {
+                $('.permission-switch:not(:disabled)').prop('checked', false);
+            });
+
             $('tr[data-bs-toggle="collapse"]').on('click', function () {
                 var icon = $(this).find('.fa-chevron-down, .fa-chevron-up');
                 if (icon.hasClass('fa-chevron-down')) {

@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class Voucher : BaseEntity
+public class Voucher : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string VoucherNumber { get; set; } = string.Empty;
     public DateTime VoucherDate { get; set; } = DateTime.Today;

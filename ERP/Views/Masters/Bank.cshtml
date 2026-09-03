@@ -123,9 +123,18 @@
         var bootstrapModal;
         $(function () {
             bootstrapModal = new bootstrap.Modal(document.getElementById('bankModal'));
+
+            $('#bankForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    modal: bootstrapModal,
+                    reloadPage: true
+                });
+            });
         });
 
         function openModal() {
+            ErpApp.clearFieldErrors('#bankForm');
             document.getElementById('bankForm').reset();
             document.getElementById('Id').value = "0";
             $('#LedgerId').val('').trigger('change');
@@ -135,7 +144,9 @@
         }
 
         function editBank(btn) {
+            ErpApp.clearFieldErrors('#bankForm');
             var b = $(btn).data('item');
+            document.getElementById('bankForm').reset();
             document.getElementById('Id').value = window.getVal(b, 'id');
             document.getElementById('BankName').value = window.getVal(b, 'bankName');
             document.getElementById('BranchName').value = window.getVal(b, 'branchName');
@@ -148,25 +159,11 @@
         }
 
         function deleteBank(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this bank account?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Masters/DeleteBank', { id: id }, function (res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Bank account has been deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        } else {
-                            Swal.fire('Error!', 'Failed to delete.', 'error');
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Masters/DeleteBank',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this bank account?'
             });
         }
     </script>

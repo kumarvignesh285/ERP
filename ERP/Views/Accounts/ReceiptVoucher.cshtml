@@ -132,7 +132,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
-                    <div class="flex-grow-1" style="max-width: 500px;">
+                    <div class="flex-grow-1 w-100" style="max-width: 500px;">
                         <label class="form-label fw-semibold text-dark">Narration <span class="text-danger">*</span></label>
                         <textarea id="Narration" class="form-control" rows="3" placeholder="Receipt description or customer collection remarks..." required></textarea>
                     </div>
@@ -295,13 +295,13 @@
             var dbTotal = parseFloat($('#lblTotalDebit').text().replace('₹', '')) || 0;
             var crTotal = parseFloat($('#lblTotalCredit').text().replace('₹', '')) || 0;
 
-            if (dbTotal !== crTotal || dbTotal === 0) {
-                Swal.fire('Error!', 'Voucher debit and credit totals must balance and be greater than zero.', 'error');
+            if (!isValid || items.length === 0) {
+                ErpApp.notify('Please select ledger accounts and enter amounts for all rows.', 'warning', 'Validation Error');
                 return;
             }
 
-            if (items.length === 0 || !isValid || !$('#VoucherNumber').val() || !$('#Narration').val()) {
-                Swal.fire('Error!', 'Please fill all required fields.', 'error');
+            if (Math.abs(dbTotal - crTotal) > 0.01 || dbTotal === 0) {
+                ErpApp.notify('Total Debit and Total Credit must be equal and greater than zero.', 'error', 'Unbalanced Voucher');
                 return;
             }
 
@@ -316,41 +316,38 @@
                 items: items
             };
 
+            var $btn = $('#btnSaveVoucher, [onclick="saveVoucher()"]').first();
+            ErpApp.setButtonLoading($btn, true, 'Saving Receipt Voucher...');
+
             $.ajax({
                 url: '/Accounts/SaveVoucher',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(voucher),
                 success: function(res) {
-                    if (res.success) {
-                        Swal.fire('Saved!', res.message, 'success').then(() => { location.reload(); });
+                    ErpApp.setButtonLoading($btn, false);
+                    if (res && res.success) {
+                        ErpApp.notify(res.message || 'Receipt Voucher saved successfully.', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
                     } else {
-                        Swal.fire('Error!', res.message, 'error');
+                        ErpApp.notify(res.message || 'Failed to save receipt voucher.', 'error');
+                        if (res.errors) ErpApp.showFieldErrors('#voucherForm', res.errors);
                     }
                 },
                 error: function(xhr) {
-                    Swal.fire('Error!', xhr.responseJSON?.message || 'Failed to save voucher.', 'error');
+                    ErpApp.setButtonLoading($btn, false);
+                    var msg = xhr.responseJSON?.message || 'Failed to save voucher.';
+                    ErpApp.notify(msg, 'error');
                 }
             });
         }
 
         function deleteVoucher(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this voucher?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Accounts/DeleteVoucher', { id: id }, function(res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Voucher deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Accounts/DeleteVoucher',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this receipt voucher? This will remove ledger debit/credit postings!'
             });
         }
     </script>

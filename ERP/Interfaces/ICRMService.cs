@@ -8,17 +8,17 @@ public interface ICRMService
     Task<List<Lead>> GetLeadsAsync();
     Task<Lead?> GetLeadByIdAsync(int id);
     Task<Lead> SaveLeadAsync(Lead lead);
-    Task DeleteLeadAsync(int id);
+    Task<(bool Success, string Message)> DeleteLeadAsync(int id);
 
     // Follow-Ups
     Task<List<FollowUp>> GetFollowUpsAsync();
     Task<FollowUp?> GetFollowUpByIdAsync(int id);
     Task<FollowUp> SaveFollowUpAsync(FollowUp followUp);
-    Task DeleteFollowUpAsync(int id);
+    Task<(bool Success, string Message)> DeleteFollowUpAsync(int id);
 
     // Opportunities
     Task<List<Opportunity>> GetOpportunitiesAsync();
     Task<Opportunity?> GetOpportunityByIdAsync(int id);
     Task<Opportunity> SaveOpportunityAsync(Opportunity opportunity);
-    Task DeleteOpportunityAsync(int id);
+    Task<(bool Success, string Message)> DeleteOpportunityAsync(int id);
 }

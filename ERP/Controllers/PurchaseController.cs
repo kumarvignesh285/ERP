@@ -44,6 +44,13 @@ public class PurchaseController : Controller
         };
     }
 
+    private Dictionary<string, string> GetModelStateErrors() =>
+        ModelState.Where(x => x.Value?.Errors.Count > 0)
+                  .ToDictionary(
+                      k => k.Key,
+                      v => v.Value!.Errors.First().ErrorMessage
+                  );
+
     // --- Purchase Order ---
     [HttpGet("Order")]
     public async Task<IActionResult> Order()
@@ -55,26 +62,34 @@ public class PurchaseController : Controller
     [HttpPost("SaveOrder")]
     public async Task<IActionResult> SaveOrder([FromBody] PurchaseOrder order)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _purchaseService.SavePurchaseOrderAsync(order);
-            return Json(new { success = true, message = "Purchase Order saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data." });
+
+        try
+        {
+            var saved = await _purchaseService.SavePurchaseOrderAsync(order);
+            return Json(ApiResponse.Ok("Purchase Order saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeleteOrder")]
     public async Task<IActionResult> DeleteOrder(int id)
     {
-        await _purchaseService.DeletePurchaseOrderAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _purchaseService.DeletePurchaseOrderAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     [HttpPost("UploadDocument")]
     public async Task<IActionResult> UploadDocument(IFormFile file)
     {
         if (file == null || file.Length == 0)
-            return Json(new { success = false, message = "File not selected" });
+            return Json(ApiResponse.Fail("File not selected"));
 
         try
         {
@@ -86,11 +101,11 @@ public class PurchaseController : Controller
             {
                 await file.CopyToAsync(fileStream);
             }
-            return Json(new { success = true, filePath = "/uploads/documents/PurchaseOrders/" + uniqueFileName });
+            return Json(ApiResponse.Ok("Document uploaded successfully.", new { filePath = "/uploads/documents/PurchaseOrders/" + uniqueFileName }));
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = ex.Message });
+            return Json(ApiResponse.Fail(ex.Message));
         }
     }
 
@@ -102,7 +117,7 @@ public class PurchaseController : Controller
             var order = await _purchaseService.GetPurchaseOrderByIdAsync(id);
             if (order == null || !order.IsActive)
             {
-                return Json(new { success = false, message = "Purchase order not found." });
+                return Json(ApiResponse.Fail("Purchase order not found."));
             }
 
             var invoice = new PurchaseInvoice
@@ -141,11 +156,11 @@ public class PurchaseController : Controller
             await _purchaseService.SaveInvoiceAsync(invoice);
             await _purchaseService.UpdatePurchaseOrderStatusAsync(order.Id, "Completed");
 
-            return Json(new { success = true, message = $"Purchase order converted to invoice {invoice.InvoiceNumber}." });
+            return Json(ApiResponse.Ok($"Purchase order converted to invoice {invoice.InvoiceNumber}.", invoice));
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = ex.Message });
+            return Json(ApiResponse.Fail(ex.Message));
         }
     }
 
@@ -160,19 +175,27 @@ public class PurchaseController : Controller
     [HttpPost("SaveGRN")]
     public async Task<IActionResult> SaveGRN([FromBody] GoodsReceiptNote grn)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _purchaseService.SaveGRNAsync(grn);
-            return Json(new { success = true, message = "Goods Receipt Note saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data." });
+
+        try
+        {
+            var saved = await _purchaseService.SaveGRNAsync(grn);
+            return Json(ApiResponse.Ok("Goods Receipt Note saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeleteGRN")]
     public async Task<IActionResult> DeleteGRN(int id)
     {
-        await _purchaseService.DeleteGRNAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _purchaseService.DeleteGRNAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     // --- Purchase Invoice ---
@@ -201,27 +224,26 @@ public class PurchaseController : Controller
             ModelState.Remove(key);
         }
 
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            try
-            {
-                if (invoice.Id == 0)
-                {
-                    invoice.InvoiceNumber = await _masterService.ReserveNextBillNumberAsync("purchase");
-                }
-
-                await _purchaseService.SaveInvoiceAsync(invoice);
-                return Json(new { success = true, message = "Purchase Invoice saved successfully.", invoiceNumber = invoice.InvoiceNumber });
-            }
-            catch (Exception ex)
-            {
-                var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                return Json(new { success = false, message });
-            }
+            return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
         }
 
-        var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-        return Json(new { success = false, message = string.IsNullOrWhiteSpace(errors) ? "Invalid data." : errors });
+        try
+        {
+            if (invoice.Id == 0)
+            {
+                invoice.InvoiceNumber = await _masterService.ReserveNextBillNumberAsync("purchase");
+            }
+
+            await _purchaseService.SaveInvoiceAsync(invoice);
+            return Json(ApiResponse.Ok("Purchase Invoice saved successfully.", new { invoiceNumber = invoice.InvoiceNumber, id = invoice.Id }));
+        }
+        catch (Exception ex)
+        {
+            var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            return Json(ApiResponse.Fail(message));
+        }
     }
 
     [HttpGet("GetInvoice/{id}")]
@@ -235,8 +257,8 @@ public class PurchaseController : Controller
     [HttpPost("DeleteInvoice")]
     public async Task<IActionResult> DeleteInvoice(int id)
     {
-        await _purchaseService.DeleteInvoiceAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _purchaseService.DeleteInvoiceAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     // --- Purchase Return ---
@@ -250,19 +272,27 @@ public class PurchaseController : Controller
     [HttpPost("SaveReturn")]
     public async Task<IActionResult> SaveReturn([FromBody] PurchaseReturn purchaseReturn)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _purchaseService.SaveReturnAsync(purchaseReturn);
-            return Json(new { success = true, message = "Purchase Return saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data." });
+
+        try
+        {
+            var saved = await _purchaseService.SaveReturnAsync(purchaseReturn);
+            return Json(ApiResponse.Ok("Purchase Return saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeleteReturn")]
     public async Task<IActionResult> DeleteReturn(int id)
     {
-        await _purchaseService.DeleteReturnAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _purchaseService.DeleteReturnAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     [HttpGet("GetOrder/{id}")]

@@ -85,6 +85,13 @@ public class InventoryService : IInventoryService
 
     public async Task<StockTransfer> SaveStockTransferAsync(StockTransfer transfer)
     {
+        if (transfer.FromWarehouseId <= 0 || transfer.ToWarehouseId <= 0)
+            throw new InvalidOperationException("Both source and destination warehouses are required.");
+        if (transfer.FromWarehouseId == transfer.ToWarehouseId)
+            throw new InvalidOperationException("Source warehouse and destination warehouse cannot be the same.");
+        if (transfer.Items == null || !transfer.Items.Any() || transfer.Items.Any(i => i.Quantity <= 0))
+            throw new InvalidOperationException("Please add at least one line item with a transfer quantity greater than 0.");
+
         using var tx = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -101,9 +108,8 @@ public class InventoryService : IInventoryService
 
                 if (existing != null)
                 {
-                    // Revert old stock transactions
                     var oldTxs = await _context.StockTransactions
-                        .Where(t => t.TransactionType == "Transfer" && t.ReferenceNumber == existing.TransferNumber)
+                        .Where(t => (t.TransactionType == "Transfer-In" || t.TransactionType == "Transfer-Out") && t.ReferenceNumber == existing.TransferNumber)
                         .ToListAsync();
                     _context.StockTransactions.RemoveRange(oldTxs);
 
@@ -118,11 +124,8 @@ public class InventoryService : IInventoryService
                 }
             }
 
-            // Create Stock Transactions for the Transfer
             foreach (var item in transfer.Items)
             {
-                // Note: Net current stock doesn't change since it's just a warehouse transfer,
-                // but we record the transfer transactions for stock card reporting.
                 _context.StockTransactions.Add(new StockTransaction
                 {
                     TransactionDate = transfer.TransferDate,
@@ -131,7 +134,7 @@ public class InventoryService : IInventoryService
                     ProductId = item.ProductId,
                     Quantity = -item.Quantity,
                     WarehouseId = transfer.FromWarehouseId,
-                    Remarks = $"Transfer to {transfer.ToWarehouse?.WarehouseName ?? "other warehouse"}"
+                    Remarks = $"Transfer to warehouse ID #{transfer.ToWarehouseId}"
                 });
 
                 _context.StockTransactions.Add(new StockTransaction
@@ -142,7 +145,7 @@ public class InventoryService : IInventoryService
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
                     WarehouseId = transfer.ToWarehouseId,
-                    Remarks = $"Transfer from {transfer.FromWarehouse?.WarehouseName ?? "other warehouse"}"
+                    Remarks = $"Transfer from warehouse ID #{transfer.FromWarehouseId}"
                 });
             }
 
@@ -158,21 +161,20 @@ public class InventoryService : IInventoryService
         return transfer;
     }
 
-    public async Task DeleteStockTransferAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteStockTransferAsync(int id)
     {
         var transfer = await _context.StockTransfers.FindAsync(id);
-        if (transfer != null)
-        {
-            transfer.IsActive = false;
+        if (transfer == null) return (false, "Stock Transfer not found or already removed.");
 
-            // Remove stock transactions
-            var txs = await _context.StockTransactions
-                .Where(t => (t.TransactionType == "Transfer-In" || t.TransactionType == "Transfer-Out") && t.ReferenceNumber == transfer.TransferNumber)
-                .ToListAsync();
-            _context.StockTransactions.RemoveRange(txs);
+        transfer.IsActive = false;
 
-            await _context.SaveChangesAsync();
-        }
+        var txs = await _context.StockTransactions
+            .Where(t => (t.TransactionType == "Transfer-In" || t.TransactionType == "Transfer-Out") && t.ReferenceNumber == transfer.TransferNumber)
+            .ToListAsync();
+        _context.StockTransactions.RemoveRange(txs);
+
+        await _context.SaveChangesAsync();
+        return (true, $"Stock Transfer '{transfer.TransferNumber}' deleted successfully.");
     }
 
     // Stock Adjustment
@@ -195,6 +197,11 @@ public class InventoryService : IInventoryService
 
     public async Task<StockAdjustment> SaveStockAdjustmentAsync(StockAdjustment adjustment)
     {
+        if (adjustment.WarehouseId <= 0)
+            throw new InvalidOperationException("Warehouse selection is required.");
+        if (adjustment.Items == null || !adjustment.Items.Any() || adjustment.Items.Any(i => i.Quantity <= 0))
+            throw new InvalidOperationException("Please add at least one line item with adjustment quantity > 0.");
+
         using var tx = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -211,7 +218,6 @@ public class InventoryService : IInventoryService
 
                 if (existing != null)
                 {
-                    // Revert old stock levels & transactions
                     var oldTxs = await _context.StockTransactions
                         .Where(t => t.TransactionType == "Adjustment" && t.ReferenceNumber == existing.AdjustmentNumber)
                         .ToListAsync();
@@ -240,7 +246,6 @@ public class InventoryService : IInventoryService
                 }
             }
 
-            // Apply stock levels and add Transactions
             foreach (var item in adjustment.Items)
             {
                 var prod = await _context.Products.FindAsync(item.ProductId);
@@ -275,34 +280,32 @@ public class InventoryService : IInventoryService
         return adjustment;
     }
 
-    public async Task DeleteStockAdjustmentAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteStockAdjustmentAsync(int id)
     {
         var adjustment = await _context.StockAdjustments.Include(a => a.Items).FirstOrDefaultAsync(a => a.Id == id);
-        if (adjustment != null)
+        if (adjustment == null) return (false, "Stock Adjustment not found or already removed.");
+
+        adjustment.IsActive = false;
+
+        foreach (var item in adjustment.Items)
         {
-            adjustment.IsActive = false;
-
-            // Revert stock levels
-            foreach (var item in adjustment.Items)
+            var prod = await _context.Products.FindAsync(item.ProductId);
+            if (prod != null)
             {
-                var prod = await _context.Products.FindAsync(item.ProductId);
-                if (prod != null)
-                {
-                    if (adjustment.AdjustmentType == "Addition")
-                        prod.CurrentStock -= item.Quantity;
-                    else
-                        prod.CurrentStock += item.Quantity;
-                }
+                if (adjustment.AdjustmentType == "Addition")
+                    prod.CurrentStock -= item.Quantity;
+                else
+                    prod.CurrentStock += item.Quantity;
             }
-
-            // Remove transactions
-            var txs = await _context.StockTransactions
-                .Where(t => t.TransactionType == "Adjustment" && t.ReferenceNumber == adjustment.AdjustmentNumber)
-                .ToListAsync();
-            _context.StockTransactions.RemoveRange(txs);
-
-            await _context.SaveChangesAsync();
         }
+
+        var txs = await _context.StockTransactions
+            .Where(t => t.TransactionType == "Adjustment" && t.ReferenceNumber == adjustment.AdjustmentNumber)
+            .ToListAsync();
+        _context.StockTransactions.RemoveRange(txs);
+
+        await _context.SaveChangesAsync();
+        return (true, $"Stock Adjustment '{adjustment.AdjustmentNumber}' deleted and stock reverted successfully.");
     }
 
     // Physical Stock Verification
@@ -325,6 +328,11 @@ public class InventoryService : IInventoryService
 
     public async Task<PhysicalStockVerification> SavePhysicalStockVerificationAsync(PhysicalStockVerification verification)
     {
+        if (verification.WarehouseId <= 0)
+            throw new InvalidOperationException("Warehouse selection is required.");
+        if (verification.Items == null || !verification.Items.Any())
+            throw new InvalidOperationException("Please add at least one line item for physical verification.");
+
         using var tx = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -341,7 +349,6 @@ public class InventoryService : IInventoryService
 
                 if (existing != null)
                 {
-                    // Revert old variance modifications from product current stock
                     var oldTxs = await _context.StockTransactions
                         .Where(t => t.TransactionType == "Verification" && t.ReferenceNumber == existing.VerificationNumber)
                         .ToListAsync();
@@ -367,13 +374,11 @@ public class InventoryService : IInventoryService
                 }
             }
 
-            // Apply verification variance and create transactions
             foreach (var item in verification.Items)
             {
                 var prod = await _context.Products.FindAsync(item.ProductId);
                 if (prod != null)
                 {
-                    // Force variance recalculation: variance = physical - book stock
                     item.BookStock = prod.CurrentStock;
                     item.Variance = item.PhysicalStock - item.BookStock;
 
@@ -408,33 +413,31 @@ public class InventoryService : IInventoryService
         return verification;
     }
 
-    public async Task DeletePhysicalStockVerificationAsync(int id)
+    public async Task<(bool Success, string Message)> DeletePhysicalStockVerificationAsync(int id)
     {
         var verification = await _context.PhysicalStockVerifications
             .Include(v => v.Items)
             .FirstOrDefaultAsync(v => v.Id == id);
 
-        if (verification != null)
+        if (verification == null) return (false, "Physical Verification not found or already removed.");
+
+        verification.IsActive = false;
+
+        foreach (var item in verification.Items)
         {
-            verification.IsActive = false;
-
-            // Revert stock variance adjustments
-            foreach (var item in verification.Items)
+            var prod = await _context.Products.FindAsync(item.ProductId);
+            if (prod != null)
             {
-                var prod = await _context.Products.FindAsync(item.ProductId);
-                if (prod != null)
-                {
-                    prod.CurrentStock -= item.Variance;
-                }
+                prod.CurrentStock -= item.Variance;
             }
-
-            // Remove transactions
-            var txs = await _context.StockTransactions
-                .Where(t => t.TransactionType == "Verification" && t.ReferenceNumber == verification.VerificationNumber)
-                .ToListAsync();
-            _context.StockTransactions.RemoveRange(txs);
-
-            await _context.SaveChangesAsync();
         }
+
+        var txs = await _context.StockTransactions
+            .Where(t => t.TransactionType == "Verification" && t.ReferenceNumber == verification.VerificationNumber)
+            .ToListAsync();
+        _context.StockTransactions.RemoveRange(txs);
+
+        await _context.SaveChangesAsync();
+        return (true, $"Physical Stock Verification '{verification.VerificationNumber}' deleted and stock reverted successfully.");
     }
 }

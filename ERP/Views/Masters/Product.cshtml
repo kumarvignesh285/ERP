@@ -387,6 +387,14 @@
             bootstrapModal = new bootstrap.Modal(document.getElementById('productModal'));
             uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
 
+            $('#productForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    modal: bootstrapModal,
+                    reloadPage: true
+                });
+            });
+
             // File Upload and Verification Logic
             var importedProducts = [];
             var importCategories = [];
@@ -760,6 +768,7 @@
         }
 
         function openModal() {
+            ErpApp.clearFieldErrors('#productForm');
             document.getElementById('productForm').reset();
             document.getElementById('Id').value = "0";
             $('#CategoryId, #BrandId, #UnitId, #WarehouseId').val('').trigger('change');
@@ -770,6 +779,7 @@
         }
 
         function editProductById(id) {
+            ErpApp.clearFieldErrors('#productForm');
             var p = window.productEditList.find(function(item) { return window.getVal(item, 'id') === id; });
             if (!p) {
                 Swal.fire('Error!', 'Product details could not be loaded.', 'error');
@@ -804,25 +814,11 @@
         }
 
         function deleteProduct(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this product?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Masters/DeleteProduct', { id: id }, function (res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Product has been deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        } else {
-                            Swal.fire('Error!', 'Failed to delete.', 'error');
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Masters/DeleteProduct',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this product?'
             });
         }
 

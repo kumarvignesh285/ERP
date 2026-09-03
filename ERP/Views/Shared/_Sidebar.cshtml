@@ -83,10 +83,13 @@
         }),
         new MenuSection("Settings", "fa-gears", "/Settings", new[] { "Super Admin", "Admin" }, new[]
         {
+            new MenuLink("Company Management", "/Company"),
             new MenuLink("User Management", "/Settings/Users"),
             new MenuLink("User Permissions", "/Settings/Permissions"),
             new MenuLink("Role Configuration", "/Settings/Roles"),
             new MenuLink("Company Setup", "/Settings/CompanySettings"),
+            new MenuLink("Audit Logs", "/Audit/Logs"),
+            new MenuLink("Login History", "/Audit/LoginHistory"),
             new MenuLink("System Settings", "/Settings/SystemConfig")
         })
     };

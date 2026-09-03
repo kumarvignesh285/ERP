@@ -45,9 +45,20 @@ public class PermissionFilter : IAsyncActionFilter
 
         if (!hasPermission)
         {
+            var auditService = context.HttpContext.RequestServices.GetService(typeof(IAuditService)) as IAuditService;
+            if (auditService != null)
+            {
+                var userName = user.Identity?.Name ?? "Anonymous";
+                await auditService.LogSecurityEventAsync(
+                    action: "UNAUTHORIZED_ACCESS",
+                    description: $"Access Denied for user '{userName}' attempting '{permissionAction}' on '{pageName}'",
+                    severity: "Warning");
+            }
+
             var request = context.HttpContext.Request;
             var isAjax = request.Headers["X-Requested-With"] == "XMLHttpRequest" || 
-                         (request.Headers["Accept"].ToString().Contains("application/json", StringComparison.OrdinalIgnoreCase));
+                         request.Headers["Accept"].ToString().Contains("application/json", StringComparison.OrdinalIgnoreCase) ||
+                         request.Path.StartsWithSegments("/api");
 
             if (isAjax)
             {
@@ -157,7 +168,7 @@ public class PermissionFilter : IAsyncActionFilter
         {
             return "delete";
         }
-        if (actionName.StartsWith("save") || actionName.StartsWith("update") || actionName.StartsWith("edit") || actionName.StartsWith("add"))
+        if (actionName.StartsWith("save") || actionName.StartsWith("update") || actionName.StartsWith("edit") || actionName.StartsWith("add") || actionName.StartsWith("create") || actionName.StartsWith("post"))
         {
             return "edit";
         }

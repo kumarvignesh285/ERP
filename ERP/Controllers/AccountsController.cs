@@ -79,22 +79,37 @@ public class AccountsController : Controller
         return View(await BuildVoucherPageModel("CreditNote"));
     }
 
+    private Dictionary<string, string> GetModelStateErrors() =>
+        ModelState.Where(x => x.Value?.Errors.Count > 0)
+                  .ToDictionary(
+                      k => k.Key,
+                      v => v.Value!.Errors.First().ErrorMessage
+                  );
+
     [HttpPost("SaveVoucher")]
     public async Task<IActionResult> SaveVoucher([FromBody] Voucher voucher)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            await _accountingService.SaveVoucherAsync(voucher);
-            return Json(new { success = true, message = "Voucher saved successfully." });
+            return Json(ApiResponse.Fail("Please correct the highlighted validation errors.", GetModelStateErrors()));
         }
-        return Json(new { success = false, message = "Invalid data." });
+
+        try
+        {
+            var saved = await _accountingService.SaveVoucherAsync(voucher);
+            return Json(ApiResponse.Ok("Voucher saved successfully.", saved));
+        }
+        catch (Exception ex)
+        {
+            return Json(ApiResponse.Fail(ex.Message));
+        }
     }
 
     [HttpPost("DeleteVoucher")]
     public async Task<IActionResult> DeleteVoucher(int id)
     {
-        await _accountingService.DeleteVoucherAsync(id);
-        return Json(new { success = true });
+        var (success, msg) = await _accountingService.DeleteVoucherAsync(id);
+        return Json(success ? ApiResponse.Ok(msg) : ApiResponse.Fail(msg));
     }
 
     [HttpGet("GetVoucher/{id}")]

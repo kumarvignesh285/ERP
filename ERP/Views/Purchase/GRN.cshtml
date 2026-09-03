@@ -387,13 +387,19 @@
             });
 
             var supplierId = $('#SupplierId').val();
-            if (!supplierId || !$('#GRNNumber').val() || items.length === 0 || !isValid) {
-                Swal.fire('Error!', 'Please fill all fields.', 'error');
+            if (!supplierId) {
+                ErpApp.notify('Please select a supplier.', 'warning', 'Validation Error');
+                $('#SupplierId').focus();
+                return;
+            }
+
+            if (!isValid || items.length === 0) {
+                ErpApp.notify('Please fill all required fields and add at least one valid line item.', 'warning', 'Validation Error');
                 return;
             }
 
             var grn = {
-                id: 0,
+                id: parseInt($('#Id').val()) || 0,
                 grnNumber: $('#GRNNumber').val(),
                 grnDate: $('#GRNDate').val(),
                 supplierId: parseInt(supplierId),
@@ -405,37 +411,38 @@
                 withGST: $('#WithGST').is(':checked')
             };
 
+            var $btn = $('#btnSaveGRN, [onclick="saveGRN()"]').first();
+            ErpApp.setButtonLoading($btn, true, 'Saving Goods Receipt...');
+
             $.ajax({
                 url: '/Purchase/SaveGRN',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(grn),
                 success: function(res) {
-                    if (res.success) {
-                        Swal.fire('Saved!', res.message, 'success').then(() => { location.reload(); });
+                    ErpApp.setButtonLoading($btn, false);
+                    if (res && res.success) {
+                        ErpApp.notify(res.message || 'Goods Receipt Note saved successfully.', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        ErpApp.notify(res.message || 'Failed to save goods receipt note.', 'error');
+                        if (res.errors) ErpApp.showFieldErrors('#grnForm', res.errors);
                     }
+                },
+                error: function(xhr) {
+                    ErpApp.setButtonLoading($btn, false);
+                    var msg = xhr.responseJSON?.message || 'Failed to save goods receipt note.';
+                    ErpApp.notify(msg, 'error');
                 }
             });
         }
 
         function deleteGRN(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this GRN?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Purchase/DeleteGRN', { id: id }, function(res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'GRN deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Purchase/DeleteGRN',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this goods receipt note?'
             });
         }
     </script>

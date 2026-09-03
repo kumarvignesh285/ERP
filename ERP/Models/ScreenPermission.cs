@@ -9,4 +9,6 @@ public class ScreenPermission : BaseEntity
     public bool CanView { get; set; } = true;
     public bool CanEdit { get; set; } = true;
     public bool CanDelete { get; set; } = true;
+    public int? CompanyId { get; set; }
+    public Company? Company { get; set; }
 }

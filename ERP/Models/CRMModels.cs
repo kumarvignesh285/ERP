@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class Lead : BaseEntity
+public class Lead : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(200)]
     public string LeadName { get; set; } = string.Empty;
     [MaxLength(200)]
@@ -27,8 +30,11 @@ public class Lead : BaseEntity
     public ICollection<Opportunity> Opportunities { get; set; } = new List<Opportunity>();
 }
 
-public class FollowUp : BaseEntity
+public class FollowUp : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     public int LeadId { get; set; }
     public Lead? Lead { get; set; }
     public DateTime FollowUpDate { get; set; } = DateTime.Now;
@@ -41,8 +47,11 @@ public class FollowUp : BaseEntity
     public string Status { get; set; } = "Completed"; // Pending, Completed
 }
 
-public class Opportunity : BaseEntity
+public class Opportunity : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     public int LeadId { get; set; }
     public Lead? Lead { get; set; }
     [Required, MaxLength(200)]

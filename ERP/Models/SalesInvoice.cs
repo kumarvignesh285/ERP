@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class SalesInvoice : BaseEntity
+public class SalesInvoice : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string InvoiceNumber { get; set; } = string.Empty;
     public DateTime InvoiceDate { get; set; } = DateTime.Today;

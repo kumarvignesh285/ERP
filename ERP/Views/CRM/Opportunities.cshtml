@@ -36,7 +36,7 @@
                                 "Closed Lost" => "bg-danger-subtle text-danger border border-danger-subtle",
                                 _ => "bg-primary-subtle text-primary border border-primary-subtle"
                             };
-                            <tr>
+                            <tr id="row-@item.Id">
                                 <td class="fw-bold text-primary">@item.OpportunityName</td>
                                 <td class="fw-semibold text-dark">@(item.Lead?.LeadName)</td>
                                 <td class="fw-bold text-dark">₹@item.ExpectedRevenue.ToString("N2")</td>
@@ -63,17 +63,17 @@
                 <h5 class="modal-title fw-bold"><i class="fa-solid fa-briefcase me-2"></i>Add / Edit Opportunity</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveOpportunity" method="post">
+            <form asp-action="SaveOpportunity" method="post" id="oppForm">
                 <div class="modal-body p-4">
                     <input type="hidden" name="Id" id="Id" value="0" />
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold text-dark">Opportunity Name <span class="text-danger">*</span></label>
-                            <input type="text" name="OpportunityName" class="form-control" required placeholder="e.g. Enterprise Software License" />
+                            <input type="text" name="OpportunityName" id="OpportunityName" class="form-control" required placeholder="e.g. Enterprise Software License" />
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold text-dark">Lead <span class="text-danger">*</span></label>
-                            <select name="LeadId" class="form-select" required>
+                            <select name="LeadId" id="LeadId" class="form-select" required>
                                 <option value="">Select Lead Account</option>
                                 @if(leads.Any())
                                 {
@@ -88,34 +88,34 @@
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold text-dark">Expected Deal Value (₹)</label>
-                            <input type="number" step="0.01" name="ExpectedRevenue" class="form-control" placeholder="0.00" />
+                            <input type="number" step="0.01" name="ExpectedRevenue" id="ExpectedRevenue" class="form-control" placeholder="0.00" />
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold text-dark">Win Probability (%)</label>
-                            <input type="number" name="Probability" class="form-control" placeholder="e.g. 75" />
+                            <input type="number" name="Probability" id="Probability" class="form-control" placeholder="e.g. 75" />
                         </div>
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold text-dark">Expected Close Date</label>
-                            <input type="date" name="CloseDate" class="form-control" />
+                            <input type="date" name="CloseDate" id="CloseDate" class="form-control" />
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold text-dark">Pipeline Stage</label>
-                            <select name="Stage" class="form-select">
-                                <option>Prospecting</option>
-                                <option>Qualification</option>
-                                <option>Proposal</option>
-                                <option>Negotiation</option>
-                                <option>Closed Won</option>
-                                <option>Closed Lost</option>
+                            <select name="Stage" id="Stage" class="form-select">
+                                <option value="Prospecting">Prospecting</option>
+                                <option value="Qualification">Qualification</option>
+                                <option value="Proposal">Proposal</option>
+                                <option value="Negotiation">Negotiation</option>
+                                <option value="Closed Won">Closed Won</option>
+                                <option value="Closed Lost">Closed Lost</option>
                             </select>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary px-4 shadow-sm"><i class="fa-solid fa-floppy-disk me-1.5"></i>Save Opportunity</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm" id="submitBtn"><i class="fa-solid fa-floppy-disk me-1.5"></i>Save Opportunity</button>
                 </div>
             </form>
         </div>
@@ -124,22 +124,25 @@
 
 @section Scripts {
     <script>
+        var oppModal;
+        $(function () {
+            oppModal = new bootstrap.Modal(document.getElementById('oppModal'));
+
+            $('#oppForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    modal: oppModal,
+                    reloadPage: true
+                });
+            });
+        });
+
         function deleteOpp(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this opportunity?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/CRM/DeleteOpportunity', { id: id }, function(res) {
-                        if (res.success) {
-                            location.reload();
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/CRM/DeleteOpportunity',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this opportunity?'
             });
         }
     </script>

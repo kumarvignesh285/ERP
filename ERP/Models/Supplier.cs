@@ -2,8 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ERP.Models;
 
-public class Supplier : BaseEntity
+public class Supplier : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string SupplierCode { get; set; } = string.Empty;
     [Required, MaxLength(200)]

@@ -193,7 +193,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
-                    <div class="flex-grow-1" style="max-width: 500px;">
+                    <div class="flex-grow-1 w-100" style="max-width: 500px;">
                         <label class="form-label fw-semibold text-dark">Notes / Terms & Conditions</label>
                         <textarea id="Remarks" class="form-control" rows="3" placeholder="Additional instructions or payment terms..."></textarea>
                     </div>
@@ -503,8 +503,14 @@
             });
 
             var customerId = $('#CustomerId').val();
-            if (!customerId || items.length === 0 || !isValid) {
-                Swal.fire('Error!', 'Please fill all required fields and add at least one valid line item.', 'error');
+            if (!customerId) {
+                ErpApp.notify('Please select a customer.', 'warning', 'Validation Error');
+                $('#CustomerId').focus();
+                return;
+            }
+
+            if (items.length === 0 || !isValid) {
+                ErpApp.notify('Please add at least one valid product line with positive quantity and rate.', 'warning', 'Line Items Required');
                 return;
             }
 
@@ -524,44 +530,39 @@
                 withGST: $('#WithGST').is(':checked')
             };
 
+            var $saveBtn = $('#btnSaveInvoice, [onclick="saveInvoice()"]').first();
+            ErpApp.setButtonLoading($saveBtn, true, 'Saving Invoice...');
+
             $.ajax({
                 url: '/Sales/SaveInvoice',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(invoice),
                 success: function(res) {
-                    if (res.success) {
-                        Swal.fire('Saved!', res.message, 'success').then(() => {
-                            location.reload();
-                        });
+                    ErpApp.setButtonLoading($saveBtn, false);
+                    if (res && res.success) {
+                        ErpApp.notify(res.message || 'Sales Invoice saved successfully.', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
                     } else {
-                        Swal.fire('Error!', res.message, 'error');
+                        ErpApp.notify(res.message || 'Failed to save sales invoice.', 'error');
+                        if (res.errors) ErpApp.showFieldErrors('#invoiceForm', res.errors);
                     }
                 },
                 error: function(xhr) {
-                    Swal.fire('Error!', xhr.responseJSON?.message || 'Failed to save invoice.', 'error');
+                    ErpApp.setButtonLoading($saveBtn, false);
+                    var msg = xhr.responseJSON?.message || 'Failed to save invoice.';
+                    ErpApp.notify(msg, 'error');
                 }
             });
         }
 
         function deleteInvoice(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "This will restore stock levels and revert journal accounting voucher entries!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Sales/DeleteInvoice', { id: id }, function(res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Invoice has been deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Sales/DeleteInvoice',
+                id: id,
+                rowElement: '#row-' + id,
+                title: 'Delete Sales Invoice?',
+                message: 'This will restore stock levels and revert accounting journal voucher entries! This action cannot be undone.'
             });
         }
     </script>

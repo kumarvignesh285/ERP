@@ -1,6 +1,10 @@
 @model IEnumerable<ERP.Models.Customer>
+@inject ERP.Interfaces.IPermissionService PermissionService
 @{
     ViewData["Title"] = "Customer Master";
+    var canCreate = await PermissionService.HasPermissionAsync(User, "Customer Master", "Edit");
+    var canEdit = await PermissionService.HasPermissionAsync(User, "Customer Master", "Edit");
+    var canDelete = await PermissionService.HasPermissionAsync(User, "Customer Master", "Delete");
 }
 
 <!-- Page Header -->
@@ -9,9 +13,12 @@
         <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-users me-2"></i> Customer Master</h4>
         <p class="text-muted small m-0 mt-1">Manage client accounts, contact details, GSTIN, credit limits, and balances</p>
     </div>
-    <button class="btn btn-primary shadow-sm" onclick="openModal()">
-        <i class="fa-solid fa-user-plus me-1.5"></i> Add New Customer
-    </button>
+    @if (canCreate)
+    {
+        <button class="btn btn-primary shadow-sm" onclick="openModal()">
+            <i class="fa-solid fa-user-plus me-1.5"></i> Add New Customer
+        </button>
+    }
 </div>
 
 <!-- Filters Row -->
@@ -66,8 +73,14 @@
                             <td><span class="fw-semibold">₹@c.OpeningBalance.ToString("N2")</span> <small class="text-muted">(@c.BalanceType)</small></td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { c.Id, c.CustomerCode, c.CustomerName, c.ContactPerson, c.MobileNumber, c.Email, c.GSTNumber, c.Address, c.City, c.State, c.CreditLimit })" onclick="editCustomer(this)" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(@c.Id)" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                    @if (canEdit)
+                                    {
+                                        <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { c.Id, c.CustomerCode, c.CustomerName, c.ContactPerson, c.MobileNumber, c.Email, c.GSTNumber, c.Address, c.City, c.State, c.CreditLimit })" onclick="editCustomer(this)" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    }
+                                    @if (canDelete)
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(@c.Id)" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                    }
                                 </div>
                             </td>
                         </tr>
@@ -178,9 +191,18 @@
         var bootstrapModal;
         $(function () {
             bootstrapModal = new bootstrap.Modal(document.getElementById('customerModal'));
+
+            $('#customerForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    modal: bootstrapModal,
+                    reloadPage: true
+                });
+            });
         });
 
         function openModal() {
+            ErpApp.clearFieldErrors('#customerForm');
             document.getElementById('customerForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-user-plus me-2"></i> Add Customer';
@@ -189,6 +211,7 @@
         }
 
         function editCustomer(btn) {
+            ErpApp.clearFieldErrors('#customerForm');
             var customer = $(btn).data('item');
             document.getElementById('customerForm').reset();
             document.getElementById('Id').value = window.getVal(customer, 'id');
@@ -208,25 +231,11 @@
         }
 
         function deleteCustomer(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this customer record?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Masters/DeleteCustomer', { id: id }, function (res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Customer has been deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        } else {
-                            Swal.fire('Error!', 'Failed to delete.', 'error');
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Masters/DeleteCustomer',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this customer record?'
             });
         }
     </script>

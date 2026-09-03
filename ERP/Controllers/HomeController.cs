@@ -1,7 +1,10 @@
+using System;
+using System.IO;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ERP.Data;
+using ERP.Interfaces;
 using ERP.ViewModels;
 
 namespace ERP.Controllers;
@@ -9,61 +12,81 @@ namespace ERP.Controllers;
 [Authorize]
 public class HomeController : Controller
 {
-    private readonly AppDbContext _context;
+    private readonly IDashboardService _dashboardService;
+    private readonly ICompanyContext _companyContext;
 
-    public HomeController(AppDbContext context)
+    public HomeController(
+        IDashboardService dashboardService,
+        ICompanyContext companyContext)
     {
-        _context = context;
+        _dashboardService = dashboardService;
+        _companyContext = companyContext;
     }
 
     [Route("")]
     [Route("Home/Index")]
-    public async Task<IActionResult> Index()
+    [Route("Dashboard")]
+    public async Task<IActionResult> Index([FromQuery] DashboardDateFilterDto filter)
     {
-        var today = DateTime.Today;
-        
-        var dbPendingApprovals = await _context.SalesOrders.Where(o => o.IsActive && o.Status == "Pending").CountAsync();
-        var dbAlertsCount = await _context.Notifications.CountAsync(n => !n.IsRead);
-        var dbAlertsList = await _context.Notifications.Where(n => !n.IsRead).OrderByDescending(n => n.CreatedAt).Take(4).ToListAsync();
-
-        return View(new HomeDashboardViewModel
+        filter ??= new DashboardDateFilterDto();
+        if (string.IsNullOrWhiteSpace(filter.Period))
         {
-            TodaySales = await _context.SalesInvoices
-                .Where(i => i.IsActive && i.InvoiceDate >= today)
-                .SumAsync(i => i.GrandTotal),
-            TodayPurchases = await _context.PurchaseInvoices
-                .Where(i => i.IsActive && i.InvoiceDate >= today)
-                .SumAsync(i => i.GrandTotal),
-            TotalReceivables = await _context.SalesInvoices
-                .Where(i => i.IsActive)
-                .SumAsync(i => i.BalanceAmount),
-            TotalPayables = await _context.PurchaseInvoices
-                .Where(i => i.IsActive)
-                .SumAsync(i => i.BalanceAmount),
-            AvailableStockValue = await _context.Products
-                .Where(p => p.IsActive)
-                .SumAsync(p => p.CurrentStock * p.PurchasePrice),
-            PendingApprovalsCount = dbPendingApprovals,
-            CustomerCount = await _context.Customers.CountAsync(c => c.IsActive),
-            SupplierCount = await _context.Suppliers.CountAsync(s => s.IsActive),
-            ProductCount = await _context.Products.CountAsync(p => p.IsActive),
-            OpenSalesOrders = await _context.SalesOrders.CountAsync(o => o.IsActive && o.Status != "Completed" && o.Status != "Cancelled"),
-            OpenPurchaseOrders = await _context.PurchaseOrders.CountAsync(o => o.IsActive && o.Status != "Completed" && o.Status != "Cancelled"),
-            RecentInvoices = await _context.SalesInvoices
-                .Include(i => i.Customer)
-                .Where(i => i.IsActive)
-                .OrderByDescending(i => i.InvoiceDate)
-                .Take(5)
-                .ToListAsync(),
-            LowStockProducts = await _context.Products
-                .Where(p => p.IsActive && p.CurrentStock <= p.ReorderLevel)
-                .Take(5)
-                .ToListAsync(),
-            
-            // Redesigned dashboard values
-            SystemAlertsCount = dbAlertsCount,
-            SystemAlerts = dbAlertsList
-        });
+            filter.Period = "ThisMonth";
+        }
+
+        var isSuperAdmin = User.IsInRole("Super Admin");
+        var activeCompId = _companyContext.CurrentCompanyId;
+
+        // Super Admin in System Mode (no active company context) -> Show Super Admin Dashboard
+        bool showSuperAdminDashboard = isSuperAdmin && (!activeCompId.HasValue || activeCompId.Value <= 0);
+
+        var viewModel = new UnifiedDashboardViewModel
+        {
+            IsSuperAdminDashboard = showSuperAdminDashboard,
+            IsSuperAdminUser = isSuperAdmin,
+            ActiveCompanyId = activeCompId,
+            ActiveCompanyName = _companyContext.CurrentCompanyName,
+            ActiveCompanyCode = _companyContext.CurrentCompanyCode,
+            Filter = filter
+        };
+
+        if (showSuperAdminDashboard)
+        {
+            viewModel.SuperAdminModel = await _dashboardService.GetSuperAdminDashboardAsync(filter, User);
+        }
+        else
+        {
+            viewModel.CompanyAdminModel = await _dashboardService.GetCompanyAdminDashboardAsync(filter, User);
+        }
+
+        return View(viewModel);
+    }
+
+    [HttpGet("api/dashboard/charts")]
+    public async Task<IActionResult> GetCharts([FromQuery] DashboardDateFilterDto filter)
+    {
+        filter ??= new DashboardDateFilterDto();
+        var chartData = await _dashboardService.GetCompanyChartsAsync(filter, User);
+        return Json(new { success = true, data = chartData });
+    }
+
+    [HttpGet("api/dashboard/summary")]
+    public async Task<IActionResult> GetSummary([FromQuery] DashboardDateFilterDto filter)
+    {
+        filter ??= new DashboardDateFilterDto();
+        var isSuperAdmin = User.IsInRole("Super Admin");
+        var activeCompId = _companyContext.CurrentCompanyId;
+
+        if (isSuperAdmin && (!activeCompId.HasValue || activeCompId.Value <= 0))
+        {
+            var superData = await _dashboardService.GetSuperAdminDashboardAsync(filter, User);
+            return Json(new { success = true, mode = "SuperAdmin", data = superData });
+        }
+        else
+        {
+            var companyData = await _dashboardService.GetCompanyAdminDashboardAsync(filter, User);
+            return Json(new { success = true, mode = "CompanyAdmin", data = companyData });
+        }
     }
 
     [HttpGet("Help")]

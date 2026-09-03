@@ -91,9 +91,18 @@
         var bootstrapModal;
         $(function () {
             bootstrapModal = new bootstrap.Modal(document.getElementById('paymentModeModal'));
+
+            $('#paymentModeForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    modal: bootstrapModal,
+                    reloadPage: true
+                });
+            });
         });
 
         function openModal() {
+            ErpApp.clearFieldErrors('#paymentModeForm');
             document.getElementById('paymentModeForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerText = "Add Payment Mode";
@@ -102,7 +111,9 @@
         }
 
         function editPaymentMode(btn) {
+            ErpApp.clearFieldErrors('#paymentModeForm');
             var pm = $(btn).data('item');
+            document.getElementById('paymentModeForm').reset();
             document.getElementById('Id').value = window.getVal(pm, 'id');
             document.getElementById('ModeName').value = window.getVal(pm, 'modeName');
             document.getElementById('ModeType').value = window.getVal(pm, 'modeType');
@@ -112,25 +123,11 @@
         }
 
         function deletePaymentMode(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this payment mode?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Masters/DeletePaymentMode', { id: id }, function (res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Payment Mode has been deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        } else {
-                            Swal.fire('Error!', 'Failed to delete.', 'error');
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Masters/DeletePaymentMode',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this payment mode?'
             });
         }
     </script>

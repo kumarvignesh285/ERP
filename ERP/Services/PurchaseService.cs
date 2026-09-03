@@ -30,6 +30,11 @@ public class PurchaseService : IPurchaseService
 
     public async Task<PurchaseOrder> SavePurchaseOrderAsync(PurchaseOrder order)
     {
+        if (order.SupplierId <= 0)
+            throw new InvalidOperationException("Supplier selection is required.");
+        if (order.Items == null || !order.Items.Any() || order.Items.Any(i => i.Quantity <= 0 || i.Rate <= 0))
+            throw new InvalidOperationException("Please add at least one line item with valid quantity and rate.");
+
         if (order.Id == 0)
         {
             _context.PurchaseOrders.Add(order);
@@ -52,14 +57,17 @@ public class PurchaseService : IPurchaseService
         return order;
     }
 
-    public async Task DeletePurchaseOrderAsync(int id)
+    public async Task<(bool Success, string Message)> DeletePurchaseOrderAsync(int id)
     {
         var item = await _context.PurchaseOrders.FindAsync(id);
-        if (item != null)
-        {
-            item.IsActive = false;
-            await _context.SaveChangesAsync();
-        }
+        if (item == null) return (false, "Purchase Order not found or already removed.");
+
+        if (item.Status == "Converted" || item.Status == "Completed")
+            return (false, $"Purchase Order '{item.OrderNumber}' cannot be deleted because it is already marked as {item.Status}.");
+
+        item.IsActive = false;
+        await _context.SaveChangesAsync();
+        return (true, $"Purchase Order '{item.OrderNumber}' deleted successfully.");
     }
 
     public async Task UpdatePurchaseOrderStatusAsync(int id, string status)
@@ -88,6 +96,11 @@ public class PurchaseService : IPurchaseService
 
     public async Task<GoodsReceiptNote> SaveGRNAsync(GoodsReceiptNote grn)
     {
+        if (grn.SupplierId <= 0)
+            throw new InvalidOperationException("Supplier selection is required.");
+        if (grn.Items == null || !grn.Items.Any() || grn.Items.Any(i => i.Quantity <= 0))
+            throw new InvalidOperationException("Please add at least one line item with valid quantity.");
+
         if (grn.Id == 0)
         {
             _context.GoodsReceiptNotes.Add(grn);
@@ -110,14 +123,14 @@ public class PurchaseService : IPurchaseService
         return grn;
     }
 
-    public async Task DeleteGRNAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteGRNAsync(int id)
     {
         var item = await _context.GoodsReceiptNotes.FindAsync(id);
-        if (item != null)
-        {
-            item.IsActive = false;
-            await _context.SaveChangesAsync();
-        }
+        if (item == null) return (false, "Goods Receipt Note not found or already removed.");
+
+        item.IsActive = false;
+        await _context.SaveChangesAsync();
+        return (true, $"Goods Receipt Note '{item.GRNNumber}' deleted successfully.");
     }
 
     // Purchase Invoice
@@ -136,6 +149,11 @@ public class PurchaseService : IPurchaseService
 
     public async Task<PurchaseInvoice> SaveInvoiceAsync(PurchaseInvoice invoice)
     {
+        if (invoice.SupplierId <= 0)
+            throw new InvalidOperationException("Supplier selection is required.");
+        if (invoice.Items == null || !invoice.Items.Any() || invoice.Items.Any(i => i.Quantity <= 0 || i.Rate <= 0))
+            throw new InvalidOperationException("Please add at least one valid line item with quantity > 0 and rate > 0.");
+
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -188,13 +206,11 @@ public class PurchaseService : IPurchaseService
                 var existing = await _context.PurchaseInvoices.Include(i => i.Items).FirstOrDefaultAsync(i => i.Id == invoice.Id);
                 if (existing != null)
                 {
-                    // Revert old stock transactions if updating
                     var oldTransactions = await _context.StockTransactions
                         .Where(t => t.TransactionType == "Purchase" && t.ReferenceNumber == existing.InvoiceNumber)
                         .ToListAsync();
                     _context.StockTransactions.RemoveRange(oldTransactions);
 
-                    // De-stock quantities
                     foreach (var item in existing.Items)
                     {
                         var product = await _context.Products.FindAsync(item.ProductId);
@@ -215,7 +231,6 @@ public class PurchaseService : IPurchaseService
                 }
             }
 
-            // Increase stock for purchase items & add StockTransactions
             foreach (var item in invoice.Items)
             {
                 var product = await _context.Products.FindAsync(item.ProductId);
@@ -235,7 +250,6 @@ public class PurchaseService : IPurchaseService
                 }
             }
 
-            // Generate Accounting Voucher (Purchase Account Dr, Supplier Account Cr)
             var supplierLedger = await _context.Ledgers.FirstOrDefaultAsync(l => l.LedgerName.Contains(supplier.SupplierName) || (!string.IsNullOrEmpty(supplier.SupplierCode) && l.LedgerCode == supplier.SupplierCode));
             if (supplierLedger == null)
             {
@@ -272,13 +286,6 @@ public class PurchaseService : IPurchaseService
                 _context.Vouchers.Remove(existingVoucher);
                 await _context.SaveChangesAsync();
             }
-
-            try
-            {
-                await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('VoucherItems', RESEED);");
-                await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Vouchers', RESEED);");
-            }
-            catch { }
 
             var voucher = new Voucher
             {
@@ -325,13 +332,15 @@ public class PurchaseService : IPurchaseService
         return invoice;
     }
 
-    public async Task DeleteInvoiceAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteInvoiceAsync(int id)
     {
-        var item = await _context.PurchaseInvoices.Include(i => i.Items).FirstOrDefaultAsync(i => i.Id == id);
-        if (item != null)
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
+            var item = await _context.PurchaseInvoices.Include(i => i.Items).FirstOrDefaultAsync(i => i.Id == id);
+            if (item == null) return (false, "Purchase Invoice not found or already removed.");
+
             item.IsActive = false;
-            // Deduct stock back
             foreach (var line in item.Items)
             {
                 var product = await _context.Products.FindAsync(line.ProductId);
@@ -340,7 +349,26 @@ public class PurchaseService : IPurchaseService
                     product.CurrentStock -= line.Quantity;
                 }
             }
+
+            var stockTxns = await _context.StockTransactions
+                .Where(t => t.TransactionType == "Purchase" && t.ReferenceNumber == item.InvoiceNumber)
+                .ToListAsync();
+            _context.StockTransactions.RemoveRange(stockTxns);
+
+            var voucher = await _context.Vouchers.Include(v => v.Items).FirstOrDefaultAsync(v => v.ReferenceNumber == item.InvoiceNumber);
+            if (voucher != null)
+            {
+                _context.Vouchers.Remove(voucher);
+            }
+
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return (true, $"Purchase Invoice '{item.InvoiceNumber}' deleted and stock reverted successfully.");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return (false, $"Failed to delete invoice: {ex.Message}");
         }
     }
 
@@ -360,6 +388,11 @@ public class PurchaseService : IPurchaseService
 
     public async Task<PurchaseReturn> SaveReturnAsync(PurchaseReturn purchaseReturn)
     {
+        if (purchaseReturn.SupplierId <= 0)
+            throw new InvalidOperationException("Supplier selection is required.");
+        if (purchaseReturn.Items == null || !purchaseReturn.Items.Any() || purchaseReturn.Items.Any(i => i.Quantity <= 0))
+            throw new InvalidOperationException("Please add at least one line item with valid return quantity.");
+
         if (purchaseReturn.Id == 0)
         {
             _context.PurchaseReturns.Add(purchaseReturn);
@@ -382,13 +415,13 @@ public class PurchaseService : IPurchaseService
         return purchaseReturn;
     }
 
-    public async Task DeleteReturnAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteReturnAsync(int id)
     {
         var item = await _context.PurchaseReturns.FindAsync(id);
-        if (item != null)
-        {
-            item.IsActive = false;
-            await _context.SaveChangesAsync();
-        }
+        if (item == null) return (false, "Purchase Return not found or already removed.");
+
+        item.IsActive = false;
+        await _context.SaveChangesAsync();
+        return (true, $"Purchase Return '{item.ReturnNumber}' deleted successfully.");
     }
 }

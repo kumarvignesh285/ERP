@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class GoodsReceiptNote : BaseEntity
+public class GoodsReceiptNote : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string GRNNumber { get; set; } = string.Empty;
     public DateTime GRNDate { get; set; } = DateTime.Today;

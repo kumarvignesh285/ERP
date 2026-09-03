@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class PurchaseOrder : BaseEntity
+public class PurchaseOrder : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string OrderNumber { get; set; } = string.Empty;
     public DateTime OrderDate { get; set; } = DateTime.Today;

@@ -93,9 +93,18 @@
         var bootstrapModal;
         $(function () {
             bootstrapModal = new bootstrap.Modal(document.getElementById('warehouseModal'));
+
+            $('#warehouseForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    modal: bootstrapModal,
+                    reloadPage: true
+                });
+            });
         });
 
         function openModal() {
+            ErpApp.clearFieldErrors('#warehouseForm');
             document.getElementById('warehouseForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerText = "Add Warehouse";
@@ -104,7 +113,9 @@
         }
 
         function editWarehouse(btn) {
+            ErpApp.clearFieldErrors('#warehouseForm');
             var w = $(btn).data('item');
+            document.getElementById('warehouseForm').reset();
             document.getElementById('Id').value = window.getVal(w, 'id');
             document.getElementById('WarehouseCode').value = window.getVal(w, 'warehouseCode');
             document.getElementById('WarehouseName').value = window.getVal(w, 'warehouseName');
@@ -117,25 +128,11 @@
         }
 
         function deleteWarehouse(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this warehouse?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Masters/DeleteWarehouse', { id: id }, function (res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Warehouse has been deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        } else {
-                            Swal.fire('Error!', 'Failed to delete.', 'error');
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Masters/DeleteWarehouse',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this warehouse?'
             });
         }
     </script>

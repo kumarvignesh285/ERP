@@ -2,8 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ERP.Models;
 
-public class AccountGroup : BaseEntity
+public class AccountGroup : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(100)]
     public string GroupName { get; set; } = string.Empty;
     // Asset, Liability, Income, Expense, Equity

@@ -539,13 +539,19 @@
             });
 
             var supplierId = $('#SupplierId').val();
-            if (!supplierId || !$('#OrderNumber').val() || items.length === 0 || !isValid) {
-                Swal.fire('Error!', 'Please fill all fields.', 'error');
+            if (!supplierId) {
+                ErpApp.notify('Please select a supplier.', 'warning', 'Validation Error');
+                $('#SupplierId').focus();
+                return;
+            }
+
+            if (!isValid || items.length === 0) {
+                ErpApp.notify('Please fill all required fields and add at least one valid line item.', 'warning', 'Validation Error');
                 return;
             }
 
             var order = {
-                id: 0,
+                id: parseInt($('#Id').val()) || 0,
                 orderNumber: $('#OrderNumber').val(),
                 orderDate: $('#OrderDate').val(),
                 supplierId: parseInt(supplierId),
@@ -558,37 +564,38 @@
                 withGST: $('#WithGST').is(':checked')
             };
 
+            var $btn = $('#btnSaveOrder, [onclick="saveOrder()"]').first();
+            ErpApp.setButtonLoading($btn, true, 'Saving Purchase Order...');
+
             $.ajax({
                 url: '/Purchase/SaveOrder',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(order),
                 success: function(res) {
-                    if (res.success) {
-                        Swal.fire('Saved!', res.message, 'success').then(() => { location.reload(); });
+                    ErpApp.setButtonLoading($btn, false);
+                    if (res && res.success) {
+                        ErpApp.notify(res.message || 'Purchase Order saved successfully.', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        ErpApp.notify(res.message || 'Failed to save purchase order.', 'error');
+                        if (res.errors) ErpApp.showFieldErrors('#orderForm', res.errors);
                     }
+                },
+                error: function(xhr) {
+                    ErpApp.setButtonLoading($btn, false);
+                    var msg = xhr.responseJSON?.message || 'Failed to save purchase order.';
+                    ErpApp.notify(msg, 'error');
                 }
             });
         }
 
         function deleteOrder(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this order?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Purchase/DeleteOrder', { id: id }, function(res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Order deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Purchase/DeleteOrder',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this purchase order?'
             });
         }
 

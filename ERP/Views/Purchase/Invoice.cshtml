@@ -171,7 +171,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
-                    <div class="flex-grow-1" style="max-width: 500px;">
+                    <div class="flex-grow-1 w-100" style="max-width: 500px;">
                         <label class="form-label fw-semibold text-dark">Notes / Terms</label>
                         <textarea id="Remarks" class="form-control" rows="3" placeholder="Purchase invoice remarks..."></textarea>
                     </div>
@@ -461,8 +461,14 @@
             });
 
             var supplierId = $('#SupplierId').val();
-            if (!supplierId || items.length === 0 || !isValid) {
-                Swal.fire('Error!', 'Please fill all fields.', 'error');
+            if (!supplierId) {
+                ErpApp.notify('Please select a supplier.', 'warning', 'Validation Error');
+                $('#SupplierId').focus();
+                return;
+            }
+
+            if (!isValid || items.length === 0) {
+                ErpApp.notify('Please fill all required fields and add at least one valid line item.', 'warning', 'Validation Error');
                 return;
             }
 
@@ -481,42 +487,39 @@
                 withGST: $('#WithGST').is(':checked')
             };
 
+            var $btn = $('#btnSaveInvoice, [onclick="saveInvoice()"]').first();
+            ErpApp.setButtonLoading($btn, true, 'Saving Purchase Invoice...');
+
             $.ajax({
                 url: '/Purchase/SaveInvoice',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(invoice),
                 success: function(res) {
-                    if (res.success) {
-                        Swal.fire('Saved!', res.message, 'success').then(() => { location.reload(); });
+                    ErpApp.setButtonLoading($btn, false);
+                    if (res && res.success) {
+                        ErpApp.notify(res.message || 'Purchase Invoice saved successfully.', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
                     } else {
-                        Swal.fire('Error!', res.message, 'error');
+                        ErpApp.notify(res.message || 'Failed to save purchase invoice.', 'error');
+                        if (res.errors) ErpApp.showFieldErrors('#invoiceForm', res.errors);
                     }
                 },
                 error: function(xhr) {
-                    Swal.fire('Error!', xhr.responseJSON?.message || 'Failed to save invoice.', 'error');
+                    ErpApp.setButtonLoading($btn, false);
+                    var msg = xhr.responseJSON?.message || 'Failed to save purchase invoice.';
+                    ErpApp.notify(msg, 'error');
                 }
             });
         }
 
         function deleteInvoice(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this purchase invoice?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Purchase/DeleteInvoice', { id: id }, function(res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Invoice deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Purchase/DeleteInvoice',
+                id: id,
+                rowElement: '#row-' + id,
+                title: 'Delete Purchase Invoice?',
+                message: 'This will reduce stock inventory and revert accounting voucher entries! This action cannot be undone.'
             });
         }
     </script>

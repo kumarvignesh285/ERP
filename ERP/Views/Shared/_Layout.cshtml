@@ -1,5 +1,7 @@
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
+@inject ERP.Interfaces.ICompanyContext CompanyContext
+@inject ERP.Interfaces.IMasterService MasterService
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -31,7 +33,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/erp.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ERP.styles.css" asp-append-version="true" />
 </head>
 <body>
     @if (SignInManager.IsSignedIn(User))
@@ -62,6 +63,93 @@
                 </div>
 
                 <div class="header-right d-flex align-items-center gap-2 gap-sm-3">
+                    @if (User.IsInRole("Super Admin"))
+                    {
+                        var activeCompanies = await MasterService.GetAllCompaniesAsync(null, "Active");
+                        <div class="dropdown" id="companyContextDropdownContainer">
+                            <button class="btn @(CompanyContext.HasActiveCompany ? "btn-outline-primary border-primary-subtle bg-primary-subtle text-primary" : "btn-light border") btn-sm d-flex align-items-center gap-1.5 px-2.5 py-1.5 rounded-pill shadow-xs" type="button" id="activeCompanyDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Switch Working Company Context">
+                                <i class="fa-solid @(CompanyContext.HasActiveCompany ? "fa-building text-primary" : "fa-globe text-secondary") fs-8"></i>
+                                <span class="fw-semibold d-none d-lg-inline fs-8 text-truncate" style="max-width: 220px;">
+                                    @(CompanyContext.HasActiveCompany ? $"{CompanyContext.CurrentCompanyCode} - {CompanyContext.CurrentCompanyName}" : "All Companies (System)")
+                                </span>
+                                <span class="fw-semibold d-inline d-lg-none fs-8 text-truncate" style="max-width: 90px;">
+                                    @(CompanyContext.HasActiveCompany ? CompanyContext.CurrentCompanyCode : "All")
+                                </span>
+                                <i class="fa-solid fa-chevron-down text-muted fs-9 ms-0.5"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="min-width: 290px; max-width: 360px;" aria-labelledby="activeCompanyDropdown">
+                                <div class="px-2 py-1.5 border-bottom mb-2">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span class="fw-bold fs-8 text-uppercase text-muted">Active Company Context</span>
+                                        <span class="badge bg-primary text-white fs-9 font-monospace">Super Admin</span>
+                                    </div>
+                                    <div class="small fw-semibold text-dark mt-1 text-truncate">
+                                        @(CompanyContext.HasActiveCompany ? $"{CompanyContext.CurrentCompanyCode} - {CompanyContext.CurrentCompanyName}" : "System Level — All Companies")
+                                    </div>
+                                </div>
+
+                                <div class="px-1 mb-2">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted fs-9"></i></span>
+                                        <input type="text" class="form-control border-start-0 fs-8" id="companyDropdownSearch" placeholder="Search company..." autocomplete="off" />
+                                    </div>
+                                </div>
+
+                                <div class="company-switch-list overflow-auto" style="max-height: 220px;" id="companySwitchList">
+                                    @if (activeCompanies.Any())
+                                    {
+                                        foreach (var comp in activeCompanies)
+                                        {
+                                            var isCurrent = CompanyContext.HasActiveCompany && CompanyContext.CurrentCompanyId == comp.Id;
+                                            <form action="/Company/SwitchCompany" method="post" class="mb-1 company-switch-form" data-name="@comp.CompanyName.ToLower()" data-code="@comp.CompanyCode.ToLower()">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="companyId" value="@comp.Id" />
+                                                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                                <button type="submit" class="dropdown-item rounded py-1.5 px-2 d-flex align-items-center justify-content-between @(isCurrent ? "bg-primary text-white active fw-bold" : "")">
+                                                    <div class="text-truncate me-2">
+                                                        <span class="badge @(isCurrent ? "bg-white text-primary" : "bg-light text-dark border") font-monospace fs-8 me-1">@comp.CompanyCode</span>
+                                                        <span class="fs-8">@comp.CompanyName</span>
+                                                    </div>
+                                                    @if (isCurrent)
+                                                    {
+                                                        <i class="fa-solid fa-circle-check fs-8"></i>
+                                                    }
+                                                </button>
+                                            </form>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="text-muted text-center py-2 fs-8">No active companies found</div>
+                                    }
+                                </div>
+
+                                @if (CompanyContext.HasActiveCompany)
+                                {
+                                    <div class="border-top pt-1 mt-1">
+                                        <form action="/Company/SwitchCompany" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="companyId" value="" />
+                                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                            <button type="submit" class="dropdown-item rounded py-1.5 px-2 text-danger fs-8 d-flex align-items-center gap-2">
+                                                <i class="fa-solid fa-arrows-rotate text-danger"></i>
+                                                <span>Clear Context (System Mode)</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (CompanyContext.HasActiveCompany)
+                    {
+                        <div class="badge bg-light text-dark border px-2.5 py-1.5 d-none d-sm-flex align-items-center gap-1.5" title="Company: @CompanyContext.CurrentCompanyName">
+                            <i class="fa-solid fa-building text-primary"></i>
+                            <span class="fs-8 fw-semibold font-monospace">@CompanyContext.CurrentCompanyCode</span>
+                            <span class="fs-8 text-muted d-none d-md-inline">| @CompanyContext.CurrentCompanyName</span>
+                        </div>
+                    }
+
                     <!-- Quick Action Add Button -->
                     <div class="dropdown d-none d-sm-block">
                         <button class="btn btn-primary btn-sm d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" type="button" id="quickAddDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -310,8 +398,51 @@
                     });
                 }
             });
+
+            // Company switch dropdown filter
+            $('#companyDropdownSearch').on('input', function () {
+                var query = $(this).val().toLowerCase().trim();
+                $('#companySwitchList .company-switch-form').each(function () {
+                    var name = $(this).data('name') || '';
+                    var code = $(this).data('code') || '';
+                    if (!query || name.indexOf(query) !== -1 || code.indexOf(query) !== -1) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+
+            // Flash Notifications from TempData
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                if (window.ErpApp) {
+                    ErpApp.notify('@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(TempData["Success"]?.ToString() ?? ""))', 'success');
+                }
+                </text>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                if (window.ErpApp) {
+                    ErpApp.notify('@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(TempData["Error"]?.ToString() ?? ""))', 'error');
+                }
+                </text>
+            }
+            @if (TempData["Warning"] != null)
+            {
+                <text>
+                if (window.ErpApp) {
+                    ErpApp.notify('@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(TempData["Warning"]?.ToString() ?? ""))', 'warning');
+                }
+                </text>
+            }
         });
     </script>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 99999;" id="erpToastContainer"></div>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

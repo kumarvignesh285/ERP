@@ -1,17 +1,30 @@
-@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityRole>
+@model RolesPageViewModel
 @{
     ViewData["Title"] = "Role Configuration";
+    var isSuperAdmin = Model.IsSuperAdmin;
+    var userCounts = Model.UserCounts;
+    var protectedRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "Super Admin", "Admin", "Company Admin", "CompanyAdmin", "Manager", "Employee", "Accountant", "Sales", "Sales User", "Purchase", "Purchase User", "Viewer"
+    };
 }
 
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-user-shield me-2"></i> Role Configuration</h4>
-        <p class="text-muted small m-0 mt-1">Configure system security roles and access permission groups</p>
+        <p class="text-muted small m-0 mt-1">Configure system security roles and manage permission groupings</p>
     </div>
-    <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#roleModal">
-        <i class="fa-solid fa-plus me-1.5"></i> Add New Role
-    </button>
+    <div class="d-flex gap-2">
+        <a href="/Settings/Users" class="btn btn-outline-primary"><i class="fa-solid fa-users me-1.5"></i> User Management</a>
+        <a href="/Settings/Permissions" class="btn btn-outline-secondary"><i class="fa-solid fa-shield-halved me-1.5"></i> Permissions</a>
+        @if (isSuperAdmin)
+        {
+            <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#roleModal">
+                <i class="fa-solid fa-plus me-1.5"></i> Add New Role
+            </button>
+        }
+    </div>
 </div>
 
 <!-- Table Card -->
@@ -38,22 +51,48 @@
                 <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                     <tr>
                         <th>Role Name</th>
+                        <th>Type</th>
+                        <th class="text-center">Assigned Users</th>
                         <th class="text-center no-print" style="width: 150px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if(Model != null)
+                    @if (Model.Roles != null)
                     {
-                        foreach (var item in Model)
+                        foreach (var item in Model.Roles)
                         {
-                            <tr>
+                            var count = userCounts.TryGetValue(item.Name!, out var c) ? c : 0;
+                            var isProtected = protectedRoles.Contains(item.Name!);
+                            <tr id="role-row-@item.Name!.Replace(" ", "_")">
                                 <td class="fw-bold text-dark">
                                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 fs-7">
                                         <i class="fa-solid fa-shield-halved me-1.5"></i>@item.Name
                                     </span>
                                 </td>
+                                <td>
+                                    @if (isProtected)
+                                    {
+                                        <span class="badge bg-light text-secondary border"><i class="fa-solid fa-lock me-1"></i>System Role</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle"><i class="fa-solid fa-gear me-1"></i>Custom</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge rounded-pill bg-light text-dark border px-3 py-1">@count User(s)</span>
+                                </td>
                                 <td class="text-center no-print">
-                                    <button class="btn btn-sm btn-outline-danger" title="Delete Role"><i class="fa-solid fa-trash"></i></button>
+                                    @if (isSuperAdmin && !isProtected)
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger delete-role" data-name="@item.Name" title="Delete Role">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small"><i class="fa-solid fa-lock"></i> Protected</span>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -65,28 +104,63 @@
 </div>
 
 <!-- Modal Dialog -->
-<div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white py-3">
-                <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-shield me-2"></i> Add Role</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form asp-action="SaveRole" method="post">
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark">Role Name <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
-                            <input type="text" name="Name" class="form-control border-start-0" placeholder="e.g. Sales Manager, Accountant" required />
+@if (isSuperAdmin)
+{
+    <div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white py-3">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-shield me-2"></i> Add Role</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="SaveRole" method="post" id="roleForm">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">Role Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
+                                <input type="text" name="name" class="form-control border-start-0" placeholder="e.g. Regional Manager, Store Supervisor" required />
+                            </div>
+                            <div class="form-text fs-8 text-muted mt-1">Unique role designation name.</div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer bg-light border-top py-2 px-4">
-                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Role</button>
-                </div>
-            </form>
+                    <div class="modal-footer bg-light border-top py-2 px-4">
+                        <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm" id="submitBtn">Save Role</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
+}
+
+@section Scripts {
+    <script>
+        $(function () {
+            var roleModalEl = document.getElementById('roleModal');
+            var roleModal = roleModalEl ? new bootstrap.Modal(roleModalEl) : null;
+
+            $('#roleForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    modal: roleModal,
+                    reloadPage: true
+                });
+            });
+
+            $('.delete-role').on('click', function () {
+                const roleName = $(this).data('name');
+                const rowId = '#role-row-' + roleName.replace(/ /g, '_');
+
+                ErpApp.confirmDelete({
+                    url: '/Settings/DeleteRole',
+                    id: roleName,
+                    idParamName: 'roleName',
+                    rowElement: rowId,
+                    title: 'Delete Role?',
+                    message: `Are you sure you want to delete role '${roleName}'?`
+                });
+            });
+        });
+    </script>
+}

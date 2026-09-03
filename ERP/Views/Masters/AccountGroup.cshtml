@@ -87,9 +87,18 @@
         var bootstrapModal;
         $(function () {
             bootstrapModal = new bootstrap.Modal(document.getElementById('groupModal'));
+
+            $('#groupForm').on('submit', function (e) {
+                e.preventDefault();
+                ErpApp.submitForm(this, {
+                    modal: bootstrapModal,
+                    reloadPage: true
+                });
+            });
         });
 
         function openModal() {
+            ErpApp.clearFieldErrors('#groupForm');
             document.getElementById('groupForm').reset();
             document.getElementById('Id').value = "0";
             document.getElementById('modalTitle').innerText = "Add Account Group";
@@ -98,7 +107,9 @@
         }
 
         function editGroup(btn) {
+            ErpApp.clearFieldErrors('#groupForm');
             var g = $(btn).data('item');
+            document.getElementById('groupForm').reset();
             document.getElementById('Id').value = window.getVal(g, 'id');
             document.getElementById('GroupName').value = window.getVal(g, 'groupName');
             document.getElementById('GroupType').value = window.getVal(g, 'groupType');
@@ -109,25 +120,11 @@
         }
 
         function deleteGroup(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this account group?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Masters/DeleteAccountGroup', { id: id }, function (res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Account Group has been deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        } else {
-                            Swal.fire('Error!', 'Failed to delete.', 'error');
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Masters/DeleteAccountGroup',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this account group?'
             });
         }
     </script>

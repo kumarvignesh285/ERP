@@ -12,17 +12,17 @@ public interface IInventoryService
     Task<List<StockTransfer>> GetStockTransfersAsync();
     Task<StockTransfer?> GetStockTransferByIdAsync(int id);
     Task<StockTransfer> SaveStockTransferAsync(StockTransfer transfer);
-    Task DeleteStockTransferAsync(int id);
+    Task<(bool Success, string Message)> DeleteStockTransferAsync(int id);
 
     // Stock Adjustment
     Task<List<StockAdjustment>> GetStockAdjustmentsAsync();
     Task<StockAdjustment?> GetStockAdjustmentByIdAsync(int id);
     Task<StockAdjustment> SaveStockAdjustmentAsync(StockAdjustment adjustment);
-    Task DeleteStockAdjustmentAsync(int id);
+    Task<(bool Success, string Message)> DeleteStockAdjustmentAsync(int id);
 
     // Physical Stock Verification
     Task<List<PhysicalStockVerification>> GetPhysicalStockVerificationsAsync();
     Task<PhysicalStockVerification?> GetPhysicalStockVerificationByIdAsync(int id);
     Task<PhysicalStockVerification> SavePhysicalStockVerificationAsync(PhysicalStockVerification verification);
-    Task DeletePhysicalStockVerificationAsync(int id);
+    Task<(bool Success, string Message)> DeletePhysicalStockVerificationAsync(int id);
 }

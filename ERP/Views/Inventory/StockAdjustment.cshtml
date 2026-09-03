@@ -275,13 +275,25 @@
             var whId = $('#WarehouseId').val();
             var remarks = $('#Remarks').val();
 
-            if (!whId || !remarks || items.length === 0 || !isValid) {
-                Swal.fire('Error!', 'Please fill all required fields.', 'error');
+            if (!whId) {
+                ErpApp.notify('Please select a warehouse.', 'warning', 'Validation Error');
+                $('#WarehouseId').focus();
+                return;
+            }
+
+            if (!remarks) {
+                ErpApp.notify('Please provide a reason / remarks for stock adjustment.', 'warning', 'Validation Error');
+                $('#Remarks').focus();
+                return;
+            }
+
+            if (!isValid || items.length === 0) {
+                ErpApp.notify('Please add at least one line item with a valid product and quantity.', 'warning', 'Line Items Required');
                 return;
             }
 
             var adjustment = {
-                id: 0,
+                id: parseInt($('#Id').val()) || 0,
                 adjustmentNumber: $('#AdjustmentNumber').val(),
                 adjustmentDate: $('#AdjustmentDate').val(),
                 warehouseId: parseInt(whId),
@@ -290,36 +302,39 @@
                 items: items
             };
 
+            var $btn = $('#btnSaveAdjustment, [onclick="saveAdjustment()"]').first();
+            ErpApp.setButtonLoading($btn, true, 'Applying Stock Adjustment...');
+
             $.ajax({
                 url: '/Inventory/SaveStockAdjustment',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(adjustment),
                 success: function(res) {
-                    if (res.success) {
-                        Swal.fire('Success!', res.message, 'success').then(() => { location.reload(); });
+                    ErpApp.setButtonLoading($btn, false);
+                    if (res && res.success) {
+                        ErpApp.notify(res.message || 'Stock Adjustment applied successfully.', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        ErpApp.notify(res.message || 'Failed to apply stock adjustment.', 'error');
+                        if (res.errors) ErpApp.showFieldErrors('#adjustmentForm', res.errors);
                     }
+                },
+                error: function(xhr) {
+                    ErpApp.setButtonLoading($btn, false);
+                    var msg = xhr.responseJSON?.message || 'Failed to save stock adjustment.';
+                    ErpApp.notify(msg, 'error');
                 }
             });
         }
 
         function deleteAdjustment(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this adjustment? This will revert stocks!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Inventory/DeleteStockAdjustment', { id: id }, function(res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Adjustment deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Inventory/DeleteStockAdjustment',
+                id: id,
+                rowElement: '#row-' + id,
+                title: 'Delete Stock Adjustment?',
+                message: 'This will revert adjusted stock quantities! This action cannot be undone.'
             });
         }
     </script>

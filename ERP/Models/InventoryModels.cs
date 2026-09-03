@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.Models;
 
-public class StockTransaction : BaseEntity
+public class StockTransaction : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     public DateTime TransactionDate { get; set; } = DateTime.Now;
     [Required, MaxLength(50)]
     public string TransactionType { get; set; } = "Purchase"; // Opening, Purchase, Sales, Return, Adjustment, Transfer
@@ -22,8 +25,11 @@ public class StockTransaction : BaseEntity
     public string? Remarks { get; set; }
 }
 
-public class StockTransfer : BaseEntity
+public class StockTransfer : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string TransferNumber { get; set; } = string.Empty;
     public DateTime TransferDate { get; set; } = DateTime.Today;
@@ -53,8 +59,11 @@ public class StockTransferItem
     public string? Remarks { get; set; }
 }
 
-public class StockAdjustment : BaseEntity
+public class StockAdjustment : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string AdjustmentNumber { get; set; } = string.Empty;
     public DateTime AdjustmentDate { get; set; } = DateTime.Today;
@@ -84,8 +93,11 @@ public class StockAdjustmentItem
     public string? Remarks { get; set; }
 }
 
-public class PhysicalStockVerification : BaseEntity
+public class PhysicalStockVerification : BaseEntity, ICompanyOwned
 {
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
     [Required, MaxLength(20)]
     public string VerificationNumber { get; set; } = string.Empty;
     public DateTime VerificationDate { get; set; } = DateTime.Today;

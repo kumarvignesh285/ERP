@@ -154,6 +154,21 @@ public sealed class UsersPageViewModel
     public List<AppUser> Users { get; set; } = new();
     public List<string> Roles { get; set; } = new();
     public Dictionary<string, IList<string>> UserRoles { get; set; } = new();
+    public Dictionary<string, DateTime?> LastLogins { get; set; } = new();
+    public List<Company> Companies { get; set; } = new();
+    public bool IsSuperAdmin { get; set; }
+    public int? CurrentCompanyId { get; set; }
+    public int? SelectedCompanyFilter { get; set; }
+    public string? SelectedRoleFilter { get; set; }
+    public string? SelectedStatusFilter { get; set; }
+    public string? SearchTerm { get; set; }
+}
+
+public sealed class RolesPageViewModel
+{
+    public List<Microsoft.AspNetCore.Identity.IdentityRole> Roles { get; set; } = new();
+    public Dictionary<string, int> UserCounts { get; set; } = new();
+    public bool IsSuperAdmin { get; set; }
 }
 
 public sealed class UserPermissionsPageViewModel
@@ -161,6 +176,7 @@ public sealed class UserPermissionsPageViewModel
     public string SelectedUserId { get; set; } = string.Empty;
     public List<AppUser> Users { get; set; } = new();
     public List<ScreenPermission> Permissions { get; set; } = new();
+    public bool IsSuperAdmin { get; set; }
 }
 
 public sealed class CrmLookupPageViewModel<TItem>

@@ -164,7 +164,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
-                    <div class="flex-grow-1" style="max-width: 500px;">
+                    <div class="flex-grow-1 w-100" style="max-width: 500px;">
                         <label class="form-label fw-semibold text-dark">Notes / Return Reason</label>
                         <textarea id="Notes" class="form-control" rows="3" placeholder="Reason for sales return..."></textarea>
                     </div>
@@ -385,13 +385,19 @@
             });
 
             var customerId = $('#CustomerId').val();
-            if (!customerId || !$('#ReturnNumber').val() || items.length === 0 || !isValid) {
-                Swal.fire('Error!', 'Please fill all fields.', 'error');
+            if (!customerId) {
+                ErpApp.notify('Please select a customer.', 'warning', 'Validation Error');
+                $('#CustomerId').focus();
+                return;
+            }
+
+            if (!isValid || items.length === 0) {
+                ErpApp.notify('Please fill all required fields and add at least one valid line item.', 'warning', 'Validation Error');
                 return;
             }
 
             var salesReturn = {
-                id: 0,
+                id: parseInt($('#Id').val()) || 0,
                 returnNumber: $('#ReturnNumber').val(),
                 returnDate: $('#ReturnDate').val(),
                 customerId: parseInt(customerId),
@@ -404,37 +410,38 @@
                 withGST: $('#WithGST').is(':checked')
             };
 
+            var $btn = $('#btnSaveReturn, [onclick="saveReturn()"]').first();
+            ErpApp.setButtonLoading($btn, true, 'Saving Sales Return...');
+
             $.ajax({
                 url: '/Sales/SaveReturn',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(salesReturn),
                 success: function(res) {
-                    if (res.success) {
-                        Swal.fire('Saved!', res.message, 'success').then(() => { location.reload(); });
+                    ErpApp.setButtonLoading($btn, false);
+                    if (res && res.success) {
+                        ErpApp.notify(res.message || 'Sales Return saved successfully.', 'success');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        ErpApp.notify(res.message || 'Failed to save sales return.', 'error');
+                        if (res.errors) ErpApp.showFieldErrors('#returnForm', res.errors);
                     }
+                },
+                error: function(xhr) {
+                    ErpApp.setButtonLoading($btn, false);
+                    var msg = xhr.responseJSON?.message || 'Failed to save sales return.';
+                    ErpApp.notify(msg, 'error');
                 }
             });
         }
 
         function deleteReturn(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to delete this return?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post('/Sales/DeleteReturn', { id: id }, function(res) {
-                        if (res.success) {
-                            Swal.fire('Deleted!', 'Return deleted.', 'success');
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        }
-                    });
-                }
+            ErpApp.confirmDelete({
+                url: '/Sales/DeleteReturn',
+                id: id,
+                rowElement: '#row-' + id,
+                message: 'Do you want to delete this sales return?'
             });
         }
     </script>
