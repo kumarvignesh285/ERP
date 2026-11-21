@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/erp.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ai-chat.css" asp-append-version="true" />
 </head>
 <body>
     @if (SignInManager.IsSignedIn(User))
@@ -101,7 +102,7 @@
                                         foreach (var comp in activeCompanies)
                                         {
                                             var isCurrent = CompanyContext.HasActiveCompany && CompanyContext.CurrentCompanyId == comp.Id;
-                                            <form action="/Company/SwitchCompany" method="post" class="mb-1 company-switch-form" data-name="@comp.CompanyName.ToLower()" data-code="@comp.CompanyCode.ToLower()">
+                                            <form asp-controller="Company" asp-action="SwitchCompany" method="post" class="mb-1 company-switch-form" data-name="@comp.CompanyName.ToLower()" data-code="@comp.CompanyCode.ToLower()">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="companyId" value="@comp.Id" />
                                                 <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
@@ -127,7 +128,7 @@
                                 @if (CompanyContext.HasActiveCompany)
                                 {
                                     <div class="border-top pt-1 mt-1">
-                                        <form action="/Company/SwitchCompany" method="post">
+                                        <form asp-controller="Company" asp-action="SwitchCompany" method="post">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="companyId" value="" />
                                             <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
@@ -226,11 +227,12 @@
                                 <span class="badge bg-light text-primary border border-primary-subtle fs-8 font-monospace mt-1">@roleLabel</span>
                             </li>
                             <li><a class="dropdown-item rounded py-2" href="/Settings/CompanySettings"><i class="fa-solid fa-building me-2 text-primary"></i> Company Setup</a></li>
-                            <li><a class="dropdown-item rounded py-2" href="/Settings/Users"><i class="fa-solid fa-user-gear me-2 text-info"></i> Profile Settings</a></li>
+                            <li><a class="dropdown-item rounded py-2" asp-controller="Account" asp-action="Profile"><i class="fa-solid fa-user-shield me-2 text-info"></i> Profile & Security</a></li>
                             <li><a class="dropdown-item rounded py-2" href="/Help"><i class="fa-solid fa-circle-question me-2 text-warning"></i> System Help</a></li>
                             <li><hr class="dropdown-divider my-1"></li>
                             <li>
-                                <form class="form-inline m-0" action="/Account/Logout" method="post">
+                                <form class="form-inline m-0" asp-controller="Account" asp-action="Logout" method="post">
+                                    @Html.AntiForgeryToken()
                                     <button type="submit" class="dropdown-item rounded py-2 text-danger"><i class="fa-solid fa-right-from-bracket me-2"></i> Sign Out</button>
                                 </form>
                             </li>
@@ -250,6 +252,7 @@
 
             <!-- Shared Footer Partial -->
             <partial name="_Footer" />
+            <partial name="_AIChatWidget" />
         </div>
     }
     else
@@ -279,6 +282,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/erp-print.js" asp-append-version="true"></script>
     <script src="~/js/erp-voucher.js" asp-append-version="true"></script>
+    <script src="~/js/ai-chat.js" asp-append-version="true"></script>
 
     <script>
         $(document).ready(function() {

@@ -3,6 +3,8 @@
     ViewData["Title"] = "Bank Master";
 }
 
+@Html.AntiForgeryToken()
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-building-columns me-2"></i> Bank Accounts List</h4>
     <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Bank Account</button>
@@ -75,38 +77,45 @@
                 <h5 class="modal-title" id="modalTitle">Add Bank Account</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form asp-action="SaveBank" method="post" id="bankForm">
+            <form asp-controller="Masters" asp-action="SaveBank" method="post" id="bankForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body">
-                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Bank Name *</label>
-                            <input type="text" id="BankName" name="BankName" class="form-control" required />
+                            <label asp-for="Form.BankName" class="form-label font-weight-semibold">Bank Name *</label>
+                            <input asp-for="Form.BankName" id="BankName" class="form-control" required />
+                            <span asp-validation-for="Form.BankName" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Branch Name *</label>
-                            <input type="text" id="BranchName" name="BranchName" class="form-control" required />
+                            <label asp-for="Form.BranchName" class="form-label font-weight-semibold">Branch Name *</label>
+                            <input asp-for="Form.BranchName" id="BranchName" class="form-control" required />
+                            <span asp-validation-for="Form.BranchName" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Account Number *</label>
-                            <input type="text" id="AccountNumber" name="AccountNumber" class="form-control" required />
+                            <label asp-for="Form.AccountNumber" class="form-label font-weight-semibold">Account Number *</label>
+                            <input asp-for="Form.AccountNumber" id="AccountNumber" class="form-control" required />
+                            <span asp-validation-for="Form.AccountNumber" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">IFSC Code *</label>
-                            <input type="text" id="IFSCCode" name="IFSCCode" class="form-control" required />
+                            <label asp-for="Form.IFSCCode" class="form-label font-weight-semibold">IFSC Code *</label>
+                            <input asp-for="Form.IFSCCode" id="IFSCCode" class="form-control" required />
+                            <span asp-validation-for="Form.IFSCCode" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label font-weight-semibold">Mapped Accounting Ledger *</label>
-                        <select id="LedgerId" name="LedgerId" class="form-select select2" required>
+                        <label asp-for="Form.LedgerId" class="form-label font-weight-semibold">Mapped Accounting Ledger *</label>
+                        <select asp-for="Form.LedgerId" id="LedgerId" class="form-select select2" required>
                             <option value="">Select Ledger</option>
                             @foreach (var l in Model.Ledgers)
                             {
                                 <option value="@l.Id">@l.LedgerName (@l.LedgerCode)</option>
                             }
                         </select>
+                        <span asp-validation-for="Form.LedgerId" class="text-danger small mt-1 d-block"></span>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -119,6 +128,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var bootstrapModal;
         $(function () {

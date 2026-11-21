@@ -74,6 +74,14 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 
+// Register AI Business Intelligence Chatbot Services
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IERPReportService, ERPReportService>();
+builder.Services.AddScoped<ERP.Services.AIChat.RuleBasedAIProviderService>();
+builder.Services.AddScoped<ERP.Services.AIChat.OpenAIProviderService>();
+builder.Services.AddScoped<IAIChatService, AIChatService>();
+builder.Services.Configure<ERP.ViewModels.AIChatOptions>(builder.Configuration.GetSection("AIChat"));
+
 // Add Razor Pages and Controllers with Views
 builder.Services.AddRazorPages(options =>
 {

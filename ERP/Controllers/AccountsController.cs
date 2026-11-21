@@ -116,7 +116,7 @@ public class AccountsController : Controller
     public async Task<IActionResult> GetVoucher(int id)
     {
         var voucher = await _accountingService.GetVoucherByIdAsync(id);
-        if (voucher == null) return NotFound();
+        if (voucher == null) return NotFound(ApiResponse.Fail("Voucher not found."));
 
         var ledgers = await _masterService.GetLedgersAsync();
         foreach (var item in voucher.Items)

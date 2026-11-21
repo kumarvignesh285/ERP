@@ -3,6 +3,8 @@
     ViewData["Title"] = "Purchase Order";
 }
 
+@Html.AntiForgeryToken()
+
 <div id="listView">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -115,48 +117,55 @@
 
     <div class="card">
         <div class="card-body">
-            <form id="orderForm">
+            <form asp-controller="Purchase" asp-action="SaveOrder" method="post" id="orderForm">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                <input type="hidden" asp-for="Form!.Id" id="Id" value="0" />
                 <div class="row">
                     <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Order Number *</label>
-                        <input type="text" id="OrderNumber" class="form-control" required />
+                        <label asp-for="Form!.OrderNumber" class="form-label font-weight-semibold">Order Number *</label>
+                        <input asp-for="Form!.OrderNumber" id="OrderNumber" class="form-control" required />
+                        <span asp-validation-for="Form!.OrderNumber" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Date *</label>
-                        <input type="date" id="OrderDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        <label asp-for="Form!.OrderDate" class="form-label font-weight-semibold">Date *</label>
+                        <input asp-for="Form!.OrderDate" type="date" id="OrderDate" class="form-control" required />
+                        <span asp-validation-for="Form!.OrderDate" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Supplier *</label>
-                        <select id="SupplierId" class="form-select select2" required>
+                        <label asp-for="Form!.SupplierId" class="form-label font-weight-semibold">Supplier *</label>
+                        <select asp-for="Form!.SupplierId" id="SupplierId" class="form-select select2" required>
                             <option value="">Select Supplier</option>
                             @foreach (var s in Model.Suppliers)
                             {
                                 <option value="@s.Id">@s.SupplierName</option>
                             }
                         </select>
+                        <span asp-validation-for="Form!.SupplierId" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Status *</label>
-                        <select id="Status" class="form-select" required>
+                        <label asp-for="Form!.Status" class="form-label font-weight-semibold">Status *</label>
+                        <select asp-for="Form!.Status" id="Status" class="form-select" required>
                             <option value="Pending">Pending</option>
                             <option value="Confirmed">Confirmed</option>
                             <option value="Partially Received">Partially Received</option>
                             <option value="Completed">Completed</option>
                             <option value="Cancelled">Cancelled</option>
                         </select>
+                        <span asp-validation-for="Form!.Status" class="text-danger small mt-1 d-block"></span>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label font-weight-semibold">PDF Document</label>
                         <input type="file" id="poDocument" class="form-control" accept="application/pdf" />
-                        <input type="hidden" id="DocumentPath" />
+                        <input type="hidden" asp-for="Form!.DocumentPath" id="DocumentPath" />
                         <div id="uploadingDocSpinner" class="spinner-border spinner-border-sm text-primary mt-2" style="display:none;" role="status"><span class="visually-hidden">Loading...</span></div>
                         <a id="poDocumentLink" href="#" target="_blank" class="btn btn-sm btn-outline-info mt-2" style="display:none;"><i class="fa-solid fa-file-pdf"></i> View Doc</a>
                     </div>
                     <div class="col-md-6 mb-3 align-self-end">
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="WithGST" name="WithGST" onchange="toggleGST(this)" />
+                            <input class="form-check-input" type="checkbox" asp-for="Form!.WithGST" id="WithGST" onchange="toggleGST(this)" />
                             <label class="form-check-label font-weight-bold" for="WithGST">
                                 With GST
                             </label>
@@ -185,20 +194,22 @@
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-between mb-4">
-                    <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
-                    <div class="text-end" style="width: 300px;">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Sub Total:</span>
-                            <span id="lblSubTotal" class="font-weight-semibold">₹0.00</span>
+                <div class="line-items-actions-row">
+                    <button type="button" class="btn btn-add-line-item shadow-xs" onclick="addRow()">
+                        <i class="fa-solid fa-plus"></i> Add Line Item
+                    </button>
+                    <div class="summary-calc-card">
+                        <div class="d-flex justify-content-between mb-1.5 fs-7">
+                            <span class="text-muted fw-medium">Sub Total:</span>
+                            <span id="lblSubTotal" class="fw-semibold text-dark">₹0.00</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-2" id="divTotalGST">
-                            <span>Total GST:</span>
-                            <span id="lblTotalGST" class="font-weight-semibold">₹0.00</span>
+                        <div class="d-flex justify-content-between mb-1.5 fs-7" id="divTotalGST">
+                            <span class="text-muted fw-medium">Total GST:</span>
+                            <span id="lblTotalGST" class="fw-semibold text-dark">₹0.00</span>
                         </div>
-                        <div class="d-flex justify-content-between border-top pt-2">
-                            <span class="font-weight-bold">Grand Total:</span>
-                            <span id="lblGrandTotal" class="font-weight-bold text-primary fs-5">₹0.00</span>
+                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                            <span class="fw-bold text-dark fs-6">Grand Total:</span>
+                            <span id="lblGrandTotal" class="fw-bold text-primary fs-5">₹0.00</span>
                         </div>
                     </div>
                 </div>
@@ -324,6 +335,7 @@
 <datalist id="importWarehousesDatalist"></datalist>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var productsList = @Json.Serialize(Model.ProductLookups);
         if (productsList) {
@@ -408,7 +420,7 @@
                         <input type="text" class="form-control total-input" value="0.00" readonly />
                     </td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
+                        <button type="button" class="btn btn-delete-row" onclick="removeRow(this)" title="Delete Row"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
@@ -432,6 +444,7 @@
                 $row.find('.total-input').val((existingItem.quantity * existingItem.rate).toFixed(2));
             }
         }
+        window.addRow = addRow;
 
         function removeRow(btn) {
             $(btn).closest('tr').remove();
@@ -768,6 +781,21 @@
                     return;
                 }
 
+                // Auto-consolidate duplicates within the parsed file by merging quantity
+                var consolidated = [];
+                var seenCodes = {};
+                importedProducts.forEach(function(item) {
+                    var codeKey = (item.productCode || '').trim().toLowerCase();
+                    if (codeKey && seenCodes[codeKey] !== undefined) {
+                        var existing = consolidated[seenCodes[codeKey]];
+                        existing.openingStock = (parseFloat(existing.openingStock) || 0) + (parseFloat(item.openingStock) || 1);
+                    } else {
+                        if (codeKey) seenCodes[codeKey] = consolidated.length;
+                        consolidated.push(item);
+                    }
+                });
+                importedProducts = consolidated;
+
                 var stats = { total: 0, news: 0, exacts: 0, similars: 0 };
 
                 importedProducts.forEach(function (item, index) {
@@ -1052,6 +1080,21 @@
 
         // Helper to add a row pre-filled with parsed product and values
         function addParsedRow(item) {
+            // Check for duplicate product already in line items table
+            if (item.productId) {
+                var $existingRow = $('#itemsTable tbody tr').filter(function() {
+                    return $(this).find('.select2-row').val() == item.productId;
+                });
+                if ($existingRow.length) {
+                    var $qtyInput = $existingRow.find('.qty-input');
+                    var curQty = parseFloat($qtyInput.val()) || 0;
+                    var addQty = item.qty || item.quantity || 1;
+                    $qtyInput.val(curQty + addQty);
+                    calculateRow($qtyInput[0]);
+                    return;
+                }
+            }
+
             var catOptionsHtml = '<option value="">All Categories</option>';
             var categoriesList = @Json.Serialize(Model.Categories.Select(c => new { id = c.Id, categoryName = c.CategoryName }));
             if (categoriesList) {
@@ -1100,7 +1143,7 @@
                         <input type="text" class="form-control total-input" value="${totalAmount}" readonly />
                     </td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
+                        <button type="button" class="btn btn-delete-row" onclick="removeRow(this)" title="Delete Row"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;

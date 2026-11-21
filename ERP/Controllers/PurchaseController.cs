@@ -250,7 +250,7 @@ public class PurchaseController : Controller
     public async Task<IActionResult> GetInvoice(int id)
     {
         var invoice = await _purchaseService.GetInvoiceByIdAsync(id);
-        if (invoice == null) return NotFound();
+        if (invoice == null) return NotFound(ApiResponse.Fail("Purchase Invoice not found."));
         return Json(invoice);
     }
 
@@ -299,7 +299,7 @@ public class PurchaseController : Controller
     public async Task<IActionResult> GetOrder(int id)
     {
         var order = await _purchaseService.GetPurchaseOrderByIdAsync(id);
-        if (order == null) return NotFound();
+        if (order == null) return NotFound(ApiResponse.Fail("Purchase Order not found."));
         return Json(order);
     }
 
@@ -307,7 +307,7 @@ public class PurchaseController : Controller
     public async Task<IActionResult> GetGRN(int id)
     {
         var item = await _purchaseService.GetGRNByIdAsync(id);
-        if (item == null) return NotFound();
+        if (item == null) return NotFound(ApiResponse.Fail("Goods Receipt Note not found."));
         return Json(item);
     }
 
@@ -315,7 +315,7 @@ public class PurchaseController : Controller
     public async Task<IActionResult> GetReturn(int id)
     {
         var item = await _purchaseService.GetReturnByIdAsync(id);
-        if (item == null) return NotFound();
+        if (item == null) return NotFound(ApiResponse.Fail("Purchase Return not found."));
         return Json(item);
     }
 

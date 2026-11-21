@@ -252,36 +252,168 @@ $(function () {
             return elements;
         };
 
-        // Listen for changes on product selection dropdowns to show clean badges underneath
+        // Listen for changes on product selection dropdowns:
+        // 1. Prevent duplicate product rows by merging quantity into existing row & removing duplicate row
+        // 2. Display clean, compact badges underneath
+        // 3. Automatically focus quantity input for lightning-fast entry
         $(document).on('change', '.select2-row', function() {
             var select = $(this);
             var selectedVal = select.val();
             var td = select.closest('td');
+            var tr = select.closest('tr');
+            var table = tr.closest('table');
             
             // Remove existing badges
             td.find('.product-details-helper').remove();
             
             if (!selectedVal) return;
             
+            // --- DUPLICATE PRODUCT MERGE CHECK ---
+            if (table.length) {
+                var duplicateRow = table.find('tbody tr').not(tr).filter(function() {
+                    return $(this).find('.select2-row').val() == selectedVal;
+                });
+                
+                if (duplicateRow.length > 0) {
+                    var existingQtyInput = duplicateRow.find('.qty-input');
+                    if (!existingQtyInput.length) {
+                        return; // Not a product quantity row (e.g. Accounts vouchers with ledgers)
+                    }
+                    var currentQty = parseFloat(existingQtyInput.val()) || 1;
+                    var thisQty = parseFloat(tr.find('.qty-input').val()) || 1;
+                    var newQty = currentQty + thisQty;
+                    
+                    // Increment quantity of existing row & trigger calculations
+                    existingQtyInput.val(newQty).trigger('input').trigger('change');
+                    if (typeof window.calculateRow === 'function') {
+                        window.calculateRow(existingQtyInput[0]);
+                    } else if (typeof calculateRow === 'function') {
+                        calculateRow(existingQtyInput[0]);
+                    }
+                    if (typeof window.calculateTotals === 'function') {
+                        window.calculateTotals();
+                    } else if (typeof calculateTotals === 'function') {
+                        calculateTotals();
+                    }
+                    
+                    // Visual pulse feedback on the existing merged row
+                    duplicateRow.addClass('table-warning row-merged-pulse');
+                    existingQtyInput.focus().select();
+                    setTimeout(function() {
+                        duplicateRow.removeClass('table-warning row-merged-pulse');
+                    }, 1500);
+                    
+                    // Completely remove the duplicate row so it never appears in the list again
+                    if (table.find('tbody tr').length > 1) {
+                        tr.remove();
+                    } else {
+                        select.val(null).trigger('change');
+                        tr.find('.rate-input').val('0.00');
+                        tr.find('.total-input').val('0.00');
+                    }
+                    
+                    if (typeof window.calculateTotals === 'function') {
+                        window.calculateTotals();
+                    } else if (typeof calculateTotals === 'function') {
+                        calculateTotals();
+                    }
+                    
+                    var selectedTextFull = select.find('option[value="' + selectedVal + '"]').text() || '';
+                    var prodName = selectedTextFull.split('|')[0].trim() || 'Selected product';
+                    if (window.ErpApp && typeof ErpApp.notify === 'function') {
+                        ErpApp.notify('"' + prodName + '" is already in line items. Merged into existing row and updated quantity to ' + newQty + '.', 'info', 'Item Merged');
+                    }
+                    return;
+                }
+            }
+            
+            // Auto-focus quantity on valid selection for fast typing
+            setTimeout(function() {
+                var qtyInput = tr.find('.qty-input');
+                if (qtyInput.length && !qtyInput.is(':focus')) {
+                    qtyInput.focus().select();
+                }
+            }, 60);
+
             var selectedText = select.find('option:selected').text();
             var parts = selectedText.split('|');
             if (parts.length > 1) {
-                var badgeHtml = '<div class="product-details-helper mt-1 d-flex gap-2 flex-wrap" style="font-size: 0.72rem;">';
+                var badgeHtml = '<div class="product-details-helper mt-1 d-flex gap-1 flex-wrap align-items-center" style="font-size: 0.65rem; line-height: 1.2;">';
                 for (var i = 1; i < parts.length; i++) {
                     var detail = parts[i].trim();
                     var badgeClass = 'bg-light text-secondary border';
                     if (detail.toLowerCase().includes('stock')) {
                         var stockNum = parseFloat(detail.replace(/[^0-9.-]/g, '')) || 0;
                         badgeClass = stockNum <= 0 ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle';
-                    } else if (detail.toLowerCase().includes('price')) {
+                    } else if (detail.toLowerCase().includes('price') || detail.toLowerCase().includes('cost')) {
                         badgeClass = 'bg-primary-subtle text-primary border border-primary-subtle';
                     } else if (detail.toLowerCase().includes('gst')) {
                         badgeClass = 'bg-info-subtle text-info border border-info-subtle';
                     }
-                    badgeHtml += `<span class="badge ${badgeClass} font-weight-medium">${detail}</span>`;
+                    badgeHtml += `<span class="badge ${badgeClass} fw-semibold py-0 px-1" style="font-size: 0.65rem;">${detail}</span>`;
                 }
                 badgeHtml += '</div>';
                 td.append(badgeHtml);
+            }
+        });
+
+        // Fast keyboard navigation & auto new row creation upon Enter or Quantity entry
+        $(document).on('keydown', '#itemsTable .qty-input, #itemsTable .rate-input', function(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                var tr = $(this).closest('tr');
+                var tbody = tr.closest('tbody');
+                var isLastRow = tr.is(':last-child');
+                var prodId = tr.find('.select2-row').val();
+                
+                if (isLastRow) {
+                    if (prodId) {
+                        var lastProd = tbody.find('tr:last .select2-row').val();
+                        if (typeof window.addRow === 'function' && lastProd) {
+                            window.addRow();
+                            setTimeout(function() {
+                                var newRow = tbody.find('tr:last');
+                                var newSelect = newRow.find('.select2-row');
+                                if (newSelect.length) {
+                                    newSelect.select2('open');
+                                }
+                            }, 60);
+                        }
+                    } else {
+                        var curSelect = tr.find('.select2-row');
+                        if (curSelect.length) {
+                            curSelect.select2('open');
+                        }
+                    }
+                } else {
+                    var nextRow = tr.next('tr');
+                    var nextProd = nextRow.find('.select2-row');
+                    var nextQty = nextRow.find('.qty-input');
+                    if (nextProd.val()) {
+                        nextQty.focus().select();
+                    } else if (nextProd.length) {
+                        nextProd.select2('open');
+                    }
+                }
+            }
+        });
+
+        // Auto-add new row when a valid quantity is entered on the last row
+        $(document).on('change', '#itemsTable .qty-input', function() {
+            var tr = $(this).closest('tr');
+            var tbody = tr.closest('tbody');
+            var isLastRow = tr.is(':last-child');
+            var prodId = tr.find('.select2-row').val();
+            var qty = parseFloat($(this).val()) || 0;
+            
+            if (isLastRow && prodId && qty > 0) {
+                if (typeof window.addRow === 'function') {
+                    // Check if the last row isn't already an empty row
+                    var lastProd = tbody.find('tr:last .select2-row').val();
+                    if (lastProd) {
+                        window.addRow();
+                    }
+                }
             }
         });
 

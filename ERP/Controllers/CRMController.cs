@@ -36,14 +36,15 @@ public class CRMController : Controller
     public async Task<IActionResult> Leads()
     {
         var list = await _crmService.GetLeadsAsync();
-        return View(list);
+        return View(new LeadsPageViewModel { Leads = list });
     }
 
     [HttpPost("SaveLead")]
     [Permission("Leads", "Edit")]
-    public async Task<IActionResult> SaveLead(Lead lead)
+    public async Task<IActionResult> SaveLead([FromForm] Lead? model, [FromForm] Lead? form)
     {
-        if (!ModelState.IsValid)
+        var lead = (form != null && !string.IsNullOrEmpty(form.LeadName)) ? form : (model ?? new Lead());
+        if (string.IsNullOrWhiteSpace(lead.LeadName))
         {
             if (IsAjaxRequest())
                 return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
@@ -90,9 +91,10 @@ public class CRMController : Controller
 
     [HttpPost("SaveFollowUp")]
     [Permission("Follow Ups", "Edit")]
-    public async Task<IActionResult> SaveFollowUp(FollowUp followUp)
+    public async Task<IActionResult> SaveFollowUp([FromForm] FollowUp? model, [FromForm] FollowUp? form)
     {
-        if (!ModelState.IsValid)
+        var followUp = (form != null && form.LeadId > 0) ? form : (model ?? new FollowUp());
+        if (followUp.LeadId <= 0)
         {
             if (IsAjaxRequest())
                 return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
@@ -139,9 +141,10 @@ public class CRMController : Controller
 
     [HttpPost("SaveOpportunity")]
     [Permission("Opportunities", "Edit")]
-    public async Task<IActionResult> SaveOpportunity(Opportunity opportunity)
+    public async Task<IActionResult> SaveOpportunity([FromForm] Opportunity? model, [FromForm] Opportunity? form)
     {
-        if (!ModelState.IsValid)
+        var opportunity = (form != null && !string.IsNullOrEmpty(form.OpportunityName)) ? form : (model ?? new Opportunity());
+        if (string.IsNullOrWhiteSpace(opportunity.OpportunityName) || opportunity.LeadId <= 0)
         {
             if (IsAjaxRequest())
                 return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));

@@ -105,6 +105,14 @@ public class InventoryController : Controller
         }
     }
 
+    [HttpGet("GetStockTransfer/{id}")]
+    public async Task<IActionResult> GetStockTransfer(int id)
+    {
+        var item = await _inventoryService.GetStockTransferByIdAsync(id);
+        if (item == null) return NotFound(ApiResponse.Fail("Stock Transfer not found."));
+        return Json(item);
+    }
+
     [HttpPost("DeleteStockTransfer")]
     public async Task<IActionResult> DeleteStockTransfer(int id)
     {
@@ -139,6 +147,14 @@ public class InventoryController : Controller
         }
     }
 
+    [HttpGet("GetStockAdjustment/{id}")]
+    public async Task<IActionResult> GetStockAdjustment(int id)
+    {
+        var item = await _inventoryService.GetStockAdjustmentByIdAsync(id);
+        if (item == null) return NotFound(ApiResponse.Fail("Stock Adjustment not found."));
+        return Json(item);
+    }
+
     [HttpPost("DeleteStockAdjustment")]
     public async Task<IActionResult> DeleteStockAdjustment(int id)
     {
@@ -171,6 +187,14 @@ public class InventoryController : Controller
         {
             return Json(ApiResponse.Fail(ex.Message));
         }
+    }
+
+    [HttpGet("GetPhysicalVerification/{id}")]
+    public async Task<IActionResult> GetPhysicalVerification(int id)
+    {
+        var item = await _inventoryService.GetPhysicalStockVerificationByIdAsync(id);
+        if (item == null) return NotFound(ApiResponse.Fail("Physical Stock Verification not found."));
+        return Json(item);
     }
 
     [HttpPost("DeletePhysicalVerification")]

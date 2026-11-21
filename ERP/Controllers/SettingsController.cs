@@ -148,8 +148,25 @@ public class SettingsController : Controller
         Request.ContentType?.Contains("application/json") == true;
 
     [HttpPost("SaveUser")]
-    public async Task<IActionResult> SaveUser(string email, string fullName, string mobile, string password, string? confirmPassword, string role, int? companyId, bool isActive = true)
+    public async Task<IActionResult> SaveUser(
+        [FromForm] UserInputModel? form,
+        [FromForm] UserInputModel? model,
+        string? email = null,
+        string? fullName = null,
+        string? mobile = null,
+        string? password = null,
+        string? confirmPassword = null,
+        string? role = null,
+        int? companyId = null,
+        bool isActive = true)
     {
+        email = string.IsNullOrWhiteSpace(email) ? (form?.Email ?? model?.Email ?? string.Empty) : email;
+        fullName = string.IsNullOrWhiteSpace(fullName) ? (form?.FullName ?? model?.FullName ?? string.Empty) : fullName;
+        mobile = string.IsNullOrWhiteSpace(mobile) ? (form?.Mobile ?? model?.Mobile) : mobile;
+        password = string.IsNullOrWhiteSpace(password) ? (form?.Password ?? model?.Password ?? string.Empty) : password;
+        role = string.IsNullOrWhiteSpace(role) ? (form?.Role ?? model?.Role ?? string.Empty) : role;
+        companyId ??= form?.CompanyId ?? model?.CompanyId;
+
         var isSuperAdmin = User.IsInRole("Super Admin");
         var activeCompanyId = _companyContext.CurrentCompanyId;
         var currentUserName = User.Identity?.Name ?? "System";
@@ -473,8 +490,12 @@ public class SettingsController : Controller
     }
 
     [HttpPost("SaveRole")]
-    public async Task<IActionResult> SaveRole(string name)
+    public async Task<IActionResult> SaveRole(
+        [FromForm] RoleInputModel? form,
+        [FromForm] RoleInputModel? model,
+        string? name = null)
     {
+        name = string.IsNullOrWhiteSpace(name) ? (form?.Name ?? model?.Name ?? string.Empty) : name;
         var isSuperAdmin = User.IsInRole("Super Admin");
         if (!isSuperAdmin)
         {

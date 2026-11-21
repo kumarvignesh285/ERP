@@ -3,6 +3,8 @@
     ViewData["Title"] = "Purchase Return";
 }
 
+@Html.AntiForgeryToken()
+
 <div id="listView">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -77,29 +79,35 @@
 
     <div class="card">
         <div class="card-body">
-            <form id="returnForm">
+            <form asp-controller="Purchase" asp-action="SaveReturn" method="post" id="returnForm">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                <input type="hidden" asp-for="Form!.Id" id="Id" value="0" />
                 <div class="row">
                     <div class="col-md-2 mb-3">
-                        <label class="form-label font-weight-semibold">Return Number *</label>
-                        <input type="text" id="ReturnNumber" class="form-control" required />
+                        <label asp-for="Form!.ReturnNumber" class="form-label font-weight-semibold">Return Number *</label>
+                        <input asp-for="Form!.ReturnNumber" id="ReturnNumber" class="form-control" required />
+                        <span asp-validation-for="Form!.ReturnNumber" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="col-md-2 mb-3">
-                        <label class="form-label font-weight-semibold">Date *</label>
-                        <input type="date" id="ReturnDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        <label asp-for="Form!.ReturnDate" class="form-label font-weight-semibold">Date *</label>
+                        <input asp-for="Form!.ReturnDate" type="date" id="ReturnDate" class="form-control" required />
+                        <span asp-validation-for="Form!.ReturnDate" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label font-weight-semibold">Supplier *</label>
-                        <select id="SupplierId" class="form-select select2" required>
+                        <label asp-for="Form!.SupplierId" class="form-label font-weight-semibold">Supplier *</label>
+                        <select asp-for="Form!.SupplierId" id="SupplierId" class="form-select select2" required>
                             <option value="">Select Supplier</option>
                             @foreach (var s in Model.Suppliers)
                             {
                                 <option value="@s.Id">@s.SupplierName</option>
                             }
                         </select>
+                        <span asp-validation-for="Form!.SupplierId" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="col-md-5 mb-3 align-self-end text-end">
                         <div class="form-check mb-2 d-inline-block text-start">
-                            <input class="form-check-input" type="checkbox" id="WithGST" name="WithGST" onchange="toggleGST(this)" />
+                            <input class="form-check-input" type="checkbox" asp-for="Form!.WithGST" id="WithGST" onchange="toggleGST(this)" />
                             <label class="form-check-label font-weight-bold" for="WithGST">
                                 With GST
                             </label>
@@ -127,20 +135,22 @@
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-between mb-4">
-                    <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
-                    <div class="text-end" style="width: 300px;">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Sub Total:</span>
-                            <span id="lblSubTotal" class="font-weight-semibold">₹0.00</span>
+                <div class="line-items-actions-row">
+                    <button type="button" class="btn btn-add-line-item shadow-xs" onclick="addRow()">
+                        <i class="fa-solid fa-plus"></i> Add Line Item
+                    </button>
+                    <div class="summary-calc-card">
+                        <div class="d-flex justify-content-between mb-1.5 fs-7">
+                            <span class="text-muted fw-medium">Sub Total:</span>
+                            <span id="lblSubTotal" class="fw-semibold text-dark">₹0.00</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-2" id="divTotalGST">
-                            <span>Total GST:</span>
-                            <span id="lblTotalGST" class="font-weight-semibold">₹0.00</span>
+                        <div class="d-flex justify-content-between mb-1.5 fs-7" id="divTotalGST">
+                            <span class="text-muted fw-medium">Total GST:</span>
+                            <span id="lblTotalGST" class="fw-semibold text-dark">₹0.00</span>
                         </div>
-                        <div class="d-flex justify-content-between border-top pt-2">
-                            <span class="font-weight-bold">Grand Total:</span>
-                            <span id="lblGrandTotal" class="font-weight-bold text-primary fs-5">₹0.00</span>
+                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                            <span class="fw-bold text-dark fs-6">Grand Total:</span>
+                            <span id="lblGrandTotal" class="fw-bold text-primary fs-5">₹0.00</span>
                         </div>
                     </div>
                 </div>
@@ -160,6 +170,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var productsList = @Json.Serialize(Model.ProductLookups);
         if (productsList) {
@@ -194,7 +205,7 @@
             $('#listView').show();
         }
 
-        function addRow() {
+        function addRow(existingItem) {
             var catOptionsHtml = '<option value="">All Categories</option>';
             var categoriesList = @Json.Serialize(Model.Categories.Select(c => new { id = c.Id, categoryName = c.CategoryName }));
             if (categoriesList) {
@@ -235,7 +246,7 @@
                         <input type="text" class="form-control total-input" value="0.00" readonly />
                     </td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
+                        <button type="button" class="btn btn-delete-row" onclick="removeRow(this)" title="Delete Row"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
@@ -258,6 +269,7 @@
                 $row.find('.total-input').val((existingItem.quantity * existingItem.rate).toFixed(2));
             }
         }
+        window.addRow = addRow;
 
         function onProductSelect(select) {
             var prodId = $(select).val();

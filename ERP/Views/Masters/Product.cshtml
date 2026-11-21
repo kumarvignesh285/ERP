@@ -3,6 +3,8 @@
     ViewData["Title"] = "Product Master";
 }
 
+@Html.AntiForgeryToken()
+
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
@@ -112,33 +114,39 @@
                 <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-box-open me-2"></i> Add Product</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveProduct" method="post" id="productForm" enctype="multipart/form-data">
+            <form asp-controller="Masters" asp-action="SaveProduct" method="post" id="productForm" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
                 <div class="modal-body p-4">
-                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     
-                    <div class="row g-3 mb-3">
+                    <div class="row g-2 mb-2">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Product Code <span class="text-danger">*</span></label>
+                            <label asp-for="Form.ProductCode" class="form-label fw-semibold text-dark">Product Code <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-barcode text-muted"></i></span>
-                                <input type="text" id="ProductCode" name="ProductCode" class="form-control border-start-0" placeholder="e.g. PRD-001" required />
+                                <input asp-for="Form.ProductCode" id="ProductCode" class="form-control border-start-0" placeholder="e.g. PRD-001" required />
                             </div>
+                            <span asp-validation-for="Form.ProductCode" class="text-danger small mt-1 d-block"></span>
+                            <div id="codeDuplicateWarn" class="text-danger small mt-1 fw-semibold" style="display:none;"><i class="fa-solid fa-circle-exclamation me-1"></i> Product code already exists in catalog.</div>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Product Name <span class="text-danger">*</span></label>
+                            <label asp-for="Form.ProductName" class="form-label fw-semibold text-dark">Product Name <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-box text-muted"></i></span>
-                                <input type="text" id="ProductName" name="ProductName" class="form-control border-start-0" placeholder="Item description" required />
+                                <input asp-for="Form.ProductName" id="ProductName" class="form-control border-start-0" placeholder="Item description" required />
                             </div>
+                            <span asp-validation-for="Form.ProductName" class="text-danger small mt-1 d-block"></span>
+                            <div id="nameDuplicateWarn" class="text-warning small mt-1 fw-semibold" style="display:none;"><i class="fa-solid fa-triangle-exclamation me-1"></i> Similar product name already exists.</div>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Category</label>
+                            <label asp-for="Form.CategoryId" class="form-label fw-semibold text-dark">Category</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-layer-group text-muted"></i></span>
-                                <select id="CategoryId" name="CategoryId" class="form-select border-start-0 select2">
+                                <select asp-for="Form.CategoryId" id="CategoryId" class="form-select border-start-0 select2">
                                     <option value="">Select Category</option>
                                     @foreach (var cat in Model.Categories)
                                     {
@@ -146,12 +154,13 @@
                                     }
                                 </select>
                             </div>
+                            <span asp-validation-for="Form.CategoryId" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Brand</label>
+                            <label asp-for="Form.BrandId" class="form-label fw-semibold text-dark">Brand</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
-                                <select id="BrandId" name="BrandId" class="form-select border-start-0 select2">
+                                <select asp-for="Form.BrandId" id="BrandId" class="form-select border-start-0 select2">
                                     <option value="">Select Brand</option>
                                     @foreach (var b in Model.Brands)
                                     {
@@ -159,15 +168,16 @@
                                     }
                                 </select>
                             </div>
+                            <span asp-validation-for="Form.BrandId" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Unit of Measure</label>
+                            <label asp-for="Form.UnitId" class="form-label fw-semibold text-dark">Unit of Measure</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-scale-unbalanced text-muted"></i></span>
-                                <select id="UnitId" name="UnitId" class="form-select border-start-0 select2">
+                                <select asp-for="Form.UnitId" id="UnitId" class="form-select border-start-0 select2">
                                     <option value="">Select Unit</option>
                                     @foreach (var u in Model.Units)
                                     {
@@ -175,12 +185,13 @@
                                     }
                                 </select>
                             </div>
+                            <span asp-validation-for="Form.UnitId" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Default Warehouse</label>
+                            <label asp-for="Form.WarehouseId" class="form-label fw-semibold text-dark">Default Warehouse</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-warehouse text-muted"></i></span>
-                                <select id="WarehouseId" name="WarehouseId" class="form-select border-start-0 select2">
+                                <select asp-for="Form.WarehouseId" id="WarehouseId" class="form-select border-start-0 select2">
                                     <option value="">Select Warehouse</option>
                                     @foreach (var wh in Model.Warehouses)
                                     {
@@ -188,54 +199,62 @@
                                     }
                                 </select>
                             </div>
+                            <span asp-validation-for="Form.WarehouseId" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-sm-4">
-                            <label class="form-label fw-semibold text-dark">Purchase Price <span class="text-danger">*</span></label>
+                            <label asp-for="Form.PurchasePrice" class="form-label fw-semibold text-dark">Purchase Price <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">₹</span>
-                                <input type="number" id="PurchasePrice" name="PurchasePrice" class="form-control border-start-0" required step="0.01" placeholder="0.00" />
+                                <input asp-for="Form.PurchasePrice" id="PurchasePrice" class="form-control border-start-0" required step="0.01" placeholder="0.00" />
                             </div>
+                            <span asp-validation-for="Form.PurchasePrice" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-sm-4">
-                            <label class="form-label fw-semibold text-dark">Sales Price <span class="text-danger">*</span></label>
+                            <label asp-for="Form.SalesPrice" class="form-label fw-semibold text-dark">Sales Price <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">₹</span>
-                                <input type="number" id="SalesPrice" name="SalesPrice" class="form-control border-start-0" required step="0.01" placeholder="0.00" />
+                                <input asp-for="Form.SalesPrice" id="SalesPrice" class="form-control border-start-0" required step="0.01" placeholder="0.00" />
                             </div>
+                            <span asp-validation-for="Form.SalesPrice" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-sm-4">
-                            <label class="form-label fw-semibold text-dark">MRP <span class="text-danger">*</span></label>
+                            <label asp-for="Form.MRP" class="form-label fw-semibold text-dark">MRP <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">₹</span>
-                                <input type="number" id="MRP" name="MRP" class="form-control border-start-0" required step="0.01" placeholder="0.00" />
+                                <input asp-for="Form.MRP" id="MRP" class="form-control border-start-0" required step="0.01" placeholder="0.00" />
                             </div>
+                            <span asp-validation-for="Form.MRP" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-sm-4">
-                            <label class="form-label fw-semibold text-dark">GST % <span class="text-danger">*</span></label>
+                            <label asp-for="Form.GSTPercentage" class="form-label fw-semibold text-dark">GST % <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-percent text-muted"></i></span>
-                                <input type="number" id="GSTPercentage" name="GSTPercentage" class="form-control border-start-0" required value="18" />
+                                <input asp-for="Form.GSTPercentage" id="GSTPercentage" class="form-control border-start-0" required value="18" />
                             </div>
+                            <span asp-validation-for="Form.GSTPercentage" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-sm-4">
-                            <label class="form-label fw-semibold text-dark">Min Stock Alert</label>
-                            <input type="number" id="MinimumStock" name="MinimumStock" class="form-control" value="0" />
+                            <label asp-for="Form.MinimumStock" class="form-label fw-semibold text-dark">Min Stock Alert</label>
+                            <input asp-for="Form.MinimumStock" id="MinimumStock" class="form-control" value="0" />
+                            <span asp-validation-for="Form.MinimumStock" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-sm-4">
-                            <label class="form-label fw-semibold text-dark">Reorder Level</label>
-                            <input type="number" id="ReorderLevel" name="ReorderLevel" class="form-control" value="0" />
+                            <label asp-for="Form.ReorderLevel" class="form-label fw-semibold text-dark">Reorder Level</label>
+                            <input asp-for="Form.ReorderLevel" id="ReorderLevel" class="form-control" value="0" />
+                            <span asp-validation-for="Form.ReorderLevel" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark">Description</label>
-                        <textarea id="Description" name="Description" class="form-control" rows="2" placeholder="Product specifications, model number..."></textarea>
+                        <label asp-for="Form.Description" class="form-label fw-semibold text-dark">Description</label>
+                        <textarea asp-for="Form.Description" id="Description" class="form-control" rows="2" placeholder="Product specifications, model number..."></textarea>
+                        <span asp-validation-for="Form.Description" class="text-danger small mt-1 d-block"></span>
                     </div>
 
                     <div class="mb-3">
@@ -367,6 +386,7 @@
 <datalist id="importWarehousesDatalist"></datalist>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
@@ -503,6 +523,21 @@
                     updateStats(0, 0, 0, 0);
                     return;
                 }
+
+                // Auto-consolidate duplicates within the parsed file by merging quantity
+                var consolidated = [];
+                var seenCodes = {};
+                importedProducts.forEach(function(item) {
+                    var codeKey = (item.productCode || '').trim().toLowerCase();
+                    if (codeKey && seenCodes[codeKey] !== undefined) {
+                        var existing = consolidated[seenCodes[codeKey]];
+                        existing.openingStock = (parseFloat(existing.openingStock) || 0) + (parseFloat(item.openingStock) || 1);
+                    } else {
+                        if (codeKey) seenCodes[codeKey] = consolidated.length;
+                        consolidated.push(item);
+                    }
+                });
+                importedProducts = consolidated;
 
                 var stats = { total: 0, news: 0, exacts: 0, similars: 0 };
 
@@ -771,6 +806,8 @@
             ErpApp.clearFieldErrors('#productForm');
             document.getElementById('productForm').reset();
             document.getElementById('Id').value = "0";
+            $('#codeDuplicateWarn, #nameDuplicateWarn').hide();
+            $('#ProductCode, #ProductName').removeClass('is-invalid');
             $('#CategoryId, #BrandId, #UnitId, #WarehouseId').val('').trigger('change');
             $('#existingDocumentDiv').hide();
             document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-box-open me-2"></i> Add Product';
@@ -780,6 +817,8 @@
 
         function editProductById(id) {
             ErpApp.clearFieldErrors('#productForm');
+            $('#codeDuplicateWarn, #nameDuplicateWarn').hide();
+            $('#ProductCode, #ProductName').removeClass('is-invalid');
             var p = window.productEditList.find(function(item) { return window.getVal(item, 'id') === id; });
             if (!p) {
                 Swal.fire('Error!', 'Product details could not be loaded.', 'error');
@@ -812,6 +851,47 @@
             document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();
         }
+
+        $(document).on('input', '#ProductCode', function() {
+            var val = $(this).val().trim().toLowerCase();
+            var curId = parseInt($('#Id').val()) || 0;
+            if (!val || !window.productEditList) {
+                $('#codeDuplicateWarn').hide();
+                $(this).removeClass('is-invalid');
+                return;
+            }
+            var exists = window.productEditList.some(function(p) {
+                var pCode = (window.getVal(p, 'productCode') || '').toLowerCase();
+                var pId = parseInt(window.getVal(p, 'id')) || 0;
+                return pCode === val && pId !== curId;
+            });
+            if (exists) {
+                $('#codeDuplicateWarn').show();
+                $(this).addClass('is-invalid');
+            } else {
+                $('#codeDuplicateWarn').hide();
+                $(this).removeClass('is-invalid');
+            }
+        });
+
+        $(document).on('input', '#ProductName', function() {
+            var val = $(this).val().trim().toLowerCase();
+            var curId = parseInt($('#Id').val()) || 0;
+            if (!val || !window.productEditList) {
+                $('#nameDuplicateWarn').hide();
+                return;
+            }
+            var exists = window.productEditList.some(function(p) {
+                var pName = (window.getVal(p, 'productName') || '').toLowerCase();
+                var pId = parseInt(window.getVal(p, 'id')) || 0;
+                return pName === val && pId !== curId;
+            });
+            if (exists) {
+                $('#nameDuplicateWarn').show();
+            } else {
+                $('#nameDuplicateWarn').hide();
+            }
+        });
 
         function deleteProduct(id) {
             ErpApp.confirmDelete({

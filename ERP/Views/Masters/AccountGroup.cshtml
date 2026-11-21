@@ -1,7 +1,9 @@
-@model IEnumerable<ERP.Models.AccountGroup>
+@model AccountGroupPageViewModel
 @{
     ViewData["Title"] = "Account Group Master";
 }
+
+@Html.AntiForgeryToken()
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-folder me-2"></i> Account Groups List</h4>
@@ -22,7 +24,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var g in Model)
+                    @foreach (var g in Model.AccountGroups)
                     {
                         <tr id="row-@g.Id">
                             <td>@g.Id</td>
@@ -51,26 +53,31 @@
                 <h5 class="modal-title" id="modalTitle">Add Account Group</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form asp-action="SaveAccountGroup" method="post" id="groupForm">
+            <form asp-controller="Masters" asp-action="SaveAccountGroup" method="post" id="groupForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body">
-                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     <div class="mb-3">
-                        <label class="form-label font-weight-semibold">Group Name *</label>
-                        <input type="text" id="GroupName" name="GroupName" class="form-control" required />
+                        <label asp-for="Form.GroupName" class="form-label font-weight-semibold">Group Name *</label>
+                        <input asp-for="Form.GroupName" id="GroupName" class="form-control" required />
+                        <span asp-validation-for="Form.GroupName" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label font-weight-semibold">Group Type *</label>
-                        <select id="GroupType" name="GroupType" class="form-select" required>
+                        <label asp-for="Form.GroupType" class="form-label font-weight-semibold">Group Type *</label>
+                        <select asp-for="Form.GroupType" id="GroupType" class="form-select" required>
                             <option value="Asset">Asset</option>
                             <option value="Liability">Liability</option>
                             <option value="Equity">Equity</option>
                             <option value="Income">Income</option>
                             <option value="Expense">Expense</option>
                         </select>
+                        <span asp-validation-for="Form.GroupType" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label font-weight-semibold">Description</label>
-                        <textarea id="Description" name="Description" class="form-control" rows="2"></textarea>
+                        <label asp-for="Form.Description" class="form-label font-weight-semibold">Description</label>
+                        <textarea asp-for="Form.Description" id="Description" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="Form.Description" class="text-danger small mt-1 d-block"></span>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -83,6 +90,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var bootstrapModal;
         $(function () {

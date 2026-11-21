@@ -1,0 +1,99 @@
+@inject ERP.Interfaces.ICompanyContext CompanyContext
+
+<div class="ai-chat-launcher no-print" id="aiChatLauncherContainer">
+    <div class="ai-chat-launcher-pill" id="aiChatLauncherPill" style="display:none;">
+        <i class="fa-solid fa-sparkles text-primary"></i>
+        <span>Ask SmartERP AI</span>
+    </div>
+
+    <button type="button" class="ai-chat-launcher-btn" id="aiChatLauncherBtn" aria-label="Open AI BI Assistant" title="Open AI Business Intelligence Chatbot (Alt+C)">
+        <div class="ai-pulse-ring"></div>
+        <i class="fa-solid fa-robot"></i>
+    </button>
+</div>
+
+<!-- Floating AI Chat Panel -->
+<div class="ai-chat-panel hidden no-print" id="aiChatPanel">
+    <!-- Header -->
+    <div class="ai-chat-header">
+        <div class="ai-chat-header-info">
+            <div class="ai-chat-avatar">
+                <i class="fa-solid fa-brain"></i>
+            </div>
+            <div>
+                <h6 class="ai-chat-title">SmartERP AI BI Assistant</h6>
+                <p class="ai-chat-subtitle">
+                    <span class="ai-status-dot"></span>
+                    <span>Live ERP Intelligence</span>
+                </p>
+            </div>
+        </div>
+        <div class="ai-chat-header-actions">
+            <button type="button" class="ai-header-btn" id="aiChatClearBtn" title="Clear Conversation">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+            <button type="button" class="ai-header-btn" id="aiChatExpandBtn" title="Toggle Fullscreen">
+                <i class="fa-solid fa-expand"></i>
+            </button>
+            <button type="button" class="ai-header-btn" id="aiChatCloseBtn" title="Close Panel">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Tenant Context Ribbon -->
+    <div class="ai-tenant-ribbon">
+        <div class="d-flex align-items-center gap-1.5 text-truncate" style="max-width: 75%;">
+            <i class="fa-solid fa-building text-primary"></i>
+            <span class="text-truncate">@(CompanyContext.CurrentCompanyName ?? "All Companies (System)")</span>
+        </div>
+        <span class="ai-tenant-badge">@(CompanyContext.CurrentCompanyCode ?? "SYSTEM")</span>
+    </div>
+
+    <!-- Chat Messages Scroll Area -->
+    <div class="ai-chat-body" id="aiChatBody">
+        <div class="ai-message assistant">
+            <div class="ai-message-avatar"><i class="fa-solid fa-robot"></i></div>
+            <div class="ai-message-content">
+                <p class="m-0">
+                    Hello! I am your <strong>SmartERP Business Intelligence Assistant</strong>. Ask me questions about your company's actual ERP data:
+                </p>
+                <div class="ai-followup-chips mt-3">
+                    <button class="ai-chip" data-query="What is my total sales this month?">
+                        <i class="fa-solid fa-cart-shopping"></i> Total Sales This Month
+                    </button>
+                    <button class="ai-chip" data-query="Show my top 10 selling products">
+                        <i class="fa-solid fa-fire"></i> Top 10 Selling Products
+                    </button>
+                    <button class="ai-chip" data-query="Which products are out of stock?">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Out-of-Stock Products
+                    </button>
+                    <button class="ai-chip" data-query="Compare sales this month with last month">
+                        <i class="fa-solid fa-arrow-trend-up"></i> Compare With Last Month
+                    </button>
+                    <button class="ai-chip" data-query="Show customer outstanding balances">
+                        <i class="fa-solid fa-hand-holding-dollar"></i> Customer Dues
+                    </button>
+                    <button class="ai-chip" data-query="Show purchases by supplier">
+                        <i class="fa-solid fa-truck"></i> Purchases by Supplier
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Input Footer -->
+    <div class="ai-chat-footer">
+        @Html.AntiForgeryToken()
+        <div class="ai-chat-input-wrapper">
+            <input type="text" id="aiChatInput" class="ai-chat-input" placeholder="Ask about sales, stock, dues, purchases..." autocomplete="off" />
+            <button type="button" class="ai-chat-btn-voice" id="aiChatVoiceBtn" title="Speak question">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+            <button type="button" class="ai-chat-btn-send" id="aiChatSendBtn" title="Send (Enter)">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+        <p class="ai-footer-note">SmartERP Read-Only Intelligence · Company Data Isolated</p>
+    </div>
+</div>

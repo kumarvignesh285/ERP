@@ -1,7 +1,9 @@
-@model IEnumerable<ERP.Models.Lead>
+@model LeadsPageViewModel
 @{
     ViewData["Title"] = "Leads";
 }
+
+@Html.AntiForgeryToken()
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -26,9 +28,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if(Model != null)
+                    @if(Model?.Leads != null)
                     {
-                        foreach (var item in Model)
+                        foreach (var item in Model.Leads)
                         {
                             <tr id="row-@item.Id">
                                 <td class="fw-bold text-primary">@item.LeadName</td>
@@ -55,35 +57,42 @@
                 <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Add / Edit Lead</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveLead" method="post" id="leadForm">
+            <form asp-controller="CRM" asp-action="SaveLead" method="post" id="leadForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body p-4">
-                    <input type="hidden" name="Id" id="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark">Lead Name <span class="text-danger">*</span></label>
-                        <input type="text" name="LeadName" id="LeadName" class="form-control" required placeholder="e.g. John Doe" />
+                        <label asp-for="Form.LeadName" class="form-label fw-semibold text-dark">Lead Name <span class="text-danger">*</span></label>
+                        <input asp-for="Form.LeadName" id="LeadName" class="form-control" required placeholder="e.g. John Doe" />
+                        <span asp-validation-for="Form.LeadName" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark">Company Name</label>
-                        <input type="text" name="CompanyName" id="CompanyName" class="form-control" placeholder="e.g. Acme Corp" />
+                        <label asp-for="Form.CompanyName" class="form-label fw-semibold text-dark">Company Name</label>
+                        <input asp-for="Form.CompanyName" id="CompanyName" class="form-control" placeholder="e.g. Acme Corp" />
+                        <span asp-validation-for="Form.CompanyName" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Email</label>
-                            <input type="email" name="Email" id="Email" class="form-control" placeholder="john@example.com" />
+                            <label asp-for="Form.Email" class="form-label fw-semibold text-dark">Email</label>
+                            <input asp-for="Form.Email" type="email" id="Email" class="form-control" placeholder="john@example.com" />
+                            <span asp-validation-for="Form.Email" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Phone</label>
-                            <input type="text" name="Phone" id="Phone" class="form-control" placeholder="+91 9876543210" />
+                            <label asp-for="Form.Phone" class="form-label fw-semibold text-dark">Phone</label>
+                            <input asp-for="Form.Phone" type="text" id="Phone" class="form-control" placeholder="+91 9876543210" />
+                            <span asp-validation-for="Form.Phone" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark">Lead Status</label>
-                        <select name="Status" id="Status" class="form-select">
+                        <label asp-for="Form.Status" class="form-label fw-semibold text-dark">Lead Status</label>
+                        <select asp-for="Form.Status" id="Status" class="form-select">
                             <option value="New">New</option>
                             <option value="Contacted">Contacted</option>
                             <option value="Qualified">Qualified</option>
                             <option value="Lost">Lost</option>
                         </select>
+                        <span asp-validation-for="Form.Status" class="text-danger small mt-1 d-block"></span>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -96,6 +105,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var leadModal;
         $(function () {

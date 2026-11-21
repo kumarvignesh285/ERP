@@ -1,0 +1,117 @@
+@model UserProfileViewModel
+@{
+    ViewData["Title"] = "User Profile & Security";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-user-shield me-2"></i> User Profile & Security</h4>
+            <p class="text-muted small m-0 mt-1">Manage your personal account credentials, assigned roles, and password settings</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Account Info Card -->
+        <div class="col-12 col-lg-5">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="m-0 fw-bold text-dark"><i class="fa-solid fa-id-card me-2 text-primary"></i> Account Details</h6>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle shadow-sm mb-3" style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold;">
+                        @(string.IsNullOrEmpty(Model.FullName) ? Model.UserName[..1].ToUpper() : Model.FullName[..1].ToUpper())
+                    </div>
+                    <h5 class="fw-bold mb-1">@(string.IsNullOrEmpty(Model.FullName) ? Model.UserName : Model.FullName)</h5>
+                    <p class="text-muted small mb-3">@@@Model.UserName</p>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill fs-7 fw-semibold">
+                        <i class="fa-solid fa-shield-halved me-1"></i> @Model.Role
+                    </span>
+
+                    <hr class="my-4 text-muted opacity-25" />
+
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <label class="text-muted small fw-semibold text-uppercase">Email Address</label>
+                            <p class="m-0 fw-medium text-dark"><i class="fa-regular fa-envelope me-2 text-muted"></i> @Model.Email</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small fw-semibold text-uppercase">Mobile Contact</label>
+                            <p class="m-0 fw-medium text-dark"><i class="fa-solid fa-phone me-2 text-muted"></i> @(string.IsNullOrEmpty(Model.Mobile) ? "Not provided" : Model.Mobile)</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small fw-semibold text-uppercase">Assigned Company</label>
+                            <p class="m-0 fw-medium text-dark"><i class="fa-solid fa-building me-2 text-muted"></i> @(string.IsNullOrEmpty(Model.CompanyName) ? "Global (All Companies)" : Model.CompanyName)</p>
+                        </div>
+                        <div>
+                            <label class="text-muted small fw-semibold text-uppercase">Member Since</label>
+                            <p class="m-0 fw-medium text-dark"><i class="fa-regular fa-calendar-check me-2 text-muted"></i> @Model.CreatedAt.ToString("dd MMMM yyyy")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security & Change Password Card -->
+        <div class="col-12 col-lg-7">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="m-0 fw-bold text-dark"><i class="fa-solid fa-key me-2 text-warning"></i> Change Password</h6>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" asp-controller="Account" asp-action="ChangePassword">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label asp-for="ChangePassword.CurrentPassword" class="form-label fw-semibold small">Current Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
+                                <input asp-for="ChangePassword.CurrentPassword" type="password" class="form-control border-start-0" placeholder="Enter your current password" />
+                            </div>
+                            <span asp-validation-for="ChangePassword.CurrentPassword" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ChangePassword.NewPassword" class="form-label fw-semibold small">New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-shield-cat text-muted"></i></span>
+                                <input asp-for="ChangePassword.NewPassword" type="password" class="form-control border-start-0" placeholder="Minimum 6 characters" />
+                            </div>
+                            <span asp-validation-for="ChangePassword.NewPassword" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ChangePassword.ConfirmPassword" class="form-label fw-semibold small">Confirm New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-check-double text-muted"></i></span>
+                                <input asp-for="ChangePassword.ConfirmPassword" type="password" class="form-control border-start-0" placeholder="Re-enter new password" />
+                            </div>
+                            <span asp-validation-for="ChangePassword.ConfirmPassword" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary px-4 py-2">
+                                <i class="fa-solid fa-floppy-disk me-2"></i> Update Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

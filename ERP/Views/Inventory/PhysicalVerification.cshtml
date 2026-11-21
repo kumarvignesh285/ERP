@@ -3,6 +3,8 @@
     ViewData["Title"] = "Physical Stock Verification";
 }
 
+@Html.AntiForgeryToken()
+
 <div id="listView">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-list-check me-2"></i> Physical Stock Verifications</h4>
@@ -52,19 +54,19 @@
 
     <div class="card">
         <div class="card-body">
-            <form id="verificationForm">
+            <form asp-controller="Inventory" asp-action="SavePhysicalVerification" method="post" id="verificationForm">
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label class="form-label font-weight-semibold">Verification Number *</label>
-                        <input type="text" id="VerificationNumber" class="form-control" required />
+                        <label asp-for="Form!.VerificationNumber" class="form-label font-weight-semibold">Verification Number *</label>
+                        <input type="text" asp-for="Form!.VerificationNumber" id="VerificationNumber" class="form-control" required />
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label font-weight-semibold">Verification Date *</label>
-                        <input type="date" id="VerificationDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        <label asp-for="Form!.VerificationDate" class="form-label font-weight-semibold">Verification Date *</label>
+                        <input type="date" asp-for="Form!.VerificationDate" id="VerificationDate" class="form-control" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label font-weight-semibold">Warehouse *</label>
-                        <select id="WarehouseId" class="form-select select2" required>
+                        <label asp-for="Form!.WarehouseId" class="form-label font-weight-semibold">Warehouse *</label>
+                        <select asp-for="Form!.WarehouseId" id="WarehouseId" class="form-select select2" required>
                             <option value="">Select Warehouse</option>
                             @foreach (var wh in Model.Warehouses)
                             {
@@ -97,12 +99,12 @@
                 </div>
 
                 <div class="mb-4">
-                    <button type="button" class="btn btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Product</button>
+                    <button type="button" class="btn btn-add-line-item shadow-xs" onclick="addRow()"><i class="fa-solid fa-plus"></i> Add Product Line</button>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label font-weight-semibold">Remarks / Notes</label>
-                    <textarea id="Remarks" class="form-control" rows="2"></textarea>
+                    <label asp-for="Form!.Remarks" class="form-label font-weight-semibold">Remarks / Notes</label>
+                    <textarea asp-for="Form!.Remarks" id="Remarks" class="form-control" rows="2"></textarea>
                 </div>
 
                 <div class="text-end">
@@ -115,6 +117,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var productsList = @Json.Serialize(Model.ProductLookups);
         if (productsList) {
@@ -190,7 +193,7 @@
                         <input type="number" class="form-control variance-input" value="0" readonly />
                     </td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
+                        <button type="button" class="btn btn-delete-row" onclick="removeRow(this)" title="Delete Row"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
@@ -199,6 +202,7 @@
             window.initializeSelect2($row.find('.select2-row'));
             window.initializeSelect2($row.find('.select2-category'));
         }
+        window.addRow = addRow;
 
         function removeRow(btn) {
             $(btn).closest('tr').remove();

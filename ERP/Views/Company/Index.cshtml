@@ -209,7 +209,7 @@
                                         </button>
                                         @if (item.IsActive)
                                         {
-                                            <form action="/Company/SwitchCompany" method="post" class="d-inline">
+                                            <form asp-controller="Company" asp-action="SwitchCompany" method="post" class="d-inline">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="companyId" value="@item.Id" />
                                                 <input type="hidden" name="returnUrl" value="/Company" />

@@ -76,6 +76,7 @@
     {
         new MenuSection("Reports", "fa-chart-line", "/Reports", new[] { "Super Admin", "Admin", "Manager", "Accountant" }, new[]
         {
+            new MenuLink("AI BI Assistant", "/AIChat", "AI"),
             new MenuLink("Sales Reports", "/Reports/SalesReports"),
             new MenuLink("Purchase Reports", "/Reports/PurchaseReports"),
             new MenuLink("Inventory Reports", "/Reports/InventoryReports"),
@@ -215,7 +216,9 @@
         </li>
 
         <li class="menu-item mt-4">
-            <form method="post" action="/Account/Logout" id="sidebarLogoutForm" class="d-none"></form>
+            <form method="post" asp-controller="Account" asp-action="Logout" id="sidebarLogoutForm" class="d-none">
+                @Html.AntiForgeryToken()
+            </form>
             <a href="javascript:document.getElementById('sidebarLogoutForm').submit();" class="text-danger logout-menu-link" title="Logout">
                 <i class="fa-solid fa-right-from-bracket text-danger"></i>
                 <span class="menu-label">Logout</span>

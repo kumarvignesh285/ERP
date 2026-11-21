@@ -64,6 +64,7 @@ public sealed class SalesPageViewModel<TItem>
     public List<ProductLookupViewModel> ProductLookups { get; set; } = new();
     public List<Warehouse> Warehouses { get; set; } = new();
     public List<Category> Categories { get; set; } = new();
+    public TItem? Form { get; set; }
 }
 
 public sealed class PurchasePageViewModel<TItem>
@@ -73,6 +74,7 @@ public sealed class PurchasePageViewModel<TItem>
     public List<ProductLookupViewModel> ProductLookups { get; set; } = new();
     public List<Warehouse> Warehouses { get; set; } = new();
     public List<Category> Categories { get; set; } = new();
+    public TItem? Form { get; set; }
 }
 
 public sealed class InventoryPageViewModel<TItem>
@@ -81,6 +83,7 @@ public sealed class InventoryPageViewModel<TItem>
     public List<ProductLookupViewModel> ProductLookups { get; set; } = new();
     public List<Warehouse> Warehouses { get; set; } = new();
     public List<Category> Categories { get; set; } = new();
+    public TItem? Form { get; set; }
 }
 
 public sealed class ProductPageViewModel
@@ -91,24 +94,28 @@ public sealed class ProductPageViewModel
     public List<Unit> Units { get; set; } = new();
     public List<Warehouse> Warehouses { get; set; } = new();
     public List<ProductEditLookupViewModel> ProductEditLookups { get; set; } = new();
+    public ProductInputModel Form { get; set; } = new();
 }
 
 public sealed class LedgerPageViewModel
 {
     public List<Ledger> Ledgers { get; set; } = new();
     public List<AccountGroup> AccountGroups { get; set; } = new();
+    public LedgerInputModel Form { get; set; } = new();
 }
 
 public sealed class BankPageViewModel
 {
     public List<Bank> Banks { get; set; } = new();
     public List<Ledger> Ledgers { get; set; } = new();
+    public BankInputModel Form { get; set; } = new();
 }
 
 public sealed class VoucherPageViewModel
 {
     public List<Voucher> Vouchers { get; set; } = new();
     public List<LedgerLookupViewModel> LedgerLookups { get; set; } = new();
+    public Voucher Form { get; set; } = new();
 }
 
 public sealed class BookPageViewModel
@@ -149,6 +156,23 @@ public sealed class HomeDashboardViewModel
     public List<Notification> SystemAlerts { get; set; } = new();
 }
 
+public sealed class UserInputModel
+{
+    public string? Id { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? Mobile { get; set; }
+    public int? CompanyId { get; set; }
+    public string Role { get; set; } = string.Empty;
+    public string? Password { get; set; }
+}
+
+public sealed class RoleInputModel
+{
+    public string? Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
+
 public sealed class UsersPageViewModel
 {
     public List<AppUser> Users { get; set; } = new();
@@ -162,6 +186,7 @@ public sealed class UsersPageViewModel
     public string? SelectedRoleFilter { get; set; }
     public string? SelectedStatusFilter { get; set; }
     public string? SearchTerm { get; set; }
+    public UserInputModel Form { get; set; } = new();
 }
 
 public sealed class RolesPageViewModel
@@ -169,6 +194,7 @@ public sealed class RolesPageViewModel
     public List<Microsoft.AspNetCore.Identity.IdentityRole> Roles { get; set; } = new();
     public Dictionary<string, int> UserCounts { get; set; } = new();
     public bool IsSuperAdmin { get; set; }
+    public RoleInputModel Form { get; set; } = new();
 }
 
 public sealed class UserPermissionsPageViewModel
@@ -179,13 +205,16 @@ public sealed class UserPermissionsPageViewModel
     public bool IsSuperAdmin { get; set; }
 }
 
+public sealed class LeadsPageViewModel
+{
+    public List<Lead> Leads { get; set; } = new();
+    public Lead Form { get; set; } = new();
+}
+
 public sealed class CrmLookupPageViewModel<TItem>
 {
     public List<TItem> Items { get; set; } = new();
     public List<Lead> Leads { get; set; } = new();
+    public TItem? Form { get; set; }
 }
 
-public sealed class LoginViewModel
-{
-    public string ReturnUrl { get; set; } = "~/";
-}

@@ -3,6 +3,8 @@
     ViewData["Title"] = "Sales Return";
 }
 
+@Html.AntiForgeryToken()
+
 <div id="listView">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -98,42 +100,48 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-body p-4">
-            <form id="returnForm">
-                <input type="hidden" id="Id" name="Id" value="0" />
+            <form asp-controller="Sales" asp-action="SaveReturn" method="post" id="returnForm">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                <input type="hidden" asp-for="Form!.Id" id="Id" value="0" />
                 
                 <div class="row g-3 mb-4">
                     <div class="col-12 col-sm-6 col-md-3">
-                        <label class="form-label fw-semibold text-dark">Return Number <span class="text-danger">*</span></label>
+                        <label asp-for="Form!.ReturnNumber" class="form-label fw-semibold text-dark">Return Number <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-hashtag text-muted"></i></span>
-                            <input type="text" id="ReturnNumber" class="form-control border-start-0 fw-bold" required readonly />
+                            <input asp-for="Form!.ReturnNumber" id="ReturnNumber" class="form-control border-start-0 fw-bold" required readonly />
                         </div>
+                        <span asp-validation-for="Form!.ReturnNumber" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="col-12 col-sm-6 col-md-3">
-                        <label class="form-label fw-semibold text-dark">Return Date <span class="text-danger">*</span></label>
+                        <label asp-for="Form!.ReturnDate" class="form-label fw-semibold text-dark">Return Date <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-calendar text-muted"></i></span>
-                            <input type="date" id="ReturnDate" class="form-control border-start-0" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <input asp-for="Form!.ReturnDate" type="date" id="ReturnDate" class="form-control border-start-0" required />
                         </div>
+                        <span asp-validation-for="Form!.ReturnDate" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="col-12 col-sm-6 col-md-3">
-                        <label class="form-label fw-semibold text-dark">Customer <span class="text-danger">*</span></label>
-                        <select id="CustomerId" class="form-select select2" required>
+                        <label asp-for="Form!.CustomerId" class="form-label fw-semibold text-dark">Customer <span class="text-danger">*</span></label>
+                        <select asp-for="Form!.CustomerId" id="CustomerId" class="form-select select2" required>
                             <option value="">Select Customer</option>
                             @foreach (var c in Model.Customers)
                             {
                                 <option value="@c.Id">@c.CustomerName (@c.CustomerCode)</option>
                             }
                         </select>
+                        <span asp-validation-for="Form!.CustomerId" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="col-12 col-sm-6 col-md-3">
-                        <label class="form-label fw-semibold text-dark">Status <span class="text-danger">*</span></label>
-                        <select id="Status" class="form-select" required>
+                        <label asp-for="Form!.Status" class="form-label fw-semibold text-dark">Status <span class="text-danger">*</span></label>
+                        <select asp-for="Form!.Status" id="Status" class="form-select" required>
                             <option value="Draft">Draft</option>
                             <option value="Pending">Pending</option>
                             <option value="Completed">Completed</option>
                             <option value="Cancelled">Cancelled</option>
                         </select>
+                        <span asp-validation-for="Form!.Status" class="text-danger small mt-1 d-block"></span>
                     </div>
                 </div>
 
@@ -141,7 +149,7 @@
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="m-0 fw-bold text-dark"><i class="fa-solid fa-list-check me-2 text-primary"></i> Line Items</h5>
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Item Row</button>
+                    <button type="button" class="btn btn-add-line-item shadow-xs" onclick="addRow()"><i class="fa-solid fa-plus"></i> Add Line Item</button>
                 </div>
 
                 <div class="table-responsive mb-4">
@@ -165,8 +173,9 @@
 
                 <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
                     <div class="flex-grow-1 w-100" style="max-width: 500px;">
-                        <label class="form-label fw-semibold text-dark">Notes / Return Reason</label>
-                        <textarea id="Notes" class="form-control" rows="3" placeholder="Reason for sales return..."></textarea>
+                        <label asp-for="Form!.Notes" class="form-label fw-semibold text-dark">Notes / Return Reason</label>
+                        <textarea asp-for="Form!.Notes" id="Notes" class="form-control" rows="3" placeholder="Reason for sales return..."></textarea>
+                        <span asp-validation-for="Form!.Notes" class="text-danger small mt-1 d-block"></span>
                     </div>
                     
                     <div class="summary-calc-card text-end ms-auto shadow-sm">
@@ -196,6 +205,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var productsList = @Json.Serialize(Model.ProductLookups);
         if (productsList) {
@@ -231,7 +241,7 @@
             $('#listView').show();
         }
 
-        function addRow() {
+        function addRow(existingItem) {
             var catOptionsHtml = '<option value="">All Categories</option>';
             var categoriesList = @Json.Serialize(Model.Categories.Select(c => new { id = c.Id, categoryName = c.CategoryName }));
             if (categoriesList) {
@@ -272,7 +282,7 @@
                         <input type="text" class="form-control total-input" value="0.00" readonly />
                     </td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
+                        <button type="button" class="btn btn-delete-row" onclick="removeRow(this)" title="Delete Row"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
@@ -295,6 +305,7 @@
                 $row.find('.total-input').val((existingItem.quantity * existingItem.rate).toFixed(2));
             }
         }
+        window.addRow = addRow;
 
         function removeRow(btn) {
             $(btn).closest('tr').remove();

@@ -2034,6 +2034,329 @@ body.sidebar-open .sidebar-backdrop {
     border-radius: 4px;
 }
 
+/* ==========================================================================
+   HIGH-DENSITY PROFESSIONAL LINE ITEMS GRID (ERP)
+   ========================================================================== */
+#itemsTable {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid #e2e8f0 !important;
+    margin-bottom: 0.75rem !important;
+    font-size: 0.8125rem !important;
+}
+
+#itemsTable thead th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 7px 10px !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    border-top: none !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+}
+
+#itemsTable tbody tr td {
+    padding: 5px 8px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    background: #ffffff;
+    transition: background 0.15s ease;
+}
+
+#itemsTable tbody tr:hover td {
+    background: #fbfcfe;
+}
+
+#itemsTable tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Compact inputs in line items */
+#itemsTable .form-control,
+#itemsTable .form-select {
+    min-height: 32px !important;
+    height: 32px !important;
+    padding: 2px 8px !important;
+    font-size: 0.8125rem !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    line-height: 1.4 !important;
+    background-color: #ffffff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#itemsTable .form-control:focus,
+#itemsTable .form-select:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12) !important;
+    outline: none !important;
+}
+
+/* Select2 inside itemsTable */
+#itemsTable .select2-container .select2-selection--single {
+    height: 32px !important;
+    min-height: 32px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    background-color: #ffffff !important;
+}
+
+#itemsTable .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 30px !important;
+    font-size: 0.8125rem !important;
+    padding-left: 8px !important;
+    padding-right: 24px !important;
+    color: #0f172a !important;
+    font-weight: 500 !important;
+}
+
+#itemsTable .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 30px !important;
+    top: 1px !important;
+    right: 6px !important;
+}
+
+/* Product detail helper badges - sleek inline strip */
+.product-details-helper {
+    margin-top: 2px !important;
+    gap: 4px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+}
+
+.product-details-helper .badge {
+    font-size: 0.65rem !important;
+    padding: 1px 5px !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+    letter-spacing: 0.02em !important;
+    line-height: 1.2 !important;
+}
+
+/* Number inputs alignment */
+#itemsTable .qty-input {
+    text-align: center !important;
+    font-weight: 600 !important;
+    max-width: 90px;
+}
+
+#itemsTable .rate-input,
+#itemsTable .gst-input {
+    text-align: right !important;
+}
+
+#itemsTable .total-input {
+    text-align: right !important;
+    font-weight: 700 !important;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #e2e8f0 !important;
+}
+
+/* Sleek delete button */
+#itemsTable .btn-delete-row,
+#itemsTable .btn-outline-danger {
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 6px !important;
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    background: transparent !important;
+    font-size: 0.75rem !important;
+    transition: all 0.15s ease !important;
+}
+
+#itemsTable .btn-delete-row:hover,
+#itemsTable .btn-outline-danger:hover {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    border-color: #dc2626 !important;
+    transform: scale(1.05);
+}
+
+/* Row merge pulse animation */
+@keyframes rowMergedPulse {
+    0% { background-color: rgba(254, 240, 138, 0.7) !important; transform: scale(1.005); }
+    50% { background-color: rgba(254, 240, 138, 0.35) !important; }
+    100% { background-color: transparent; transform: scale(1); }
+}
+
+.row-merged-pulse {
+    animation: rowMergedPulse 1.4s ease-out !important;
+}
+
+/* Action row: Add Item & Summary Card flex layout fix */
+.line-items-actions-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.btn-add-line-item {
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    padding: 6px 14px !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    border: 1.5px dashed #2563eb !important;
+    color: #2563eb !important;
+    background: rgba(37, 99, 235, 0.04) !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+}
+
+.btn-add-line-item:hover {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-style: solid !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Summary Card Polish */
+.summary-calc-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 12px 18px !important;
+    min-width: 280px !important;
+    max-width: 340px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* ==========================================================================
+   HIGH-DENSITY PROFESSIONAL MASTER FORMS & MODALS (ALL PAGES)
+   Eliminates excess whitespace, bloated heights, and oversized inputs
+   ========================================================================== */
+.modal-content {
+    border-radius: 10px !important;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 0.75rem 1.25rem !important;
+}
+
+.modal-header .modal-title {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+}
+
+.modal-body {
+    padding: 1rem 1.25rem !important;
+}
+
+.modal-footer {
+    padding: 0.65rem 1.25rem !important;
+    background: #f8fafc !important;
+}
+
+/* Compact form fields in all modals & cards */
+.modal-body .form-label,
+#formView .form-label {
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.25rem !important;
+    color: #334155 !important;
+}
+
+.modal-body .form-control,
+.modal-body .form-select,
+.modal-body .input-group-text,
+#formView .card-body .form-control:not(textarea),
+#formView .card-body .form-select {
+    min-height: 34px !important;
+    height: 34px !important;
+    font-size: 0.8125rem !important;
+    padding: 3px 10px !important;
+    border-radius: 6px !important;
+}
+
+.modal-body .input-group-text {
+    background-color: #f8fafc !important;
+    color: #64748b !important;
+    border-color: #cbd5e1 !important;
+    font-size: 0.8rem !important;
+    padding: 0 10px !important;
+}
+
+/* Compact Select2 in modals and form cards */
+.modal-body .select2-container .select2-selection--single,
+#formView .select2-container .select2-selection--single {
+    min-height: 34px !important;
+    height: 34px !important;
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.modal-body .select2-container--default .select2-selection--single .select2-selection__rendered,
+#formView .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 32px !important;
+    font-size: 0.8125rem !important;
+    padding-left: 10px !important;
+}
+
+.modal-body .select2-container--default .select2-selection--single .select2-selection__arrow,
+#formView .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 32px !important;
+}
+
+/* Modal row spacing */
+.modal-body .row.g-3 {
+    --bs-gutter-y: 0.65rem !important;
+    --bs-gutter-x: 0.75rem !important;
+}
+
+.modal-body .mb-3 {
+    margin-bottom: 0.65rem !important;
+}
+
+/* High-Density Verification Table (Bulk Import Product/PO Workspace) */
+#verificationTable {
+    font-size: 0.8125rem !important;
+}
+
+#verificationTable thead th {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    font-size: 0.72rem !important;
+    padding: 6px 8px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+}
+
+#verificationTable tbody td {
+    padding: 4px 6px !important;
+    vertical-align: middle !important;
+}
+
+#verificationTable .form-control,
+#verificationTable .form-select {
+    min-height: 30px !important;
+    height: 30px !important;
+    font-size: 0.8rem !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+}
+
 
 
 

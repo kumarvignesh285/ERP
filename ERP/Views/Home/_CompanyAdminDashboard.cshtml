@@ -22,7 +22,7 @@
             
             <div class="col-12 col-lg-5 text-lg-end d-flex flex-column flex-sm-row gap-2 justify-content-lg-end align-items-sm-center">
                 <!-- Date Filter Selector Form -->
-                <form method="get" action="/Home/Index" class="d-flex gap-2 align-items-center" id="periodFilterForm">
+                <form method="get" asp-controller="Home" asp-action="Index" class="d-flex gap-2 align-items-center" id="periodFilterForm">
                     <select name="Period" class="form-select form-select-sm bg-white text-dark fw-semibold" onchange="this.form.submit()" style="min-width: 140px;">
                         <option value="Today" selected="@(m.Filter.Period == "Today")">Today</option>
                         <option value="Yesterday" selected="@(m.Filter.Period == "Yesterday")">Yesterday</option>

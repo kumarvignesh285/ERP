@@ -1,7 +1,9 @@
-@model IEnumerable<ERP.Models.Category>
+@model CategoryPageViewModel
 @{
     ViewData["Title"] = "Category Master";
 }
+
+@Html.AntiForgeryToken()
 
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -27,7 +29,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var c in Model)
+                    @foreach (var c in Model.Categories)
                     {
                         <tr id="row-@c.Id">
                             <td class="fw-bold text-muted">#@c.Id</td>
@@ -54,15 +56,18 @@
                 <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-layer-group me-2"></i> Add Category</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveCategory" method="post" id="categoryForm">
+            <form asp-controller="Masters" asp-action="SaveCategory" method="post" id="categoryForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body p-4">
-                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark">Category Name <span class="text-danger">*</span></label>
+                        <label asp-for="Form.CategoryName" class="form-label fw-semibold text-dark">Category Name <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
-                            <input type="text" id="CategoryName" name="CategoryName" class="form-control border-start-0" placeholder="e.g. Power Tools, Fasteners..." required />
+                            <input asp-for="Form.CategoryName" id="CategoryName" class="form-control border-start-0" placeholder="e.g. Power Tools, Fasteners..." required />
                         </div>
+                        <span asp-validation-for="Form.CategoryName" class="text-danger small mt-1 d-block"></span>
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-top py-2 px-4">
@@ -75,6 +80,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var bootstrapModal;
         $(function () {

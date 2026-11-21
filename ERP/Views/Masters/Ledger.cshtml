@@ -3,6 +3,8 @@
     ViewData["Title"] = "Ledger Master";
 }
 
+@Html.AntiForgeryToken()
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-book-bookmark me-2"></i> Ledgers List</h4>
     <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> Add Ledger</button>
@@ -84,42 +86,49 @@
                 <h5 class="modal-title" id="modalTitle">Add Ledger</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form asp-action="SaveLedger" method="post" id="ledgerForm">
+            <form asp-controller="Masters" asp-action="SaveLedger" method="post" id="ledgerForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body">
-                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Ledger Code *</label>
-                            <input type="text" id="LedgerCode" name="LedgerCode" class="form-control" required />
+                            <label asp-for="Form.LedgerCode" class="form-label font-weight-semibold">Ledger Code *</label>
+                            <input asp-for="Form.LedgerCode" id="LedgerCode" class="form-control" required />
+                            <span asp-validation-for="Form.LedgerCode" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Ledger Name *</label>
-                            <input type="text" id="LedgerName" name="LedgerName" class="form-control" required />
+                            <label asp-for="Form.LedgerName" class="form-label font-weight-semibold">Ledger Name *</label>
+                            <input asp-for="Form.LedgerName" id="LedgerName" class="form-control" required />
+                            <span asp-validation-for="Form.LedgerName" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-semibold">Account Group *</label>
-                            <select id="AccountGroupId" name="AccountGroupId" class="form-select select2" required>
+                            <label asp-for="Form.AccountGroupId" class="form-label font-weight-semibold">Account Group *</label>
+                            <select asp-for="Form.AccountGroupId" id="AccountGroupId" class="form-select select2" required>
                                 <option value="">Select Group</option>
                                 @foreach (var grp in Model.AccountGroups)
                                 {
                                     <option value="@grp.Id">@grp.GroupName (@grp.GroupType)</option>
                                 }
                             </select>
+                            <span asp-validation-for="Form.AccountGroupId" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="row">
                                 <div class="col-md-8">
-                                    <label class="form-label font-weight-semibold">Opening Balance</label>
-                                    <input type="number" id="OpeningBalance" name="OpeningBalance" class="form-control" value="0" step="0.01" />
+                                    <label asp-for="Form.OpeningBalance" class="form-label font-weight-semibold">Opening Balance</label>
+                                    <input asp-for="Form.OpeningBalance" id="OpeningBalance" class="form-control" value="0" step="0.01" />
+                                    <span asp-validation-for="Form.OpeningBalance" class="text-danger small mt-1 d-block"></span>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label font-weight-semibold">Dr/Cr</label>
-                                    <select id="BalanceType" name="BalanceType" class="form-select">
-                                        <option value="Dr">Dr</option>
-                                        <option value="Cr">Cr</option>
+                                    <label asp-for="Form.BalanceType" class="form-label font-weight-semibold">Dr/Cr</label>
+                                    <select asp-for="Form.BalanceType" id="BalanceType" class="form-select">
+                                        <option value="Debit">Dr</option>
+                                        <option value="Credit">Cr</option>
                                     </select>
+                                    <span asp-validation-for="Form.BalanceType" class="text-danger small mt-1 d-block"></span>
                                 </div>
                             </div>
                         </div>
@@ -135,6 +144,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var bootstrapModal;
         $(function () {

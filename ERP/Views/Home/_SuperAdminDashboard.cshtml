@@ -238,7 +238,7 @@
                                 }
                             </td>
                             <td class="text-center">
-                                <form method="post" action="/Company/SwitchCompany" class="d-inline">
+                                <form method="post" asp-controller="Company" asp-action="SwitchCompany" class="d-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="companyId" value="@c.CompanyId" />
                                     <input type="hidden" name="returnUrl" value="/" />

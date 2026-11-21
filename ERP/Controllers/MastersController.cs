@@ -40,7 +40,7 @@ public class MastersController : Controller
     }
 
     [HttpPost("Company")]
-    public async Task<IActionResult> SaveCompany(Company company)
+    public async Task<IActionResult> SaveCompany([FromForm] Company company)
     {
         if (!ModelState.IsValid)
         {
@@ -71,12 +71,13 @@ public class MastersController : Controller
     public async Task<IActionResult> Customer()
     {
         var list = await _masterService.GetCustomersAsync();
-        return View(list);
+        return View(new CustomerPageViewModel { Customers = list });
     }
 
     [HttpPost("SaveCustomer")]
-    public async Task<IActionResult> SaveCustomer(Customer customer)
+    public async Task<IActionResult> SaveCustomer([FromForm] CustomerInputModel? model, [FromForm] CustomerInputModel? form)
     {
+        var input = model?.CustomerCode != null ? model : (form ?? model ?? new CustomerInputModel());
         if (!ModelState.IsValid)
         {
             if (IsAjaxRequest())
@@ -87,6 +88,23 @@ public class MastersController : Controller
 
         try
         {
+            var customer = new Customer
+            {
+                Id = input.Id,
+                CustomerCode = input.CustomerCode,
+                CustomerName = input.CustomerName,
+                ContactPerson = input.ContactPerson,
+                MobileNumber = input.MobileNumber,
+                Email = input.Email,
+                GSTNumber = input.GSTNumber,
+                Address = input.Address,
+                City = input.City,
+                State = input.State,
+                CreditLimit = input.CreditLimit,
+                OpeningBalance = input.OpeningBalance,
+                BalanceType = input.BalanceType,
+                IsActive = input.IsActive
+            };
             var saved = await _masterService.SaveCustomerAsync(customer);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Customer saved successfully.", saved));
@@ -114,12 +132,13 @@ public class MastersController : Controller
     public async Task<IActionResult> Supplier()
     {
         var list = await _masterService.GetSuppliersAsync();
-        return View(list);
+        return View(new SupplierPageViewModel { Suppliers = list });
     }
 
     [HttpPost("SaveSupplier")]
-    public async Task<IActionResult> SaveSupplier(Supplier supplier)
+    public async Task<IActionResult> SaveSupplier([FromForm] SupplierInputModel? model, [FromForm] SupplierInputModel? form)
     {
+        var input = model?.SupplierCode != null ? model : (form ?? model ?? new SupplierInputModel());
         if (!ModelState.IsValid)
         {
             if (IsAjaxRequest())
@@ -130,6 +149,22 @@ public class MastersController : Controller
 
         try
         {
+            var supplier = new Supplier
+            {
+                Id = input.Id,
+                SupplierCode = input.SupplierCode,
+                SupplierName = input.SupplierName,
+                ContactPerson = input.ContactPerson,
+                Mobile = input.Mobile,
+                Email = input.Email,
+                GSTNumber = input.GSTNumber,
+                Address = input.Address,
+                City = input.City,
+                State = input.State,
+                OpeningBalance = input.OpeningBalance,
+                BalanceType = input.BalanceType,
+                IsActive = input.IsActive
+            };
             var saved = await _masterService.SaveSupplierAsync(supplier);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Supplier saved successfully.", saved));
@@ -191,19 +226,29 @@ public class MastersController : Controller
     }
 
     [HttpPost("SaveProduct")]
-    public async Task<IActionResult> SaveProduct(Product product, IFormFile? pdfDocument)
+    public async Task<IActionResult> SaveProduct([FromForm] ProductInputModel? model, [FromForm] ProductInputModel? form, IFormFile? pdfDocument)
     {
+        var input = model?.ProductCode != null ? model : (form ?? model ?? new ProductInputModel());
         if (pdfDocument != null && pdfDocument.Length > 0)
         {
+            var ext = Path.GetExtension(pdfDocument.FileName).ToLowerInvariant();
+            if (ext != ".pdf")
+            {
+                if (IsAjaxRequest())
+                    return Json(ApiResponse.Fail("Only PDF documents (.pdf) are allowed for product attachment."));
+                TempData["Error"] = "Only PDF documents (.pdf) are allowed.";
+                return RedirectToAction(nameof(Product));
+            }
+
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents", "Products");
             if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-            var uniqueFileName = Guid.NewGuid().ToString() + "_" + pdfDocument.FileName;
+            var uniqueFileName = Guid.NewGuid().ToString("N") + "_" + Path.GetFileName(pdfDocument.FileName);
             var filePath = Path.Combine(uploadsFolder, uniqueFileName);
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 await pdfDocument.CopyToAsync(fileStream);
             }
-            product.DocumentPath = "/uploads/documents/Products/" + uniqueFileName;
+            input.DocumentPath = "/uploads/documents/Products/" + uniqueFileName;
         }
 
         if (!ModelState.IsValid)
@@ -216,6 +261,27 @@ public class MastersController : Controller
 
         try
         {
+            var product = new Product
+            {
+                Id = input.Id,
+                ProductCode = input.ProductCode,
+                ProductName = input.ProductName,
+                CategoryId = input.CategoryId,
+                BrandId = input.BrandId,
+                UnitId = input.UnitId,
+                WarehouseId = input.WarehouseId,
+                HSNCode = input.HSNCode,
+                Barcode = input.Barcode,
+                PurchasePrice = input.PurchasePrice,
+                SalesPrice = input.SalesPrice,
+                MRP = input.MRP,
+                GSTPercentage = input.GSTPercentage,
+                MinimumStock = input.MinimumStock,
+                ReorderLevel = input.ReorderLevel,
+                Description = input.Description,
+                DocumentPath = input.DocumentPath,
+                IsActive = input.IsActive
+            };
             var saved = await _masterService.SaveProductAsync(product);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Product saved successfully.", saved));
@@ -407,21 +473,33 @@ public class MastersController : Controller
     public async Task<IActionResult> Category()
     {
         var list = await _masterService.GetCategoriesAsync();
-        return View(list);
+        return View(new CategoryPageViewModel { Categories = list });
     }
 
     [HttpPost("SaveCategory")]
-    public async Task<IActionResult> SaveCategory(Category category)
+    public async Task<IActionResult> SaveCategory([FromForm] CategoryInputModel? model, [FromForm] CategoryInputModel? form, [FromForm] Category? legacyCategory)
     {
-        if (!ModelState.IsValid)
+        var input = model?.CategoryName != null ? model : (form ?? model);
+        var categoryName = input?.CategoryName ?? legacyCategory?.CategoryName ?? string.Empty;
+        var id = input?.Id ?? legacyCategory?.Id ?? 0;
+        var description = input?.Description ?? legacyCategory?.Description;
+
+        if (string.IsNullOrWhiteSpace(categoryName))
         {
             if (IsAjaxRequest())
-                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+                return Json(ApiResponse.Fail("Category name is required."));
+            TempData["Error"] = "Category name is required.";
             return RedirectToAction(nameof(Category));
         }
 
         try
         {
+            var category = new Category
+            {
+                Id = id,
+                CategoryName = categoryName,
+                Description = description
+            };
             var saved = await _masterService.SaveCategoryAsync(category);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Category saved successfully.", saved));
@@ -449,21 +527,33 @@ public class MastersController : Controller
     public async Task<IActionResult> Brand()
     {
         var list = await _masterService.GetBrandsAsync();
-        return View(list);
+        return View(new BrandPageViewModel { Brands = list });
     }
 
     [HttpPost("SaveBrand")]
-    public async Task<IActionResult> SaveBrand(Brand brand)
+    public async Task<IActionResult> SaveBrand([FromForm] BrandInputModel? model, [FromForm] BrandInputModel? form, [FromForm] Brand? legacyBrand)
     {
-        if (!ModelState.IsValid)
+        var input = model?.BrandName != null ? model : (form ?? model);
+        var brandName = input?.BrandName ?? legacyBrand?.BrandName ?? string.Empty;
+        var id = input?.Id ?? legacyBrand?.Id ?? 0;
+        var description = input?.Description ?? legacyBrand?.Description;
+
+        if (string.IsNullOrWhiteSpace(brandName))
         {
             if (IsAjaxRequest())
-                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+                return Json(ApiResponse.Fail("Brand name is required."));
+            TempData["Error"] = "Brand name is required.";
             return RedirectToAction(nameof(Brand));
         }
 
         try
         {
+            var brand = new Brand
+            {
+                Id = id,
+                BrandName = brandName,
+                Description = description
+            };
             var saved = await _masterService.SaveBrandAsync(brand);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Brand saved successfully.", saved));
@@ -491,21 +581,35 @@ public class MastersController : Controller
     public async Task<IActionResult> Unit()
     {
         var list = await _masterService.GetUnitsAsync();
-        return View(list);
+        return View(new UnitPageViewModel { Units = list });
     }
 
     [HttpPost("SaveUnit")]
-    public async Task<IActionResult> SaveUnit(Unit unit)
+    public async Task<IActionResult> SaveUnit([FromForm] UnitInputModel? model, [FromForm] UnitInputModel? form, [FromForm] Unit? legacyUnit)
     {
-        if (!ModelState.IsValid)
+        var input = model?.UnitName != null ? model : (form ?? model);
+        var unitName = input?.UnitName ?? legacyUnit?.UnitName ?? string.Empty;
+        var unitSymbol = input?.UnitSymbol ?? legacyUnit?.UnitSymbol ?? string.Empty;
+        var id = input?.Id ?? legacyUnit?.Id ?? 0;
+        var description = input?.Description ?? legacyUnit?.Description;
+
+        if (string.IsNullOrWhiteSpace(unitName))
         {
             if (IsAjaxRequest())
-                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+                return Json(ApiResponse.Fail("Unit name is required."));
+            TempData["Error"] = "Unit name is required.";
             return RedirectToAction(nameof(Unit));
         }
 
         try
         {
+            var unit = new Unit
+            {
+                Id = id,
+                UnitName = unitName,
+                UnitSymbol = unitSymbol,
+                Description = description
+            };
             var saved = await _masterService.SaveUnitAsync(unit);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Unit saved successfully.", saved));
@@ -533,12 +637,13 @@ public class MastersController : Controller
     public async Task<IActionResult> Warehouse()
     {
         var list = await _masterService.GetWarehousesAsync();
-        return View(list);
+        return View(new WarehousePageViewModel { Warehouses = list });
     }
 
     [HttpPost("SaveWarehouse")]
-    public async Task<IActionResult> SaveWarehouse(Warehouse warehouse)
+    public async Task<IActionResult> SaveWarehouse([FromForm] WarehouseInputModel? model, [FromForm] WarehouseInputModel? form)
     {
+        var input = model?.WarehouseCode != null ? model : (form ?? model ?? new WarehouseInputModel());
         if (!ModelState.IsValid)
         {
             if (IsAjaxRequest())
@@ -548,6 +653,17 @@ public class MastersController : Controller
 
         try
         {
+            var warehouse = new Warehouse
+            {
+                Id = input.Id,
+                WarehouseCode = input.WarehouseCode,
+                WarehouseName = input.WarehouseName,
+                Address = input.Address,
+                City = input.City,
+                State = input.State,
+                Phone = input.Phone,
+                IsActive = input.IsActive
+            };
             var saved = await _masterService.SaveWarehouseAsync(warehouse);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Warehouse saved successfully.", saved));
@@ -575,21 +691,37 @@ public class MastersController : Controller
     public async Task<IActionResult> Employee()
     {
         var list = await _masterService.GetEmployeesAsync();
-        return View(list);
+        return View(new EmployeePageViewModel { Employees = list });
     }
 
     [HttpPost("SaveEmployee")]
-    public async Task<IActionResult> SaveEmployee(Employee employee)
+    public async Task<IActionResult> SaveEmployee([FromForm] EmployeeInputModel? model, [FromForm] EmployeeInputModel? form, [FromForm] Employee? legacyEmployee)
     {
-        if (!ModelState.IsValid)
+        var input = model?.EmployeeCode != null ? model : (form ?? model);
+        var employeeCode = input?.EmployeeCode ?? legacyEmployee?.EmployeeCode ?? string.Empty;
+        var employeeName = input?.EmployeeName ?? legacyEmployee?.EmployeeName ?? string.Empty;
+        var id = input?.Id ?? legacyEmployee?.Id ?? 0;
+
+        if (string.IsNullOrWhiteSpace(employeeCode) || string.IsNullOrWhiteSpace(employeeName))
         {
             if (IsAjaxRequest())
-                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+                return Json(ApiResponse.Fail("Employee code and name are required."));
+            TempData["Error"] = "Employee code and name are required.";
             return RedirectToAction(nameof(Employee));
         }
 
         try
         {
+            var employee = new Employee
+            {
+                Id = id,
+                EmployeeCode = employeeCode,
+                EmployeeName = employeeName,
+                Designation = input?.Designation ?? legacyEmployee?.Designation,
+                Department = input?.Department ?? legacyEmployee?.Department,
+                Mobile = input?.Mobile ?? legacyEmployee?.Mobile,
+                Email = input?.Email ?? legacyEmployee?.Email
+            };
             var saved = await _masterService.SaveEmployeeAsync(employee);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Employee saved successfully.", saved));
@@ -617,21 +749,35 @@ public class MastersController : Controller
     public async Task<IActionResult> AccountGroup()
     {
         var list = await _masterService.GetAccountGroupsAsync();
-        return View(list);
+        return View(new AccountGroupPageViewModel { AccountGroups = list });
     }
 
     [HttpPost("SaveAccountGroup")]
-    public async Task<IActionResult> SaveAccountGroup(AccountGroup group)
+    public async Task<IActionResult> SaveAccountGroup([FromForm] AccountGroupInputModel? model, [FromForm] AccountGroupInputModel? form, [FromForm] AccountGroup? legacyGroup)
     {
-        if (!ModelState.IsValid)
+        var input = model?.GroupName != null ? model : (form ?? model);
+        var groupName = input?.GroupName ?? legacyGroup?.GroupName ?? string.Empty;
+        var groupType = input?.GroupType ?? legacyGroup?.GroupType ?? "Asset";
+        var id = input?.Id ?? legacyGroup?.Id ?? 0;
+        var description = input?.Description ?? legacyGroup?.Description;
+
+        if (string.IsNullOrWhiteSpace(groupName))
         {
             if (IsAjaxRequest())
-                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+                return Json(ApiResponse.Fail("Group name is required."));
+            TempData["Error"] = "Group name is required.";
             return RedirectToAction(nameof(AccountGroup));
         }
 
         try
         {
+            var group = new AccountGroup
+            {
+                Id = id,
+                GroupName = groupName,
+                GroupType = groupType,
+                Description = description
+            };
             var saved = await _masterService.SaveAccountGroupAsync(group);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Account Group saved successfully.", saved));
@@ -666,17 +812,34 @@ public class MastersController : Controller
     }
 
     [HttpPost("SaveLedger")]
-    public async Task<IActionResult> SaveLedger(Ledger ledger)
+    public async Task<IActionResult> SaveLedger([FromForm] LedgerInputModel? model, [FromForm] LedgerInputModel? form, [FromForm] Ledger? legacyLedger)
     {
-        if (!ModelState.IsValid)
+        var input = model?.LedgerCode != null ? model : (form ?? model);
+        var ledgerCode = input?.LedgerCode ?? legacyLedger?.LedgerCode ?? string.Empty;
+        var ledgerName = input?.LedgerName ?? legacyLedger?.LedgerName ?? string.Empty;
+        var accountGroupId = input?.AccountGroupId ?? legacyLedger?.AccountGroupId ?? 0;
+        var id = input?.Id ?? legacyLedger?.Id ?? 0;
+
+        if (string.IsNullOrWhiteSpace(ledgerCode) || string.IsNullOrWhiteSpace(ledgerName) || accountGroupId == 0)
         {
             if (IsAjaxRequest())
-                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+                return Json(ApiResponse.Fail("Ledger code, name and account group are required."));
+            TempData["Error"] = "Ledger code, name and account group are required.";
             return RedirectToAction(nameof(Ledger));
         }
 
         try
         {
+            var ledger = new Ledger
+            {
+                Id = id,
+                LedgerCode = ledgerCode,
+                LedgerName = ledgerName,
+                AccountGroupId = accountGroupId,
+                OpeningBalance = input?.OpeningBalance ?? legacyLedger?.OpeningBalance ?? 0,
+                BalanceType = input?.BalanceType ?? legacyLedger?.BalanceType ?? "Debit",
+                Notes = input?.Description ?? legacyLedger?.Notes
+            };
             var saved = await _masterService.SaveLedgerAsync(ledger);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Ledger saved successfully.", saved));
@@ -711,17 +874,31 @@ public class MastersController : Controller
     }
 
     [HttpPost("SaveBank")]
-    public async Task<IActionResult> SaveBank(Bank bank)
+    public async Task<IActionResult> SaveBank([FromForm] BankInputModel? model, [FromForm] BankInputModel? form, [FromForm] Bank? legacyBank)
     {
-        if (!ModelState.IsValid)
+        var input = model?.BankName != null ? model : (form ?? model);
+        var bankName = input?.BankName ?? legacyBank?.BankName ?? string.Empty;
+        var id = input?.Id ?? legacyBank?.Id ?? 0;
+
+        if (string.IsNullOrWhiteSpace(bankName))
         {
             if (IsAjaxRequest())
-                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+                return Json(ApiResponse.Fail("Bank name is required."));
+            TempData["Error"] = "Bank name is required.";
             return RedirectToAction(nameof(Bank));
         }
 
         try
         {
+            var bank = new Bank
+            {
+                Id = id,
+                BankName = bankName,
+                BranchName = input?.BranchName ?? legacyBank?.BranchName,
+                AccountNumber = input?.AccountNumber ?? legacyBank?.AccountNumber,
+                IFSCCode = input?.IFSCCode ?? legacyBank?.IFSCCode,
+                LedgerId = input?.LedgerId ?? legacyBank?.LedgerId
+            };
             var saved = await _masterService.SaveBankAsync(bank);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Bank saved successfully.", saved));
@@ -749,21 +926,35 @@ public class MastersController : Controller
     public async Task<IActionResult> Tax()
     {
         var list = await _masterService.GetTaxesAsync();
-        return View(list);
+        return View(new TaxPageViewModel { Taxes = list });
     }
 
     [HttpPost("SaveTax")]
-    public async Task<IActionResult> SaveTax(Tax tax)
+    public async Task<IActionResult> SaveTax([FromForm] TaxInputModel? model, [FromForm] TaxInputModel? form, [FromForm] Tax? legacyTax)
     {
-        if (!ModelState.IsValid)
+        var input = model?.TaxName != null ? model : (form ?? model);
+        var taxName = input?.TaxName ?? legacyTax?.TaxName ?? string.Empty;
+        var id = input?.Id ?? legacyTax?.Id ?? 0;
+
+        if (string.IsNullOrWhiteSpace(taxName))
         {
             if (IsAjaxRequest())
-                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+                return Json(ApiResponse.Fail("Tax name is required."));
+            TempData["Error"] = "Tax name is required.";
             return RedirectToAction(nameof(Tax));
         }
 
         try
         {
+            var tax = new Tax
+            {
+                Id = id,
+                TaxName = taxName,
+                TaxPercentage = input?.TaxPercentage ?? legacyTax?.TaxPercentage ?? 0,
+                IGSTPercentage = input?.IGSTPercentage ?? legacyTax?.IGSTPercentage,
+                CGSTPercentage = input?.CGSTPercentage ?? legacyTax?.CGSTPercentage,
+                SGSTPercentage = input?.SGSTPercentage ?? legacyTax?.SGSTPercentage
+            };
             var saved = await _masterService.SaveTaxAsync(tax);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Tax settings saved successfully.", saved));
@@ -791,21 +982,33 @@ public class MastersController : Controller
     public async Task<IActionResult> PaymentMode()
     {
         var list = await _masterService.GetPaymentModesAsync();
-        return View(list);
+        return View(new PaymentModePageViewModel { PaymentModes = list });
     }
 
     [HttpPost("SavePaymentMode")]
-    public async Task<IActionResult> SavePaymentMode(PaymentMode mode)
+    public async Task<IActionResult> SavePaymentMode([FromForm] PaymentModeInputModel? model, [FromForm] PaymentModeInputModel? form, [FromForm] PaymentMode? legacyMode)
     {
-        if (!ModelState.IsValid)
+        var input = model?.ModeName != null ? model : (form ?? model);
+        var modeName = input?.ModeName ?? legacyMode?.ModeName ?? string.Empty;
+        var modeType = input?.ModeType ?? legacyMode?.ModeType ?? "Cash";
+        var id = input?.Id ?? legacyMode?.Id ?? 0;
+
+        if (string.IsNullOrWhiteSpace(modeName))
         {
             if (IsAjaxRequest())
-                return Json(ApiResponse.Fail("Please correct the validation errors.", GetModelStateErrors()));
+                return Json(ApiResponse.Fail("Payment mode name is required."));
+            TempData["Error"] = "Payment mode name is required.";
             return RedirectToAction(nameof(PaymentMode));
         }
 
         try
         {
+            var mode = new PaymentMode
+            {
+                Id = id,
+                ModeName = modeName,
+                ModeType = modeType
+            };
             var saved = await _masterService.SavePaymentModeAsync(mode);
             if (IsAjaxRequest())
                 return Json(ApiResponse.Ok("Payment Mode saved successfully.", saved));

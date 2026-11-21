@@ -260,7 +260,7 @@ public class SalesController : Controller
     public async Task<IActionResult> GetInvoice(int id)
     {
         var invoice = await _salesService.GetInvoiceByIdAsync(id);
-        if (invoice == null) return NotFound();
+        if (invoice == null) return NotFound(ApiResponse.Fail("Sales Invoice not found."));
         return Json(invoice);
     }
 
@@ -275,7 +275,7 @@ public class SalesController : Controller
     public async Task<IActionResult> GetOrder(int id)
     {
         var order = await _salesService.GetSalesOrderByIdAsync(id);
-        if (order == null) return NotFound();
+        if (order == null) return NotFound(ApiResponse.Fail("Sales Order not found."));
         return Json(order);
     }
 
@@ -283,7 +283,7 @@ public class SalesController : Controller
     public async Task<IActionResult> GetQuotation(int id)
     {
         var item = await _salesService.GetQuotationByIdAsync(id);
-        if (item == null) return NotFound();
+        if (item == null) return NotFound(ApiResponse.Fail("Sales Quotation not found."));
         return Json(item);
     }
 
@@ -291,7 +291,7 @@ public class SalesController : Controller
     public async Task<IActionResult> GetChallan(int id)
     {
         var item = await _salesService.GetDeliveryChallanByIdAsync(id);
-        if (item == null) return NotFound();
+        if (item == null) return NotFound(ApiResponse.Fail("Delivery Challan not found."));
         return Json(item);
     }
 
@@ -299,7 +299,7 @@ public class SalesController : Controller
     public async Task<IActionResult> GetReturn(int id)
     {
         var item = await _salesService.GetReturnByIdAsync(id);
-        if (item == null) return NotFound();
+        if (item == null) return NotFound(ApiResponse.Fail("Sales Return not found."));
         return Json(item);
     }
 

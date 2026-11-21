@@ -4,6 +4,8 @@
     var leads = Model?.Leads ?? new List<Lead>();
 }
 
+@Html.AntiForgeryToken()
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-phone-volume me-2"></i> Follow-ups</h4>
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#followupModal"><i class="fa-solid fa-plus me-1"></i> Add Follow-up</button>
@@ -53,12 +55,14 @@
                 <h5 class="modal-title">Record Follow-up</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveFollowUp" method="post" id="followupForm">
+            <form asp-controller="CRM" asp-action="SaveFollowUp" method="post" id="followupForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body">
-                    <input type="hidden" name="Id" id="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     <div class="mb-3">
-                        <label class="form-label">Lead *</label>
-                        <select name="LeadId" id="LeadId" class="form-select" required>
+                        <label asp-for="Form.LeadId" class="form-label">Lead *</label>
+                        <select asp-for="Form.LeadId" id="LeadId" class="form-select" required>
                             <option value="">Select Lead</option>
                             @if(leads.Any())
                             {
@@ -68,26 +72,31 @@
                                 }
                             }
                         </select>
+                        <span asp-validation-for="Form.LeadId" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Follow Up Date *</label>
-                        <input type="datetime-local" name="FollowUpDate" id="FollowUpDate" class="form-control" required />
+                        <label asp-for="Form.FollowUpDate" class="form-label">Follow Up Date *</label>
+                        <input asp-for="Form.FollowUpDate" type="datetime-local" id="FollowUpDate" class="form-control" required />
+                        <span asp-validation-for="Form.FollowUpDate" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Type</label>
-                        <select name="FollowUpType" id="FollowUpType" class="form-select">
+                        <label asp-for="Form.FollowUpType" class="form-label">Type</label>
+                        <select asp-for="Form.FollowUpType" id="FollowUpType" class="form-select">
                             <option value="Call">Call</option>
                             <option value="Email">Email</option>
                             <option value="Meeting">Meeting</option>
                         </select>
+                        <span asp-validation-for="Form.FollowUpType" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Notes *</label>
-                        <textarea name="Remarks" id="Remarks" class="form-control" rows="2" required></textarea>
+                        <label asp-for="Form.Remarks" class="form-label">Notes *</label>
+                        <textarea asp-for="Form.Remarks" id="Remarks" class="form-control" rows="2" required></textarea>
+                        <span asp-validation-for="Form.Remarks" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Next Follow Up Date</label>
-                        <input type="date" name="NextFollowUpDate" id="NextFollowUpDate" class="form-control" />
+                        <label asp-for="Form.NextFollowUpDate" class="form-label">Next Follow Up Date</label>
+                        <input asp-for="Form.NextFollowUpDate" type="date" id="NextFollowUpDate" class="form-control" />
+                        <span asp-validation-for="Form.NextFollowUpDate" class="text-danger small mt-1 d-block"></span>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -100,6 +109,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var followupModal;
         $(function () {

@@ -9,6 +9,8 @@
     };
 }
 
+@Html.AntiForgeryToken()
+
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -113,13 +115,13 @@
                     <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-shield me-2"></i> Add Role</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form asp-action="SaveRole" method="post" id="roleForm">
+                <form asp-controller="Settings" asp-action="SaveRole" method="post" id="roleForm">
                     <div class="modal-body p-4">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-dark">Role Name <span class="text-danger">*</span></label>
+                            <label asp-for="Form.Name" class="form-label fw-semibold text-dark">Role Name <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
-                                <input type="text" name="name" class="form-control border-start-0" placeholder="e.g. Regional Manager, Store Supervisor" required />
+                                <input type="text" asp-for="Form.Name" id="name" class="form-control border-start-0" placeholder="e.g. Regional Manager, Store Supervisor" required />
                             </div>
                             <div class="form-text fs-8 text-muted mt-1">Unique role designation name.</div>
                         </div>
@@ -135,6 +137,7 @@
 }
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         $(function () {
             var roleModalEl = document.getElementById('roleModal');

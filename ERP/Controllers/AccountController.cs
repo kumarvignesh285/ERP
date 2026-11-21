@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Interfaces;
@@ -33,37 +34,42 @@ public class AccountController : Controller
     [Route("Account/Login")]
     public IActionResult Login(string? returnUrl = null)
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
         return View(new LoginViewModel { ReturnUrl = returnUrl ?? Url.Content("~/") });
     }
 
     [HttpPost]
     [Route("Account/Login")]
-    public async Task<IActionResult> Login(string email, string password, bool rememberMe, string? returnUrl = null)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Login([FromForm] LoginViewModel model)
     {
-        returnUrl ??= Url.Content("~/");
+        model.ReturnUrl ??= Url.Content("~/");
 
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        if (!ModelState.IsValid)
         {
-            ModelState.AddModelError(string.Empty, "Email and password are required.");
-            return View(new LoginViewModel { ReturnUrl = returnUrl });
+            return View(model);
         }
 
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
 
-        var user = await _userManager.FindByEmailAsync(email) ?? await _userManager.FindByNameAsync(email);
+        var user = await _userManager.FindByEmailAsync(model.Email) ?? await _userManager.FindByNameAsync(model.Email);
         if (user == null)
         {
-            await _loginHistoryService.RecordFailedLoginAsync(email, "Invalid credentials", ip, userAgent);
+            await _loginHistoryService.RecordFailedLoginAsync(model.Email, "Invalid credentials", ip, userAgent);
             await _auditService.LogAsync(
                 action: "LOGIN_FAILED",
                 module: "Authentication",
-                description: $"Failed login attempt for unknown user '{email}'",
+                description: $"Failed login attempt for unknown user '{model.Email}'",
                 status: "Failed",
                 severity: "Warning");
 
             ModelState.AddModelError(string.Empty, "Invalid login credentials.");
-            return View(new LoginViewModel { ReturnUrl = returnUrl });
+            return View(model);
         }
 
         if (!user.IsActive)
@@ -78,7 +84,7 @@ public class AccountController : Controller
                 companyId: user.CompanyId);
 
             ModelState.AddModelError(string.Empty, "Your account has been deactivated. Please contact your administrator.");
-            return View(new LoginViewModel { ReturnUrl = returnUrl });
+            return View(model);
         }
 
         if (user.CompanyId.HasValue && !await _userManager.IsInRoleAsync(user, "Super Admin"))
@@ -96,11 +102,11 @@ public class AccountController : Controller
                     companyId: user.CompanyId);
 
                 ModelState.AddModelError(string.Empty, "Your company account has been deactivated. Please contact the system administrator.");
-                return View(new LoginViewModel { ReturnUrl = returnUrl });
+                return View(model);
             }
         }
 
-        var result = await _signInManager.PasswordSignInAsync(user.UserName!, password, rememberMe, lockoutOnFailure: false);
+        var result = await _signInManager.PasswordSignInAsync(user.UserName!, model.Password, model.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
             HttpContext.Session.Clear();
@@ -118,7 +124,7 @@ public class AccountController : Controller
                 severity: "Info",
                 companyId: user.CompanyId);
 
-            if (returnUrl == Url.Content("~/"))
+            if (model.ReturnUrl == Url.Content("~/"))
             {
                 if (await _userManager.IsInRoleAsync(user, "Sales User"))
                 {
@@ -136,7 +142,7 @@ public class AccountController : Controller
                 }
             }
 
-            return LocalRedirect(returnUrl);
+            return LocalRedirect(model.ReturnUrl);
         }
         else
         {
@@ -150,12 +156,13 @@ public class AccountController : Controller
                 companyId: user.CompanyId);
 
             ModelState.AddModelError(string.Empty, "Invalid login credentials.");
-            return View(new LoginViewModel { ReturnUrl = returnUrl });
+            return View(model);
         }
     }
 
     [HttpPost]
     [Route("Account/Logout")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
         var sessionId = HttpContext.Session.GetString("UserSessionId");
@@ -173,6 +180,85 @@ public class AccountController : Controller
         HttpContext.Session.Clear();
         await _signInManager.SignOutAsync();
         return RedirectToAction("Login", "Account");
+    }
+
+    [Authorize]
+    [HttpGet]
+    [Route("Account/Profile")]
+    public async Task<IActionResult> Profile()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        string? companyName = null;
+        if (user.CompanyId.HasValue)
+        {
+            var company = await _masterService.GetCompanyByIdAsync(user.CompanyId.Value);
+            companyName = company?.CompanyName;
+        }
+
+        var vm = new UserProfileViewModel
+        {
+            UserId = user.Id,
+            UserName = user.UserName ?? string.Empty,
+            FullName = user.FullName,
+            Email = user.Email ?? string.Empty,
+            Mobile = user.Mobile,
+            Role = roles.FirstOrDefault() ?? "User",
+            CompanyId = user.CompanyId,
+            CompanyName = companyName,
+            CreatedAt = user.CreatedAt
+        };
+
+        return View(vm);
+    }
+
+    [Authorize]
+    [HttpPost]
+    [Route("Account/ChangePassword")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordViewModel model)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "Please correct the password validation errors.";
+            return RedirectToAction("Profile");
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+        if (result.Succeeded)
+        {
+            await _auditService.LogAsync(
+                action: "CHANGE_PASSWORD",
+                module: "Authentication",
+                entityName: "AppUser",
+                entityId: user.Id,
+                description: $"User '{user.UserName}' successfully changed their password.",
+                status: "Success",
+                severity: "Info",
+                companyId: user.CompanyId);
+
+            TempData["SuccessMessage"] = "Your password has been changed successfully.";
+            return RedirectToAction("Profile");
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+
+        TempData["ErrorMessage"] = string.Join(" ", result.Errors.Select(e => e.Description));
+        return RedirectToAction("Profile");
     }
 
     [HttpGet]

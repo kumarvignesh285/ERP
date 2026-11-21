@@ -8,7 +8,7 @@
         <h5 class="m-0"><i class="fa-solid fa-building-columns me-2"></i> Bank Book</h5>
     </div>
     <div class="card-body">
-        <form method="get" class="row g-3 mb-4">
+        <form asp-controller="Accounts" asp-action="BankBook" method="get" class="row g-3 mb-4">
             <div class="col-auto">
                 <label class="visually-hidden">Start Date</label>
                 <input type="date" class="form-control" name="startDate" value="@Model.StartDate" />

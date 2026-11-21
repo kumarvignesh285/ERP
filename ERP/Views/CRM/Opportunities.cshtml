@@ -4,6 +4,8 @@
     var leads = Model?.Leads ?? new List<Lead>();
 }
 
+@Html.AntiForgeryToken()
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="m-0 fw-bold text-primary"><i class="fa-solid fa-briefcase me-2"></i> Sales Opportunities</h4>
@@ -63,17 +65,20 @@
                 <h5 class="modal-title fw-bold"><i class="fa-solid fa-briefcase me-2"></i>Add / Edit Opportunity</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveOpportunity" method="post" id="oppForm">
+            <form asp-controller="CRM" asp-action="SaveOpportunity" method="post" id="oppForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body p-4">
-                    <input type="hidden" name="Id" id="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Opportunity Name <span class="text-danger">*</span></label>
-                            <input type="text" name="OpportunityName" id="OpportunityName" class="form-control" required placeholder="e.g. Enterprise Software License" />
+                            <label asp-for="Form.OpportunityName" class="form-label fw-semibold text-dark">Opportunity Name <span class="text-danger">*</span></label>
+                            <input asp-for="Form.OpportunityName" id="OpportunityName" class="form-control" required placeholder="e.g. Enterprise Software License" />
+                            <span asp-validation-for="Form.OpportunityName" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Lead <span class="text-danger">*</span></label>
-                            <select name="LeadId" id="LeadId" class="form-select" required>
+                            <label asp-for="Form.LeadId" class="form-label fw-semibold text-dark">Lead <span class="text-danger">*</span></label>
+                            <select asp-for="Form.LeadId" id="LeadId" class="form-select" required>
                                 <option value="">Select Lead Account</option>
                                 @if(leads.Any())
                                 {
@@ -83,26 +88,30 @@
                                     }
                                 }
                             </select>
+                            <span asp-validation-for="Form.LeadId" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Expected Deal Value (₹)</label>
-                            <input type="number" step="0.01" name="ExpectedRevenue" id="ExpectedRevenue" class="form-control" placeholder="0.00" />
+                            <label asp-for="Form.ExpectedRevenue" class="form-label fw-semibold text-dark">Expected Deal Value (₹)</label>
+                            <input asp-for="Form.ExpectedRevenue" type="number" step="0.01" id="ExpectedRevenue" class="form-control" placeholder="0.00" />
+                            <span asp-validation-for="Form.ExpectedRevenue" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Win Probability (%)</label>
-                            <input type="number" name="Probability" id="Probability" class="form-control" placeholder="e.g. 75" />
+                            <label asp-for="Form.Probability" class="form-label fw-semibold text-dark">Win Probability (%)</label>
+                            <input asp-for="Form.Probability" type="number" id="Probability" class="form-control" placeholder="e.g. 75" />
+                            <span asp-validation-for="Form.Probability" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Expected Close Date</label>
-                            <input type="date" name="CloseDate" id="CloseDate" class="form-control" />
+                            <label asp-for="Form.CloseDate" class="form-label fw-semibold text-dark">Expected Close Date</label>
+                            <input asp-for="Form.CloseDate" type="date" id="CloseDate" class="form-control" />
+                            <span asp-validation-for="Form.CloseDate" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Pipeline Stage</label>
-                            <select name="Stage" id="Stage" class="form-select">
+                            <label asp-for="Form.Stage" class="form-label fw-semibold text-dark">Pipeline Stage</label>
+                            <select asp-for="Form.Stage" id="Stage" class="form-select">
                                 <option value="Prospecting">Prospecting</option>
                                 <option value="Qualification">Qualification</option>
                                 <option value="Proposal">Proposal</option>
@@ -110,6 +119,7 @@
                                 <option value="Closed Won">Closed Won</option>
                                 <option value="Closed Lost">Closed Lost</option>
                             </select>
+                            <span asp-validation-for="Form.Stage" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                 </div>
@@ -123,6 +133,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var oppModal;
         $(function () {

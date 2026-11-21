@@ -1,7 +1,9 @@
-@model IEnumerable<ERP.Models.Supplier>
+@model SupplierPageViewModel
 @{
     ViewData["Title"] = "Supplier Master";
 }
+
+@Html.AntiForgeryToken()
 
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -22,7 +24,7 @@
                 <label class="form-label fw-semibold mb-1 small text-muted">Filter by City</label>
                 <select id="filterCity" class="form-select form-select-sm select2">
                     <option value="">All Cities</option>
-                    @foreach (var city in Model.Where(s => !string.IsNullOrEmpty(s.City)).Select(s => s.City).Distinct())
+                    @foreach (var city in Model.Suppliers.Where(s => !string.IsNullOrEmpty(s.City)).Select(s => s.City).Distinct())
                     {
                         <option value="@city">@city</option>
                     }
@@ -45,26 +47,28 @@
                     <tr>
                         <th>Code</th>
                         <th>Name</th>
-                        <th>Contact Person</th>
+                        <th>Contact</th>
                         <th>Mobile</th>
-                        <th>Email</th>
+                        <th>GSTIN</th>
                         <th>City</th>
+                        <th>Balance</th>
                         <th class="text-center no-print">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var s in Model)
+                    @foreach (var s in Model.Suppliers)
                     {
                         <tr id="row-@s.Id">
                             <td class="fw-bold text-primary">@s.SupplierCode</td>
                             <td class="fw-semibold text-dark">@s.SupplierName</td>
-                            <td>@s.ContactPerson</td>
+                            <td>@(string.IsNullOrEmpty(s.ContactPerson) ? "—" : s.ContactPerson)</td>
                             <td><i class="fa-solid fa-phone fs-8 text-muted me-1"></i>@s.Mobile</td>
-                            <td>@s.Email</td>
+                            <td><span class="font-monospace fs-8 text-uppercase">@(string.IsNullOrEmpty(s.GSTNumber) ? "—" : s.GSTNumber)</span></td>
                             <td>@s.City</td>
+                            <td><span class="fw-semibold">₹@s.OpeningBalance.ToString("N2")</span> <small class="text-muted">(@s.BalanceType)</small></td>
                             <td class="text-center no-print">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { s.Id, s.SupplierCode, s.SupplierName, s.ContactPerson, s.Mobile, s.Email, s.GSTNumber, s.Address, s.City, s.State, s.Country })" onclick="editSupplier(this)" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary" data-item="@System.Text.Json.JsonSerializer.Serialize(new { s.Id, s.SupplierCode, s.SupplierName, s.ContactPerson, Mobile = s.Mobile, MobileNumber = s.Mobile, s.Email, s.GSTNumber, s.Address, s.City, s.State })" onclick="editSupplier(this)" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button class="btn btn-sm btn-outline-danger" onclick="deleteSupplier(@s.Id)" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </td>
@@ -76,86 +80,93 @@
     </div>
 </div>
 
-<!-- Modal Dialog -->
+<!-- Modal Dialog with Strongly-Typed Form -->
 <div class="modal fade" id="supplierModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white py-3">
-                <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-truck-field me-2"></i> Add Supplier</h5>
+                <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-plus me-2"></i> Add Supplier</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveSupplier" method="post" id="supplierForm">
+            <form asp-controller="Masters" asp-action="SaveSupplier" method="post" id="supplierForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body p-4">
-                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Supplier Code <span class="text-danger">*</span></label>
+                            <label asp-for="Form.SupplierCode" class="form-label fw-semibold text-dark">Supplier Code <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-barcode text-muted"></i></span>
-                                <input type="text" id="SupplierCode" name="SupplierCode" class="form-control border-start-0" placeholder="e.g. SUP-001" required />
+                                <input asp-for="Form.SupplierCode" id="SupplierCode" class="form-control border-start-0" placeholder="e.g. SUP-001" required />
                             </div>
+                            <span asp-validation-for="Form.SupplierCode" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Supplier Name <span class="text-danger">*</span></label>
+                            <label asp-for="Form.SupplierName" class="form-label fw-semibold text-dark">Supplier Name <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-truck-moving text-muted"></i></span>
-                                <input type="text" id="SupplierName" name="SupplierName" class="form-control border-start-0" placeholder="Vendor / Distributor Name" required />
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-truck-field text-muted"></i></span>
+                                <input asp-for="Form.SupplierName" id="SupplierName" class="form-control border-start-0" placeholder="Vendor / Entity Name" required />
                             </div>
+                            <span asp-validation-for="Form.SupplierName" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Contact Person</label>
+                            <label asp-for="Form.ContactPerson" class="form-label fw-semibold text-dark">Contact Person</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-user text-muted"></i></span>
-                                <input type="text" id="ContactPerson" name="ContactPerson" class="form-control border-start-0" placeholder="Key contact person" />
+                                <input asp-for="Form.ContactPerson" id="ContactPerson" class="form-control border-start-0" placeholder="Sales rep / manager name" />
                             </div>
+                            <span asp-validation-for="Form.ContactPerson" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Mobile Number</label>
+                            <label asp-for="Form.MobileNumber" class="form-label fw-semibold text-dark">Mobile Number</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-phone text-muted"></i></span>
-                                <input type="text" id="Mobile" name="Mobile" class="form-control border-start-0" placeholder="+91 98765 43210" />
+                                <input asp-for="Form.MobileNumber" id="MobileNumber" class="form-control border-start-0" placeholder="+91 98765 43210" />
                             </div>
+                            <span asp-validation-for="Form.MobileNumber" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Email Address</label>
+                            <label asp-for="Form.Email" class="form-label fw-semibold text-dark">Email Address</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-envelope text-muted"></i></span>
-                                <input type="email" id="Email" name="Email" class="form-control border-start-0" placeholder="supplier@vendor.com" />
+                                <input asp-for="Form.Email" id="Email" class="form-control border-start-0" placeholder="vendor@supplier.com" />
                             </div>
+                            <span asp-validation-for="Form.Email" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">GSTIN Number</label>
+                            <label asp-for="Form.GSTNumber" class="form-label fw-semibold text-dark">GSTIN Number</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-file-invoice text-muted"></i></span>
-                                <input type="text" id="GSTNumber" name="GSTNumber" class="form-control border-start-0 text-uppercase" placeholder="33AAAAA0000A1Z5" />
+                                <input asp-for="Form.GSTNumber" id="GSTNumber" class="form-control border-start-0 text-uppercase" placeholder="33AAAAA0000A1Z5" />
                             </div>
+                            <span asp-validation-for="Form.GSTNumber" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark">Address</label>
-                        <textarea id="Address" name="Address" class="form-control" rows="2" placeholder="Warehouse, office, factory address..."></textarea>
+                        <label asp-for="Form.Address" class="form-label fw-semibold text-dark">Warehouse / Office Address</label>
+                        <textarea asp-for="Form.Address" id="Address" class="form-control" rows="2" placeholder="Street address, building, industrial area..."></textarea>
+                        <span asp-validation-for="Form.Address" class="text-danger small mt-1 d-block"></span>
                     </div>
 
                     <div class="row g-3 mb-3">
-                        <div class="col-12 col-sm-4">
-                            <label class="form-label fw-semibold text-dark">City</label>
-                            <input type="text" id="City" name="City" class="form-control" placeholder="Chennai" />
+                        <div class="col-12 col-sm-6">
+                            <label asp-for="Form.City" class="form-label fw-semibold text-dark">City</label>
+                            <input asp-for="Form.City" id="City" class="form-control" placeholder="Coimbatore" />
+                            <span asp-validation-for="Form.City" class="text-danger small mt-1 d-block"></span>
                         </div>
-                        <div class="col-12 col-sm-4">
-                            <label class="form-label fw-semibold text-dark">State</label>
-                            <input type="text" id="State" name="State" class="form-control" placeholder="Tamil Nadu" />
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <label class="form-label fw-semibold text-dark">Country</label>
-                            <input type="text" id="Country" name="Country" class="form-control" value="India" />
+                        <div class="col-12 col-sm-6">
+                            <label asp-for="Form.State" class="form-label fw-semibold text-dark">State</label>
+                            <input asp-for="Form.State" id="State" class="form-control" placeholder="Tamil Nadu" />
+                            <span asp-validation-for="Form.State" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                 </div>
@@ -169,6 +180,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var bootstrapModal;
         $(function () {
@@ -187,7 +199,7 @@
             ErpApp.clearFieldErrors('#supplierForm');
             document.getElementById('supplierForm').reset();
             document.getElementById('Id').value = "0";
-            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-truck-field me-2"></i> Add Supplier';
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-plus me-2"></i> Add Supplier';
             document.getElementById('submitBtn').innerText = "Save Supplier";
             bootstrapModal.show();
         }
@@ -200,13 +212,12 @@
             document.getElementById('SupplierCode').value = window.getVal(supplier, 'supplierCode');
             document.getElementById('SupplierName').value = window.getVal(supplier, 'supplierName');
             document.getElementById('ContactPerson').value = window.getVal(supplier, 'contactPerson') || "";
-            document.getElementById('Mobile').value = window.getVal(supplier, 'mobile') || "";
+            document.getElementById('MobileNumber').value = window.getVal(supplier, 'mobileNumber') || "";
             document.getElementById('Email').value = window.getVal(supplier, 'email') || "";
             document.getElementById('GSTNumber').value = window.getVal(supplier, 'gstNumber') || "";
             document.getElementById('Address').value = window.getVal(supplier, 'address') || "";
             document.getElementById('City').value = window.getVal(supplier, 'city') || "";
             document.getElementById('State').value = window.getVal(supplier, 'state') || "";
-            document.getElementById('Country').value = window.getVal(supplier, 'country') || "India";
             document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square me-2"></i> Edit Supplier';
             document.getElementById('submitBtn').innerText = "Save Changes";
             bootstrapModal.show();

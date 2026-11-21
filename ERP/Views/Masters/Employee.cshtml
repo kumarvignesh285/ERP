@@ -1,7 +1,9 @@
-@model IEnumerable<ERP.Models.Employee>
+@model EmployeePageViewModel
 @{
     ViewData["Title"] = "Employee Master";
 }
+
+@Html.AntiForgeryToken()
 
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -22,7 +24,7 @@
                 <label class="form-label fw-semibold mb-1 small text-muted">Department</label>
                 <select id="filterDepartment" class="form-select form-select-sm select2">
                     <option value="">All Departments</option>
-                    @foreach (var dept in Model.Where(e => !string.IsNullOrEmpty(e.Department)).Select(e => e.Department).Distinct())
+                    @foreach (var dept in Model.Employees.Where(e => !string.IsNullOrEmpty(e.Department)).Select(e => e.Department).Distinct())
                     {
                         <option value="@dept">@dept</option>
                     }
@@ -32,7 +34,7 @@
                 <label class="form-label fw-semibold mb-1 small text-muted">Designation</label>
                 <select id="filterDesignation" class="form-select form-select-sm select2">
                     <option value="">All Designations</option>
-                    @foreach (var desig in Model.Where(e => !string.IsNullOrEmpty(e.Designation)).Select(e => e.Designation).Distinct())
+                    @foreach (var desig in Model.Employees.Where(e => !string.IsNullOrEmpty(e.Designation)).Select(e => e.Designation).Distinct())
                     {
                         <option value="@desig">@desig</option>
                     }
@@ -63,7 +65,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var e in Model)
+                    @foreach (var e in Model.Employees)
                     {
                         <tr id="row-@e.Id">
                             <td class="fw-bold text-primary">@e.EmployeeCode</td>
@@ -94,58 +96,66 @@
                 <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-user-tie me-2"></i> Add Employee</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveEmployee" method="post" id="employeeForm">
+            <form asp-controller="Masters" asp-action="SaveEmployee" method="post" id="employeeForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body p-4">
-                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Employee Code <span class="text-danger">*</span></label>
+                            <label asp-for="Form.EmployeeCode" class="form-label fw-semibold text-dark">Employee Code <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-id-badge text-muted"></i></span>
-                                <input type="text" id="EmployeeCode" name="EmployeeCode" class="form-control border-start-0" placeholder="e.g. EMP-001" required />
+                                <input asp-for="Form.EmployeeCode" id="EmployeeCode" class="form-control border-start-0" placeholder="e.g. EMP-001" required />
                             </div>
+                            <span asp-validation-for="Form.EmployeeCode" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Employee Name <span class="text-danger">*</span></label>
+                            <label asp-for="Form.EmployeeName" class="form-label fw-semibold text-dark">Employee Name <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
-                                <input type="text" id="EmployeeName" name="EmployeeName" class="form-control border-start-0" placeholder="Full Name" required />
+                                <input asp-for="Form.EmployeeName" id="EmployeeName" class="form-control border-start-0" placeholder="Full Name" required />
                             </div>
+                            <span asp-validation-for="Form.EmployeeName" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Designation</label>
+                            <label asp-for="Form.Designation" class="form-label fw-semibold text-dark">Designation</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-briefcase text-muted"></i></span>
-                                <input type="text" id="Designation" name="Designation" class="form-control border-start-0" placeholder="e.g. Sales Executive, Manager" />
+                                <input asp-for="Form.Designation" id="Designation" class="form-control border-start-0" placeholder="e.g. Sales Executive, Manager" />
                             </div>
+                            <span asp-validation-for="Form.Designation" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Department</label>
+                            <label asp-for="Form.Department" class="form-label fw-semibold text-dark">Department</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-sitemap text-muted"></i></span>
-                                <input type="text" id="Department" name="Department" class="form-control border-start-0" placeholder="e.g. Sales, Accounts, Warehouse" />
+                                <input asp-for="Form.Department" id="Department" class="form-control border-start-0" placeholder="e.g. Sales, Accounts, Warehouse" />
                             </div>
+                            <span asp-validation-for="Form.Department" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Mobile Number</label>
+                            <label asp-for="Form.Mobile" class="form-label fw-semibold text-dark">Mobile Number</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-phone text-muted"></i></span>
-                                <input type="text" id="Mobile" name="Mobile" class="form-control border-start-0" placeholder="+91 98765 43210" />
+                                <input asp-for="Form.Mobile" id="Mobile" class="form-control border-start-0" placeholder="+91 98765 43210" />
                             </div>
+                            <span asp-validation-for="Form.Mobile" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Email Address</label>
+                            <label asp-for="Form.Email" class="form-label fw-semibold text-dark">Email Address</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-envelope text-muted"></i></span>
-                                <input type="email" id="Email" name="Email" class="form-control border-start-0" placeholder="employee@company.com" />
+                                <input asp-for="Form.Email" type="email" id="Email" class="form-control border-start-0" placeholder="employee@company.com" />
                             </div>
+                            <span asp-validation-for="Form.Email" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                 </div>
@@ -159,6 +169,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var bootstrapModal;
         $(function () {

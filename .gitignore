@@ -47,3 +47,7 @@ node_modules/
 # Publish Profiles
 **/PublishProfiles/
 **/Properties/PublishProfiles/
+
+# Temp build
+tmp_build/
+

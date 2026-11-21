@@ -92,3 +92,42 @@ public class CompanyUserDto
     public bool IsActive { get; set; }
     public string CreatedAt { get; set; } = string.Empty;
 }
+
+public class CompanyDetailViewModel
+{
+    public int Id { get; set; }
+    public string CompanyCode { get; set; } = string.Empty;
+    public string CompanyName { get; set; } = string.Empty;
+    public string? BusinessType { get; set; }
+    public string? Address { get; set; }
+    public string? City { get; set; }
+    public string? State { get; set; }
+    public string? Country { get; set; } = "India";
+    public string? Pincode { get; set; }
+    public string? Phone { get; set; }
+    public string? AlternatePhone { get; set; }
+    public string? Email { get; set; }
+    public string? Website { get; set; }
+    public string? GSTNumber { get; set; }
+    public string? PANNumber { get; set; }
+    public string? Logo { get; set; }
+    public string Currency { get; set; } = "INR";
+    public string? FinancialYear { get; set; }
+    public bool IsActive { get; set; }
+    public string CreatedAt { get; set; } = string.Empty;
+    public string? CreatedBy { get; set; }
+    public string UpdatedAt { get; set; } = "—";
+    public string? UpdatedBy { get; set; }
+
+    // Admin Details
+    public string AdminUserId { get; set; } = string.Empty;
+    public string AdminUsername { get; set; } = string.Empty;
+    public string AdminFullName { get; set; } = string.Empty;
+    public string AdminEmail { get; set; } = string.Empty;
+    public string AdminMobile { get; set; } = string.Empty;
+    public string AdminRole { get; set; } = string.Empty;
+    public bool AdminIsActive { get; set; } = true;
+
+    // All Users List
+    public List<CompanyUserDto> Users { get; set; } = new();
+}

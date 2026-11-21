@@ -64,7 +64,7 @@ public class CompanyController : Controller
         );
 
         AppUser? adminUser = null;
-        var userDtos = new List<object>();
+        var userDtos = new List<CompanyUserDto>();
 
         foreach (var u in companyUsers)
         {
@@ -78,16 +78,16 @@ public class CompanyController : Controller
                 adminUser = u;
             }
 
-            userDtos.Add(new
+            userDtos.Add(new CompanyUserDto
             {
-                id = u.Id,
-                userName = u.UserName ?? "—",
-                fullName = u.FullName ?? "—",
-                email = u.Email ?? "—",
-                mobile = u.Mobile ?? "—",
-                roles = string.IsNullOrWhiteSpace(roleStr) ? "CompanyUser" : roleStr,
-                isActive = u.IsActive,
-                createdAt = u.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt")
+                Id = u.Id,
+                UserName = u.UserName ?? "—",
+                FullName = u.FullName ?? "—",
+                Email = u.Email ?? "—",
+                Mobile = u.Mobile ?? "—",
+                Roles = string.IsNullOrWhiteSpace(roleStr) ? "CompanyUser" : roleStr,
+                IsActive = u.IsActive,
+                CreatedAt = u.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt")
             });
         }
 
@@ -96,44 +96,46 @@ public class CompanyController : Controller
             adminUser = companyUsers.First();
         }
 
-        return Json(new
+        var detail = new CompanyDetailViewModel
         {
-            company.Id,
-            company.CompanyCode,
-            company.CompanyName,
-            company.BusinessType,
-            company.Address,
-            company.City,
-            company.State,
-            company.Country,
-            company.Pincode,
-            company.Phone,
-            company.AlternatePhone,
-            company.Email,
-            company.Website,
-            company.GSTNumber,
-            company.PANNumber,
-            company.Logo,
-            company.Currency,
-            company.FinancialYear,
-            company.IsActive,
+            Id = company.Id,
+            CompanyCode = company.CompanyCode,
+            CompanyName = company.CompanyName,
+            BusinessType = company.BusinessType,
+            Address = company.Address,
+            City = company.City,
+            State = company.State,
+            Country = company.Country,
+            Pincode = company.Pincode,
+            Phone = company.Phone,
+            AlternatePhone = company.AlternatePhone,
+            Email = company.Email,
+            Website = company.Website,
+            GSTNumber = company.GSTNumber,
+            PANNumber = company.PANNumber,
+            Logo = company.Logo,
+            Currency = company.Currency,
+            FinancialYear = company.FinancialYear,
+            IsActive = company.IsActive,
             CreatedAt = company.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt"),
-            company.CreatedBy,
+            CreatedBy = company.CreatedBy,
             UpdatedAt = company.UpdatedAt?.ToString("dd-MMM-yyyy hh:mm tt") ?? "—",
-            company.UpdatedBy,
+            UpdatedBy = company.UpdatedBy,
 
             // Admin Details
-            adminUserId = adminUser?.Id ?? "",
-            adminUsername = adminUser?.UserName ?? "",
-            adminFullName = adminUser?.FullName ?? "",
-            adminEmail = adminUser?.Email ?? "",
-            adminMobile = adminUser?.Mobile ?? "",
-            adminRole = adminUser != null ? string.Join(", ", await _userManager.GetRolesAsync(adminUser)) : "",
-            adminIsActive = adminUser?.IsActive ?? true,
+            AdminUserId = adminUser?.Id ?? string.Empty,
+            AdminUsername = adminUser?.UserName ?? string.Empty,
+            AdminFullName = adminUser?.FullName ?? string.Empty,
+            AdminEmail = adminUser?.Email ?? string.Empty,
+            AdminMobile = adminUser?.Mobile ?? string.Empty,
+            AdminRole = adminUser != null ? string.Join(", ", await _userManager.GetRolesAsync(adminUser)) : string.Empty,
+            AdminIsActive = adminUser?.IsActive ?? true,
 
             // All Users List
-            users = userDtos
-        });
+            Users = userDtos
+        };
+
+        return Json(detail);
     }
 
     [HttpGet("CheckCode")]
@@ -166,7 +168,7 @@ public class CompanyController : Controller
 
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CompanyProvisioningViewModel model)
+    public async Task<IActionResult> Create([FromForm] CompanyProvisioningViewModel model)
     {
         var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
@@ -228,7 +230,7 @@ public class CompanyController : Controller
 
     [HttpPost("Edit")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(CompanyEditViewModel model, IFormFile? logoFile)
+    public async Task<IActionResult> Edit([FromForm] CompanyEditViewModel model, IFormFile? logoFile)
     {
         var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
         if (model.Id <= 0)
@@ -268,7 +270,8 @@ public class CompanyController : Controller
         };
 
         var currentUserId = User.FindFirstValue(ClaimTypes.Name) ?? User.Identity?.Name ?? "Super Admin";
-        var (success, errorMessage, updatedCompany) = await _masterService.UpdateCompanyAsync(company, logoFile, _env, currentUserId);
+        var effectiveLogo = model.LogoFile ?? logoFile;
+        var (success, errorMessage, updatedCompany) = await _masterService.UpdateCompanyAsync(company, effectiveLogo, _env, currentUserId);
 
         if (!success)
         {

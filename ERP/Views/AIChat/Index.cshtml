@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "AI Business Intelligence Hub";
+    var suggestions = ViewBag.Suggestions as List<ERP.ViewModels.AIChatSuggestionDto> ?? new List<ERP.ViewModels.AIChatSuggestionDto>();
+}
+
+<div class="ai-hub-container">
+    <!-- Hero Banner -->
+    <div class="ai-hub-hero">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <span class="badge bg-white text-primary px-3 py-1.5 rounded-pill fw-bold">
+                        <i class="fa-solid fa-sparkles me-1"></i> AI Powered
+                    </span>
+                    <span class="badge bg-light text-white bg-opacity-25 px-3 py-1.5 rounded-pill">
+                        <i class="fa-solid fa-building me-1"></i> @ViewBag.ActiveCompanyName
+                    </span>
+                </div>
+                <h2 class="fw-bold mb-2 text-white">AI Business Intelligence Hub</h2>
+                <p class="m-0 text-white-50 fs-6">
+                    Ask natural questions about your ERP sales, procurement, inventory levels, customer receivables, and financial performance.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <button type="button" class="btn btn-light px-4 py-2.5 rounded-pill fw-bold shadow-sm" onclick="window.openERPBotWithPrompt('Summarize the most important business figures this month')">
+                    <i class="fa-solid fa-bolt text-primary me-2"></i> Executive Snapshot
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Query Prompts Grid -->
+    <h5 class="fw-bold mb-3"><i class="fa-solid fa-lightbulb text-warning me-2"></i> Popular Business Queries</h5>
+    <div class="row g-3 mb-4">
+        @foreach (var s in suggestions.Take(8))
+        {
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="ai-hub-quick-card" onclick="window.openERPBotWithPrompt('@s.Query')">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-primary-subtle text-primary fw-bold fs-8">@s.Category</span>
+                    </div>
+                    <h6 class="fw-bold mb-1 text-truncate">@s.Title</h6>
+                    <p class="text-muted small m-0 text-truncate">"@s.Query"</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Embedded BI Console Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-comments text-primary fs-5"></i>
+                <h5 class="m-0 fw-bold">Interactive BI Console</h5>
+            </div>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1.5 rounded-pill">
+                <i class="fa-solid fa-circle-check me-1"></i> Ready
+            </span>
+        </div>
+        <div class="card-body p-4 bg-light">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-xs rounded-3 p-3 h-100 bg-white">
+                        <h6 class="fw-bold text-uppercase fs-8 text-muted mb-3">Module Quick Queries</h6>
+                        <div class="d-flex flex-column gap-2">
+                            <button class="btn btn-outline-primary text-start rounded-3 py-2 px-3 fs-7" onclick="window.openERPBotWithPrompt('What is my total sales this month?')">
+                                <i class="fa-solid fa-chart-line me-2"></i> Total Sales This Month
+                            </button>
+                            <button class="btn btn-outline-primary text-start rounded-3 py-2 px-3 fs-7" onclick="window.openERPBotWithPrompt('Show my top 10 selling products')">
+                                <i class="fa-solid fa-fire me-2"></i> Top 10 Selling Products
+                            </button>
+                            <button class="btn btn-outline-primary text-start rounded-3 py-2 px-3 fs-7" onclick="window.openERPBotWithPrompt('Which products are out of stock?')">
+                                <i class="fa-solid fa-triangle-exclamation me-2"></i> Out-of-Stock Products
+                            </button>
+                            <button class="btn btn-outline-primary text-start rounded-3 py-2 px-3 fs-7" onclick="window.openERPBotWithPrompt('Compare sales this month with last month')">
+                                <i class="fa-solid fa-arrow-trend-up me-2"></i> Period Sales Comparison
+                            </button>
+                            <button class="btn btn-outline-primary text-start rounded-3 py-2 px-3 fs-7" onclick="window.openERPBotWithPrompt('Show customer outstanding balances')">
+                                <i class="fa-solid fa-hand-holding-dollar me-2"></i> Customer Outstanding Dues
+                            </button>
+                            <button class="btn btn-outline-primary text-start rounded-3 py-2 px-3 fs-7" onclick="window.openERPBotWithPrompt('Show purchases by supplier')">
+                                <i class="fa-solid fa-truck me-2"></i> Purchases by Supplier
+                            </button>
+                            <button class="btn btn-outline-primary text-start rounded-3 py-2 px-3 fs-7" onclick="window.openERPBotWithPrompt('Show products with no sales in the last 90 days')">
+                                <i class="fa-solid fa-hourglass-half me-2"></i> Dead Stock (90 Days)
+                            </button>
+                            <button class="btn btn-outline-primary text-start rounded-3 py-2 px-3 fs-7" onclick="window.openERPBotWithPrompt('Show receivables aging analysis')">
+                                <i class="fa-solid fa-calendar-days me-2"></i> Receivables Aging
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-xs rounded-3 p-4 bg-white text-center h-100 d-flex flex-column justify-content-center align-items-center">
+                        <div class="avatar bg-primary-subtle text-primary rounded-circle p-4 mb-3" style="width: 72px; height: 72px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fa-solid fa-robot fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">SmartERP Intelligence is Active</h4>
+                        <p class="text-muted max-w-md mb-4" style="max-width: 480px;">
+                            Click any quick query on the left or use the floating assistant button in the bottom-right corner to start asking real-time ERP business questions.
+                        </p>
+                        <button type="button" class="btn btn-primary px-4 py-2.5 rounded-pill shadow-sm fw-bold" onclick="window.openERPBotWithPrompt('What is my total sales this month?')">
+                            <i class="fa-solid fa-comments me-2"></i> Open AI Assistant
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -3,6 +3,8 @@
     ViewData["Title"] = "Company Profile";
 }
 
+@Html.AntiForgeryToken()
+
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -28,7 +30,7 @@
             </div>
         }
         
-        <form asp-action="Company" method="post" class="needs-validation">
+        <form asp-controller="Masters" asp-action="Company" method="post" class="needs-validation">
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="CreatedBy" />
             <input type="hidden" asp-for="CreatedAt" />
@@ -116,6 +118,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         $(function () {
             $('form.needs-validation').on('submit', function (e) {

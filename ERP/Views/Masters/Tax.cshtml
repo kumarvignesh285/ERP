@@ -1,7 +1,9 @@
-@model IEnumerable<ERP.Models.Tax>
+@model TaxPageViewModel
 @{
     ViewData["Title"] = "Tax Settings";
 }
+
+@Html.AntiForgeryToken()
 
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -30,7 +32,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var t in Model)
+                    @foreach (var t in Model.Taxes)
                     {
                         <tr id="row-@t.Id">
                             <td class="fw-bold text-dark">@t.TaxName</td>
@@ -60,49 +62,56 @@
                 <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-percent me-2"></i> Add Tax Slab</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="SaveTax" method="post" id="taxForm">
+            <form asp-controller="Masters" asp-action="SaveTax" method="post" id="taxForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body p-4">
-                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark">Tax Name <span class="text-danger">*</span></label>
+                        <label asp-for="Form.TaxName" class="form-label fw-semibold text-dark">Tax Name <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-receipt text-muted"></i></span>
-                            <input type="text" id="TaxName" name="TaxName" class="form-control border-start-0" required placeholder="e.g. GST 18%" />
+                            <input asp-for="Form.TaxName" id="TaxName" class="form-control border-start-0" required placeholder="e.g. GST 18%" />
+                        </div>
+                        <span asp-validation-for="Form.TaxName" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Form.TaxPercentage" class="form-label fw-semibold text-dark">Tax Percentage <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-percent text-muted"></i></span>
+                                <input asp-for="Form.TaxPercentage" id="TaxPercentage" class="form-control border-start-0" required step="0.01" placeholder="18" />
+                            </div>
+                            <span asp-validation-for="Form.TaxPercentage" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Form.IGSTPercentage" class="form-label fw-semibold text-dark">IGST Percentage <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-percent text-muted"></i></span>
+                                <input asp-for="Form.IGSTPercentage" id="IGSTPercentage" class="form-control border-start-0" required step="0.01" placeholder="18" />
+                            </div>
+                            <span asp-validation-for="Form.IGSTPercentage" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">Tax Percentage <span class="text-danger">*</span></label>
+                            <label asp-for="Form.CGSTPercentage" class="form-label fw-semibold text-dark">CGST Percentage <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-percent text-muted"></i></span>
-                                <input type="number" id="TaxPercentage" name="TaxPercentage" class="form-control border-start-0" required step="0.01" placeholder="18" />
+                                <input asp-for="Form.CGSTPercentage" id="CGSTPercentage" class="form-control border-start-0" required step="0.01" placeholder="9" />
                             </div>
+                            <span asp-validation-for="Form.CGSTPercentage" class="text-danger small mt-1 d-block"></span>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">IGST Percentage <span class="text-danger">*</span></label>
+                            <label asp-for="Form.SGSTPercentage" class="form-label fw-semibold text-dark">SGST Percentage <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-percent text-muted"></i></span>
-                                <input type="number" id="IGSTPercentage" name="IGSTPercentage" class="form-control border-start-0" required step="0.01" placeholder="18" />
+                                <input asp-for="Form.SGSTPercentage" id="SGSTPercentage" class="form-control border-start-0" required step="0.01" placeholder="9" />
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-3">
-                        <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">CGST Percentage <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-percent text-muted"></i></span>
-                                <input type="number" id="CGSTPercentage" name="CGSTPercentage" class="form-control border-start-0" required step="0.01" placeholder="9" />
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold text-dark">SGST Percentage <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-percent text-muted"></i></span>
-                                <input type="number" id="SGSTPercentage" name="SGSTPercentage" class="form-control border-start-0" required step="0.01" placeholder="9" />
-                            </div>
+                            <span asp-validation-for="Form.SGSTPercentage" class="text-danger small mt-1 d-block"></span>
                         </div>
                     </div>
                 </div>
@@ -116,6 +125,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var bootstrapModal;
         $(function () {

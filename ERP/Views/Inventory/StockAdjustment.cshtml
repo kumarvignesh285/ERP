@@ -3,6 +3,8 @@
     ViewData["Title"] = "Stock Adjustment";
 }
 
+@Html.AntiForgeryToken()
+
 <div id="listView">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -66,27 +68,27 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-body p-4">
-            <form id="adjustmentForm">
+            <form asp-controller="Inventory" asp-action="SaveStockAdjustment" method="post" id="adjustmentForm">
                 <input type="hidden" id="Id" name="Id" value="0" />
                 
                 <div class="row g-3 mb-4">
                     <div class="col-12 col-sm-6 col-md-3">
-                        <label class="form-label fw-semibold text-dark">Adjustment Number <span class="text-danger">*</span></label>
+                        <label asp-for="Form!.AdjustmentNumber" class="form-label fw-semibold text-dark">Adjustment Number <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-hashtag text-muted"></i></span>
-                            <input type="text" id="AdjustmentNumber" class="form-control border-start-0 fw-bold" required readonly />
+                            <input type="text" asp-for="Form!.AdjustmentNumber" id="AdjustmentNumber" class="form-control border-start-0 fw-bold" required readonly />
                         </div>
                     </div>
                     <div class="col-12 col-sm-6 col-md-3">
-                        <label class="form-label fw-semibold text-dark">Adjustment Date <span class="text-danger">*</span></label>
+                        <label asp-for="Form!.AdjustmentDate" class="form-label fw-semibold text-dark">Adjustment Date <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-calendar text-muted"></i></span>
-                            <input type="date" id="AdjustmentDate" class="form-control border-start-0" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <input type="date" asp-for="Form!.AdjustmentDate" id="AdjustmentDate" class="form-control border-start-0" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
                         </div>
                     </div>
                     <div class="col-12 col-sm-6 col-md-3">
-                        <label class="form-label fw-semibold text-dark">Warehouse <span class="text-danger">*</span></label>
-                        <select id="WarehouseId" class="form-select select2" required>
+                        <label asp-for="Form!.WarehouseId" class="form-label fw-semibold text-dark">Warehouse <span class="text-danger">*</span></label>
+                        <select asp-for="Form!.WarehouseId" id="WarehouseId" class="form-select select2" required>
                             <option value="">Select Warehouse</option>
                             @foreach (var w in Model.Warehouses)
                             {
@@ -95,8 +97,8 @@
                         </select>
                     </div>
                     <div class="col-12 col-sm-6 col-md-3">
-                        <label class="form-label fw-semibold text-dark">Adjustment Type <span class="text-danger">*</span></label>
-                        <select id="AdjustmentType" class="form-select" required>
+                        <label asp-for="Form!.AdjustmentType" class="form-label fw-semibold text-dark">Adjustment Type <span class="text-danger">*</span></label>
+                        <select asp-for="Form!.AdjustmentType" id="AdjustmentType" class="form-select" required>
                             <option value="Addition">Addition (+)</option>
                             <option value="Deduction">Deduction (-)</option>
                         </select>
@@ -107,16 +109,17 @@
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="m-0 fw-bold text-dark"><i class="fa-solid fa-boxes-stacked me-2 text-primary"></i> Adjustment Line Items</h5>
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Item Row</button>
+                    <button type="button" class="btn btn-add-line-item shadow-xs" onclick="addRow()"><i class="fa-solid fa-plus"></i> Add Line Item</button>
                 </div>
 
                 <div class="table-responsive mb-4">
                     <table class="table table-bordered align-middle shadow-sm" id="itemsTable">
                         <thead class="table-light text-uppercase fs-8 fw-bold text-muted">
                             <tr>
+                                <th style="width: 200px;">Category</th>
                                 <th>Product *</th>
-                                <th class="w-150px">Adjustment Qty *</th>
-                                <th class="w-200px">Reason / Notes</th>
+                                <th class="w-120px">Adjustment Qty *</th>
+                                <th class="w-150px">Cost Rate *</th>
                                 <th class="w-60px text-center">Action</th>
                             </tr>
                         </thead>
@@ -127,8 +130,8 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold text-dark">Remarks</label>
-                    <textarea id="Remarks" class="form-control" rows="2" placeholder="Reason for adjustment..."></textarea>
+                    <label asp-for="Form!.Remarks" class="form-label fw-semibold text-dark">Remarks</label>
+                    <textarea asp-for="Form!.Remarks" id="Remarks" class="form-control" rows="2" placeholder="Reason for adjustment..."></textarea>
                 </div>
 
                 <!-- Sticky Bottom Actions Bar -->
@@ -142,6 +145,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var productsList = @Json.Serialize(Model.ProductLookups);
         if (productsList) {
@@ -214,7 +218,7 @@
                         <input type="number" class="form-control rate-input" value="0.00" step="0.01" required />
                     </td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
+                        <button type="button" class="btn btn-delete-row" onclick="removeRow(this)" title="Delete Row"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
@@ -223,6 +227,7 @@
             window.initializeSelect2($row.find('.select2-row'));
             window.initializeSelect2($row.find('.select2-category'));
         }
+        window.addRow = addRow;
 
         function removeRow(btn) {
             $(btn).closest('tr').remove();

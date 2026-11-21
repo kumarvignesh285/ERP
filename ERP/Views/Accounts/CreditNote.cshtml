@@ -77,27 +77,28 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-body p-4">
-            <form id="voucherForm">
+            <form asp-controller="Accounts" asp-action="SaveVoucher" method="post" id="voucherForm">
+                @Html.AntiForgeryToken()
                 <div class="row g-3 mb-4">
                     <div class="col-12 col-sm-6 col-md-4">
-                        <label class="form-label fw-semibold text-dark">Voucher Number <span class="text-danger">*</span></label>
+                        <label asp-for="Form.VoucherNumber" class="form-label fw-semibold text-dark">Voucher Number <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-hashtag text-muted"></i></span>
-                            <input type="text" id="VoucherNumber" class="form-control border-start-0 fw-bold" required />
+                            <input type="text" asp-for="Form.VoucherNumber" id="VoucherNumber" class="form-control border-start-0 fw-bold" required />
                         </div>
                     </div>
                     <div class="col-12 col-sm-6 col-md-4">
-                        <label class="form-label fw-semibold text-dark">Voucher Date <span class="text-danger">*</span></label>
+                        <label asp-for="Form.VoucherDate" class="form-label fw-semibold text-dark">Voucher Date <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-calendar text-muted"></i></span>
-                            <input type="date" id="VoucherDate" class="form-control border-start-0" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <input type="date" asp-for="Form.VoucherDate" id="VoucherDate" class="form-control border-start-0" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
                         </div>
                     </div>
                     <div class="col-12 col-sm-6 col-md-4">
-                        <label class="form-label fw-semibold text-dark">Reference Invoice No</label>
+                        <label asp-for="Form.ReferenceNumber" class="form-label fw-semibold text-dark">Reference Invoice No</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-receipt text-muted"></i></span>
-                            <input type="text" id="ReferenceNumber" class="form-control border-start-0" placeholder="e.g. Sales Invoice No" />
+                            <input type="text" asp-for="Form.ReferenceNumber" id="ReferenceNumber" class="form-control border-start-0" placeholder="e.g. Sales Invoice No" />
                         </div>
                     </div>
                 </div>
@@ -109,7 +110,7 @@
                         <h5 class="m-0 fw-bold text-dark"><i class="fa-solid fa-list-check me-2 text-primary"></i> Debit & Credit Ledger Allocations</h5>
                         <p class="text-muted fs-8 m-0 mt-1">Add rows to debit/credit ledgers. Total Debit must equal Total Credit before saving.</p>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()"><i class="fa-solid fa-plus me-1"></i> Add Row</button>
+                    <button type="button" class="btn btn-add-line-item shadow-xs" onclick="addRow()"><i class="fa-solid fa-plus"></i> Add Row</button>
                 </div>
 
                 <div class="table-responsive mb-4">
@@ -130,8 +131,8 @@
 
                 <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
                     <div class="flex-grow-1 w-100" style="max-width: 500px;">
-                        <label class="form-label fw-semibold text-dark">Narration <span class="text-danger">*</span></label>
-                        <textarea id="Narration" class="form-control" rows="3" placeholder="Credit note reason..." required></textarea>
+                        <label asp-for="Form.Narration" class="form-label fw-semibold text-dark">Narration <span class="text-danger">*</span></label>
+                        <textarea asp-for="Form.Narration" id="Narration" class="form-control" rows="3" placeholder="Credit note reason..." required></textarea>
                     </div>
                     
                     <div class="summary-calc-card text-end ms-auto shadow-sm">
@@ -161,6 +162,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var ledgersList = @Json.Serialize(Model.LedgerLookups);
 
@@ -202,7 +204,7 @@
                         <input type="text" class="form-control particulars-input" />
                     </td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button>
+                        <button type="button" class="btn btn-delete-row" onclick="removeRow(this)" title="Delete Row"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
@@ -210,6 +212,7 @@
             $('#itemsTable tbody').append($row);
             window.initializeSelect2($row.find('.select2-row'));
         }
+        window.addRow = addRow;
 
         function removeRow(btn) {
             $(btn).closest('tr').remove();

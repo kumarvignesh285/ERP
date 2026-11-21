@@ -1,7 +1,9 @@
-@model IEnumerable<ERP.Models.PaymentMode>
+@model PaymentModePageViewModel
 @{
     ViewData["Title"] = "Payment Modes";
 }
+
+@Html.AntiForgeryToken()
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="m-0 font-weight-bold text-primary"><i class="fa-solid fa-credit-card me-2"></i> Payment Modes List</h4>
@@ -21,7 +23,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var pm in Model)
+                    @foreach (var pm in Model.PaymentModes)
                     {
                         <tr id="row-@pm.Id">
                             <td>@pm.Id</td>
@@ -59,22 +61,26 @@
                 <h5 class="modal-title" id="modalTitle">Add Payment Mode</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form asp-action="SavePaymentMode" method="post" id="paymentModeForm">
+            <form asp-controller="Masters" asp-action="SavePaymentMode" method="post" id="paymentModeForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-body">
-                    <input type="hidden" id="Id" name="Id" value="0" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                    <input type="hidden" asp-for="Form.Id" id="Id" value="0" />
                     <div class="mb-3">
-                        <label class="form-label font-weight-semibold">Mode Name *</label>
-                        <input type="text" id="ModeName" name="ModeName" class="form-control" required placeholder="e.g. UPI / QR Code" />
+                        <label asp-for="Form.ModeName" class="form-label font-weight-semibold">Mode Name *</label>
+                        <input asp-for="Form.ModeName" id="ModeName" class="form-control" required placeholder="e.g. UPI / QR Code" />
+                        <span asp-validation-for="Form.ModeName" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label font-weight-semibold">Mode Type *</label>
-                        <select id="ModeType" name="ModeType" class="form-select" required>
+                        <label asp-for="Form.ModeType" class="form-label font-weight-semibold">Mode Type *</label>
+                        <select asp-for="Form.ModeType" id="ModeType" class="form-select" required>
                             <option value="Cash">Cash</option>
                             <option value="Bank">Bank</option>
                             <option value="Card">Card</option>
                             <option value="UPI">UPI</option>
                             <option value="Other">Other</option>
                         </select>
+                        <span asp-validation-for="Form.ModeType" class="text-danger small mt-1 d-block"></span>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -87,6 +93,7 @@
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         var bootstrapModal;
         $(function () {
