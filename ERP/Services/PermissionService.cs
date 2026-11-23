@@ -104,7 +104,7 @@ public class PermissionService : IPermissionService
             {
                 return normalizedAction is not ("delete" or "remove");
             }
-            if (screenName is "Product Master" or "Category Master" or "Stock Opening" or "Sales Reports")
+            if (screenName is "Product Master" or "Category Master" or "Stock Opening" or "Sales Reports" or "Customer Reports" or "Reports Dashboard")
             {
                 return normalizedAction is "view" or "read" or "print" or "export";
             }
@@ -118,7 +118,7 @@ public class PermissionService : IPermissionService
             {
                 return normalizedAction is not ("delete" or "remove");
             }
-            if (screenName is "Stock Opening" or "Stock Transfer" or "Purchase Reports")
+            if (screenName is "Stock Opening" or "Stock Transfer" or "Purchase Reports" or "Supplier Reports" or "Reports Dashboard")
             {
                 return normalizedAction is "view" or "read" or "print" or "export";
             }
@@ -127,7 +127,8 @@ public class PermissionService : IPermissionService
         if (roles.Contains("Accountant"))
         {
             var isAccount = screenName is "Receipt Voucher" or "Payment Voucher" or "Contra Voucher" or "Journal Voucher"
-                or "Debit Note" or "Credit Note" or "Cash Book" or "Bank Book" or "Accounting Reports"
+                or "Debit Note" or "Credit Note" or "Cash Book" or "Bank Book" or "Accounting Reports" or "Accounts Reports"
+                or "GST Reports" or "Customer Reports" or "Supplier Reports" or "Reports Dashboard"
                 or "Ledger Master" or "Bank Master" or "Tax Settings";
             if (isAccount)
             {

@@ -1,0 +1,406 @@
+@model ERP.ViewModels.Reporting.ReportResultViewModel<object>
+@{
+    ViewData["Title"] = Model.ReportTitle;
+    var currentType = Model.ReportType;
+    var filter = Model.Filter;
+}
+
+<!-- Print Header -->
+<div class="report-print-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="company-title">@Model.ActiveCompanyName</h1>
+            <h2 class="report-title">@Model.ReportTitle</h2>
+            <div class="report-meta">
+                Period: @(filter.FromDate?.ToString("dd-MMM-yyyy") ?? "Start") to @(filter.ToDate?.ToString("dd-MMM-yyyy") ?? "Today") | 
+                Generated: @DateTime.Now.ToString("dd-MMM-yyyy HH:mm")
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 no-print">
+    <div>
+        <h4 class="m-0 fw-bold text-dark"><i class="fa-solid fa-boxes-stacked text-warning me-2"></i> @Model.ReportTitle</h4>
+        <p class="text-muted small m-0 mt-0.5">@Model.ReportDescription</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Index", "Reports")" class="btn btn-sm btn-outline-secondary">
+            <i class="fa-solid fa-gauge me-1"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- 15 Sub-Report Navigation Tabs -->
+<div class="card border-0 shadow-sm mb-3 no-print report-subnav">
+    <div class="card-body p-2">
+        <div class="nav nav-pills nav-fill flex-nowrap overflow-auto gap-1">
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "CurrentStock", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "CurrentStock" ? "active" : "")">
+                <i class="fa-solid fa-layer-group me-1"></i> Current Stock
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "LowStock", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "LowStock" ? "active text-warning" : "")">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i> Low Stock
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "OutOfStock", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap text-danger @(currentType == "OutOfStock" ? "active bg-danger text-white" : "")">
+                <i class="fa-solid fa-circle-xmark me-1"></i> Out of Stock
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "StockLedger", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "StockLedger" ? "active" : "")">
+                <i class="fa-solid fa-book-open me-1"></i> Stock Ledger
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "StockMovement", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "StockMovement" ? "active" : "")">
+                <i class="fa-solid fa-arrows-split-up-and-left me-1"></i> Stock Movement
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "StockValuation", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "StockValuation" ? "active" : "")">
+                <i class="fa-solid fa-calculator me-1"></i> Valuation
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "OpeningStock", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "OpeningStock" ? "active" : "")">
+                <i class="fa-solid fa-door-open me-1"></i> Opening Stock
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "ClosingStock", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "ClosingStock" ? "active" : "")">
+                <i class="fa-solid fa-door-closed me-1"></i> Closing Stock
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "StockTransfer", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "StockTransfer" ? "active" : "")">
+                <i class="fa-solid fa-dolly me-1"></i> Transfers
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "StockAdjustment", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "StockAdjustment" ? "active" : "")">
+                <i class="fa-solid fa-sliders me-1"></i> Adjustments
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "PhysicalVerification", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "PhysicalVerification" ? "active" : "")">
+                <i class="fa-solid fa-clipboard-check me-1"></i> Audit Verification
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "FastMoving", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "FastMoving" ? "active" : "")">
+                <i class="fa-solid fa-bolt me-1"></i> Fast Moving
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "SlowMoving", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "SlowMoving" ? "active" : "")">
+                <i class="fa-solid fa-hourglass-half me-1"></i> Slow Moving
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "NonMoving", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap text-danger @(currentType == "NonMoving" ? "active" : "")">
+                <i class="fa-solid fa-skull me-1"></i> Dead Stock
+            </a>
+            <a href="@Url.Action("Inventory", "Reports", new { reportType = "ReorderSuggestions", CategoryId = filter.CategoryId, WarehouseId = filter.WarehouseId })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "ReorderSuggestions" ? "active" : "")">
+                <i class="fa-solid fa-cart-plus me-1"></i> Reorder Plan
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<partial name="_ReportFilterBar" model="filter" />
+
+<!-- Summary Metric Cards -->
+@if (Model.SummaryCards.Any())
+{
+    <div class="row g-3 mb-4 report-summary-cards">
+        @foreach (var card in Model.SummaryCards)
+        {
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="card border-0 shadow-sm bg-@card.ColorClass bg-opacity-10 h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted fs-8 fw-bold text-uppercase">@card.Title</span>
+                            <i class="fa-solid @card.Icon text-@card.ColorClass fs-6"></i>
+                        </div>
+                        <h4 class="fw-bold text-@card.ColorClass m-0">@card.Value</h4>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Data Table Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold m-0 text-dark">
+            <i class="fa-solid fa-table-list text-warning me-1.5"></i> @Model.ReportTitle Data Table
+        </h6>
+        <span class="badge bg-light text-muted border fs-8">@Model.TotalRecords Records</span>
+    </div>
+    <div class="card-body p-3">
+        <div class="table-responsive">
+            @if (currentType is "CurrentStock" or "LowStock" or "OutOfStock" or "OpeningStock" or "ClosingStock" or "StockValuation")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Warehouse</th>
+                            <th class="text-end">Current Stock</th>
+                            <th class="text-end">Cost Price</th>
+                            <th class="text-end">Retail Price</th>
+                            <th class="text-end">Cost Valuation</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Data.Cast<ERP.ViewModels.Reporting.CurrentStockDto>())
+                        {
+                            <tr>
+                                <td class="font-monospace text-muted">@p.ProductCode</td>
+                                <td class="fw-bold text-dark">@p.ProductName</td>
+                                <td><span class="badge bg-light text-secondary border">@p.CategoryName</span></td>
+                                <td><span class="badge bg-light text-secondary border">@p.WarehouseName</span></td>
+                                <td class="text-end fw-bold @(p.CurrentStock <= 0 ? "text-danger" : p.CurrentStock <= p.MinimumStock ? "text-warning" : "text-dark")">
+                                    @p.CurrentStock.ToString("N2") @p.UnitName
+                                </td>
+                                <td class="text-end">₹@p.PurchasePrice.ToString("N2")</td>
+                                <td class="text-end">₹@p.SalesPrice.ToString("N2")</td>
+                                <td class="text-end fw-bold text-success">₹@p.StockValuation.ToString("N2")</td>
+                                <td class="text-center">
+                                    @if (p.CurrentStock <= 0)
+                                    {
+                                        <span class="badge bg-danger text-white rounded-pill">Out of Stock</span>
+                                    }
+                                    else if (p.CurrentStock <= p.MinimumStock)
+                                    {
+                                        <span class="badge bg-warning text-dark rounded-pill">Low Stock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">In Stock</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "StockLedger")
+            {
+                <div class="alert alert-info py-2 fs-8 mb-3 no-print">
+                    <i class="fa-solid fa-circle-info me-1"></i> Displaying transaction-by-transaction movement card for selected product across chronological dates with running stock balances.
+                </div>
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Ref #</th>
+                            <th>Warehouse</th>
+                            <th class="text-end text-success">Qty In (+)</th>
+                            <th class="text-end text-danger">Qty Out (-)</th>
+                            <th class="text-end">Running Balance</th>
+                            <th class="text-end">Rate</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.StockLedgerRowDto>())
+                        {
+                            <tr>
+                                <td>@row.TransactionDate.ToString("dd-MMM-yyyy")</td>
+                                <td><span class="badge bg-light text-dark border">@row.TransactionType</span></td>
+                                <td class="fw-semibold">@row.ReferenceNumber</td>
+                                <td>@row.WarehouseName</td>
+                                <td class="text-end fw-bold text-success">@(row.QuantityIn > 0 ? $"+{row.QuantityIn:N2}" : "-")</td>
+                                <td class="text-end fw-bold text-danger">@(row.QuantityOut > 0 ? $"-{row.QuantityOut:N2}" : "-")</td>
+                                <td class="text-end fw-bold text-primary">@row.BalanceQuantity.ToString("N2")</td>
+                                <td class="text-end">₹@row.Rate.ToString("N2")</td>
+                                <td class="text-muted fs-9">@(row.Remarks ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "StockMovement")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th class="text-end">Opening Qty</th>
+                            <th class="text-end text-success">Inward (+)</th>
+                            <th class="text-end text-danger">Outward (-)</th>
+                            <th class="text-end fw-bold">Closing Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var m in Model.Data.Cast<ERP.ViewModels.Reporting.StockMovementDto>())
+                        {
+                            <tr>
+                                <td class="font-monospace text-muted">@m.ProductCode</td>
+                                <td class="fw-bold text-dark">@m.ProductName</td>
+                                <td>@m.CategoryName</td>
+                                <td class="text-end">@m.OpeningStock.ToString("N2") @m.UnitName</td>
+                                <td class="text-end text-success fw-semibold">+@m.InwardQuantity.ToString("N2")</td>
+                                <td class="text-end text-danger fw-semibold">-@m.OutwardQuantity.ToString("N2")</td>
+                                <td class="text-end fw-bold text-primary">@m.ClosingStock.ToString("N2") @m.UnitName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType is "FastMoving" or "SlowMoving" or "NonMoving")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th class="text-end">Current Stock</th>
+                            <th class="text-end">Quantity Sold</th>
+                            <th class="text-end">Total Revenue</th>
+                            <th class="text-center">Classification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Data.Cast<ERP.ViewModels.Reporting.ProductMovementAnalysisDto>())
+                        {
+                            <tr>
+                                <td class="font-monospace text-muted">@p.ProductCode</td>
+                                <td class="fw-bold text-dark">@p.ProductName</td>
+                                <td>@p.CategoryName</td>
+                                <td class="text-end fw-semibold">@p.CurrentStock.ToString("N2")</td>
+                                <td class="text-end fw-bold">@p.QuantitySold.ToString("N0")</td>
+                                <td class="text-end fw-bold text-success">₹@p.TotalSalesAmount.ToString("N2")</td>
+                                <td class="text-center">
+                                    <span class="badge @(p.MovementClassification.Contains("Fast") ? "bg-success" : p.MovementClassification.Contains("Slow") ? "bg-warning text-dark" : "bg-danger") rounded-pill">
+                                        @p.MovementClassification
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "ReorderSuggestions")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th class="text-end">Current Stock</th>
+                            <th class="text-end">Min / Reorder Threshold</th>
+                            <th class="text-end text-primary">Suggested Order Qty</th>
+                            <th class="text-end">Unit Cost</th>
+                            <th class="text-end">Estimated Procurement Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.Data.Cast<ERP.ViewModels.Reporting.ReorderSuggestionDto>())
+                        {
+                            <tr>
+                                <td class="font-monospace text-muted">@r.ProductCode</td>
+                                <td class="fw-bold text-dark">@r.ProductName</td>
+                                <td>@r.CategoryName</td>
+                                <td class="text-end fw-bold text-danger">@r.CurrentStock.ToString("N2")</td>
+                                <td class="text-end text-muted">@r.MinimumStock.ToString("N0") / @r.ReorderLevel.ToString("N0")</td>
+                                <td class="text-end fw-bold text-primary fs-7">@r.SuggestedOrderQty.ToString("N0")</td>
+                                <td class="text-end">₹@r.PurchasePrice.ToString("N2")</td>
+                                <td class="text-end fw-bold text-success">₹@r.EstimatedOrderCost.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <!-- Generic fallback for StockTransfer, StockAdjustment, PhysicalVerification -->
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            @if (currentType == "StockTransfer")
+                            {
+                                <th>Transfer #</th>
+                                <th>Date</th>
+                                <th>From Warehouse</th>
+                                <th>To Warehouse</th>
+                                <th class="text-center">Items</th>
+                                <th class="text-end">Total Qty</th>
+                                <th class="text-center">Status</th>
+                            }
+                            else if (currentType == "StockAdjustment")
+                            {
+                                <th>Adjustment #</th>
+                                <th>Date</th>
+                                <th>Warehouse</th>
+                                <th>Type</th>
+                                <th class="text-center">Items</th>
+                                <th class="text-end">Total Quantity</th>
+                                <th>Remarks</th>
+                            }
+                            else if (currentType == "PhysicalVerification")
+                            {
+                                <th>Verification #</th>
+                                <th>Audit Date</th>
+                                <th>Warehouse</th>
+                                <th class="text-center">Items Count</th>
+                                <th class="text-end">Total Variance</th>
+                                <th>Remarks</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (currentType == "StockTransfer")
+                        {
+                            foreach (var st in Model.Data.Cast<ERP.ViewModels.Reporting.StockTransferReportDto>())
+                            {
+                                <tr>
+                                    <td class="fw-bold text-primary">@st.TransferNumber</td>
+                                    <td>@st.TransferDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>@st.FromWarehouse</td>
+                                    <td>@st.ToWarehouse</td>
+                                    <td class="text-center">@st.ItemCount</td>
+                                    <td class="text-end fw-semibold">@st.TotalQuantity.ToString("N2")</td>
+                                    <td class="text-center"><span class="badge bg-success rounded-pill">@st.Status</span></td>
+                                </tr>
+                            }
+                        }
+                        else if (currentType == "StockAdjustment")
+                        {
+                            foreach (var sa in Model.Data.Cast<ERP.ViewModels.Reporting.StockAdjustmentReportDto>())
+                            {
+                                <tr>
+                                    <td class="fw-bold">@sa.AdjustmentNumber</td>
+                                    <td>@sa.AdjustmentDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>@sa.WarehouseName</td>
+                                    <td><span class="badge @(sa.AdjustmentType == "Addition" ? "bg-success" : "bg-danger")">@sa.AdjustmentType</span></td>
+                                    <td class="text-center">@sa.ItemCount</td>
+                                    <td class="text-end fw-semibold">@sa.TotalQuantity.ToString("N2")</td>
+                                    <td class="text-muted">@(sa.Remarks ?? "-")</td>
+                                </tr>
+                            }
+                        }
+                        else if (currentType == "PhysicalVerification")
+                        {
+                            foreach (var pv in Model.Data.Cast<ERP.ViewModels.Reporting.PhysicalVerificationReportDto>())
+                            {
+                                <tr>
+                                    <td class="fw-bold text-primary">@pv.VerificationNumber</td>
+                                    <td>@pv.VerificationDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>@pv.WarehouseName</td>
+                                    <td class="text-center">@pv.ItemCount</td>
+                                    <td class="text-end fw-bold @(pv.TotalVariance != 0 ? "text-danger" : "text-success")">@pv.TotalVariance.ToString("N2")</td>
+                                    <td class="text-muted">@(pv.Remarks ?? "-")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

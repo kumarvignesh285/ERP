@@ -74,6 +74,19 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 
+// Register ERP Reports & Analytics Module Services
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+builder.Services.AddScoped<ERP.Interfaces.Reporting.ISalesReportService, ERP.Services.Reporting.SalesReportService>();
+builder.Services.AddScoped<ERP.Interfaces.Reporting.IPurchaseReportService, ERP.Services.Reporting.PurchaseReportService>();
+builder.Services.AddScoped<ERP.Interfaces.Reporting.IInventoryReportService, ERP.Services.Reporting.InventoryReportService>();
+builder.Services.AddScoped<ERP.Interfaces.Reporting.IAccountsReportService, ERP.Services.Reporting.AccountsReportService>();
+builder.Services.AddScoped<ERP.Interfaces.Reporting.IGstReportService, ERP.Services.Reporting.GstReportService>();
+builder.Services.AddScoped<ERP.Interfaces.Reporting.ICustomerSupplierReportService, ERP.Services.Reporting.CustomerSupplierReportService>();
+builder.Services.AddScoped<ERP.Interfaces.Reporting.IAuditReportService, ERP.Services.Reporting.AuditReportService>();
+builder.Services.AddScoped<ERP.Interfaces.Reporting.IBusinessAnalyticsService, ERP.Services.Reporting.BusinessAnalyticsService>();
+builder.Services.AddScoped<ERP.Interfaces.Reporting.IReportDashboardService, ERP.Services.Reporting.ReportDashboardService>();
+builder.Services.AddScoped<ERP.Interfaces.Reporting.IReportExportService, ERP.Services.Reporting.ReportExportService>();
+
 // Register AI Business Intelligence Chatbot Services
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IERPReportService, ERPReportService>();

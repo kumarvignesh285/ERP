@@ -1,0 +1,551 @@
+@model ERP.ViewModels.Reporting.ReportResultViewModel<object>
+@{
+    ViewData["Title"] = Model.ReportTitle;
+    var currentType = Model.ReportType;
+    var filter = Model.Filter;
+}
+
+<!-- Print-Only Header -->
+<div class="report-print-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="company-title">@Model.ActiveCompanyName</h1>
+            <h2 class="report-title">@Model.ReportTitle</h2>
+            <div class="report-meta">
+                Period: @(filter.FromDate?.ToString("dd-MMM-yyyy") ?? "Start") to @(filter.ToDate?.ToString("dd-MMM-yyyy") ?? "Today") | 
+                Generated: @DateTime.Now.ToString("dd-MMM-yyyy HH:mm")
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 no-print">
+    <div>
+        <h4 class="m-0 fw-bold text-dark"><i class="fa-solid fa-chart-line text-primary me-2"></i> @Model.ReportTitle</h4>
+        <p class="text-muted small m-0 mt-0.5">@Model.ReportDescription</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Index", "Reports")" class="btn btn-sm btn-outline-secondary">
+            <i class="fa-solid fa-gauge me-1"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- 11 BI Sub-Report Navigation Tabs -->
+<div class="card border-0 shadow-sm mb-3 no-print report-subnav">
+    <div class="card-body p-2">
+        <div class="nav nav-pills nav-fill flex-nowrap overflow-auto gap-1">
+            <a href="@Url.Action("BI", "Reports", new { reportType = "SalesGrowth", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "SalesGrowth" ? "active" : "")">
+                <i class="fa-solid fa-arrow-trend-up me-1"></i> Sales Growth
+            </a>
+            <a href="@Url.Action("BI", "Reports", new { reportType = "MonthOverMonth", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "MonthOverMonth" ? "active" : "")">
+                <i class="fa-solid fa-calendar-day me-1"></i> MoM Growth
+            </a>
+            <a href="@Url.Action("BI", "Reports", new { reportType = "YearOverYear", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "YearOverYear" ? "active" : "")">
+                <i class="fa-solid fa-calendar me-1"></i> YoY Growth
+            </a>
+            <a href="@Url.Action("BI", "Reports", new { reportType = "Top10Products", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "Top10Products" ? "active" : "")">
+                <i class="fa-solid fa-trophy me-1 text-warning"></i> Top 10 Products
+            </a>
+            <a href="@Url.Action("BI", "Reports", new { reportType = "Bottom10Products", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "Bottom10Products" ? "active" : "")">
+                <i class="fa-solid fa-arrow-down-wide-short me-1"></i> Bottom 10
+            </a>
+            <a href="@Url.Action("BI", "Reports", new { reportType = "CategoryPerformance", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "CategoryPerformance" ? "active" : "")">
+                <i class="fa-solid fa-chart-pie me-1"></i> Categories
+            </a>
+            <a href="@Url.Action("BI", "Reports", new { reportType = "SalesTrends", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "SalesTrends" ? "active" : "")">
+                <i class="fa-solid fa-wave-square me-1"></i> Trends
+            </a>
+            <a href="@Url.Action("BI", "Reports", new { reportType = "DeadStock", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "DeadStock" ? "active" : "")">
+                <i class="fa-solid fa-skull-crossbones me-1 text-danger"></i> Dead Stock
+            </a>
+            <a href="@Url.Action("BI", "Reports", new { reportType = "InventoryTurnover", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "InventoryTurnover" ? "active" : "")">
+                <i class="fa-solid fa-arrows-spin me-1"></i> Turnover &amp; DSI
+            </a>
+            <a href="@Url.Action("BI", "Reports", new { reportType = "ReorderSuggestions", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "ReorderSuggestions" ? "active" : "")">
+                <i class="fa-solid fa-cart-flatbed me-1"></i> Reorders
+            </a>
+            <a href="@Url.Action("BI", "Reports", new { reportType = "PurchaseVsSales", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "PurchaseVsSales" ? "active" : "")">
+                <i class="fa-solid fa-code-compare me-1"></i> Sales vs Purchase
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<partial name="_ReportFilterBar" model="filter" />
+
+<!-- Summary Metric Cards -->
+@if (Model.SummaryCards.Any())
+{
+    <div class="row g-3 mb-4 report-summary-cards">
+        @foreach (var card in Model.SummaryCards)
+        {
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="card border-0 shadow-sm bg-@card.ColorClass bg-opacity-10 h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted fs-8 fw-bold text-uppercase">@card.Title</span>
+                            <i class="fa-solid @card.Icon text-@card.ColorClass fs-6"></i>
+                        </div>
+                        <h4 class="fw-bold text-@card.ColorClass m-0">@card.Value</h4>
+                        @if (!string.IsNullOrEmpty(card.Subtitle))
+                        {
+                            <span class="text-muted fs-9">@card.Subtitle</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Chart Container for Visual BI Insights (No-print) -->
+<div class="card border-0 shadow-sm mb-4 no-print">
+    <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold m-0 text-dark">
+            <i class="fa-solid fa-chart-column text-primary me-1.5"></i> Visual Intelligence Chart
+        </h6>
+        <span class="badge bg-light text-muted border fs-8">Dynamic Analysis</span>
+    </div>
+    <div class="card-body p-3">
+        <div style="height: 280px; position: relative;">
+            <canvas id="biChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Data Table Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold m-0 text-dark">
+            <i class="fa-solid fa-table-list text-primary me-1.5"></i> @Model.ReportTitle Data Table
+        </h6>
+        <span class="badge bg-light text-muted border fs-8">@Model.TotalRecords Records</span>
+    </div>
+    <div class="card-body p-3">
+        <div class="table-responsive">
+            @if (currentType == "SalesGrowth")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Period</th>
+                            <th class="text-end">Current Period Sales</th>
+                            <th class="text-end">Previous Period Sales</th>
+                            <th class="text-end">Growth Value</th>
+                            <th class="text-end">Growth Rate %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.GrowthAnalysisDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.PeriodLabel</td>
+                                <td class="text-end fw-bold text-primary">₹@row.SalesAmount.ToString("N2")</td>
+                                <td class="text-end text-muted">₹@row.PreviousPeriodSales.ToString("N2")</td>
+                                <td class="text-end fw-semibold @(row.GrowthAmount >= 0 ? "text-success" : "text-danger")">
+                                    @(row.GrowthAmount >= 0 ? "+" : "")₹@row.GrowthAmount.ToString("N2")
+                                </td>
+                                <td class="text-end fw-bold @(row.GrowthPercentage >= 0 ? "text-success" : "text-danger")">
+                                    <i class="fa-solid @(row.GrowthPercentage >= 0 ? "fa-arrow-up" : "fa-arrow-down") me-0.5"></i>
+                                    @row.GrowthPercentage.ToString("N2")%
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "MonthOverMonth" || currentType == "YearOverYear")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>KPI Metric</th>
+                            <th class="text-end">Current Period</th>
+                            <th class="text-end">Previous Period</th>
+                            <th class="text-end">Variance</th>
+                            <th class="text-end">Variance %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.PeriodComparisonBiDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.Metric</td>
+                                <td class="text-end fw-bold text-primary">₹@row.CurrentPeriodValue.ToString("N2")</td>
+                                <td class="text-end text-muted">₹@row.PreviousPeriodValue.ToString("N2")</td>
+                                <td class="text-end fw-semibold @(row.Variance >= 0 ? "text-success" : "text-danger")">
+                                    @(row.Variance >= 0 ? "+" : "")₹@row.Variance.ToString("N2")
+                                </td>
+                                <td class="text-end fw-bold @(row.VariancePercent >= 0 ? "text-success" : "text-danger")">
+                                    <i class="fa-solid @(row.VariancePercent >= 0 ? "fa-arrow-up" : "fa-arrow-down") me-0.5"></i>
+                                    @row.VariancePercent.ToString("N2")%
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "Top10Products" || currentType == "Bottom10Products")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="text-center">Rank</th>
+                            <th>Code</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th class="text-end">Qty Sold</th>
+                            <th class="text-end">Revenue</th>
+                            <th class="text-end">Est. Gross Profit</th>
+                            <th class="text-end">Margin %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.ProductPerformanceRankDto>())
+                        {
+                            <tr>
+                                <td class="text-center fw-bold">
+                                    @if (row.Rank <= 3 && currentType == "Top10Products")
+                                    {
+                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-crown me-0.5"></i> #@row.Rank</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark border">#@row.Rank</span>
+                                    }
+                                </td>
+                                <td class="fw-bold">@row.ProductCode</td>
+                                <td class="fw-semibold">@row.ProductName</td>
+                                <td><span class="badge bg-light text-dark border">@row.CategoryName</span></td>
+                                <td class="text-end">@row.QuantitySold.ToString("N2")</td>
+                                <td class="text-end fw-bold text-primary">₹@row.Revenue.ToString("N2")</td>
+                                <td class="text-end fw-semibold text-success">₹@row.EstimatedProfit.ToString("N2")</td>
+                                <td class="text-end fw-bold @(row.ProfitMargin >= 20 ? "text-success" : row.ProfitMargin >= 10 ? "text-warning" : "text-danger")">
+                                    @row.ProfitMargin.ToString("N2")%
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "CategoryPerformance")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Category</th>
+                            <th class="text-center">Products</th>
+                            <th class="text-end">Units Sold</th>
+                            <th class="text-end">Total Revenue</th>
+                            <th class="text-end">Revenue Share %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.CategoryWiseSalesDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold text-primary">@row.CategoryName</td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">@row.ProductCount</span></td>
+                                <td class="text-end">@row.QuantitySold.ToString("N2")</td>
+                                <td class="text-end fw-bold">₹@row.TotalSalesAmount.ToString("N2")</td>
+                                <td class="text-end fw-bold text-info">@row.PercentageOfTotal.ToString("N2")%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "SalesTrends")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Date</th>
+                            <th class="text-center">Sales Invoices</th>
+                            <th class="text-end">Sales Turnover</th>
+                            <th class="text-center">Purchase Invoices</th>
+                            <th class="text-end">Purchase Outflow</th>
+                            <th class="text-end">Net Operational Margin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.DailyTrendDto>())
+                        {
+                            <tr>
+                                <td class="fw-semibold">@row.DateLabel</td>
+                                <td class="text-center">@row.SalesInvoiceCount</td>
+                                <td class="text-end fw-bold text-primary">₹@row.SalesAmount.ToString("N2")</td>
+                                <td class="text-center">@row.PurchaseInvoiceCount</td>
+                                <td class="text-end fw-semibold text-danger">₹@row.PurchaseAmount.ToString("N2")</td>
+                                <td class="text-end fw-bold @((row.SalesAmount - row.PurchaseAmount) >= 0 ? "text-success" : "text-danger")">
+                                    ₹@((row.SalesAmount - row.PurchaseAmount).ToString("N2"))
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "DeadStock")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th class="text-end">Current Stock</th>
+                            <th class="text-end">Cost Price</th>
+                            <th class="text-end">Selling Price</th>
+                            <th class="text-end">Capital Locked Up</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.CurrentStockDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.ProductCode</td>
+                                <td class="fw-semibold">@row.ProductName</td>
+                                <td><span class="badge bg-light text-dark border">@row.CategoryName</span></td>
+                                <td class="text-end fw-bold text-danger">@row.CurrentStock.ToString("N2") @row.UnitName</td>
+                                <td class="text-end">₹@row.PurchasePrice.ToString("N2")</td>
+                                <td class="text-end">₹@row.SalesPrice.ToString("N2")</td>
+                                <td class="text-end fw-bold text-danger">₹@row.StockValuation.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "InventoryTurnover")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th class="text-end">COGS</th>
+                            <th class="text-end">Avg Stock Value</th>
+                            <th class="text-end">Turnover Ratio</th>
+                            <th class="text-center">Days Sales of Inv. (DSI)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.InventoryTurnoverDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.ProductCode</td>
+                                <td class="fw-semibold">@row.ProductName</td>
+                                <td><span class="badge bg-light text-dark border">@row.CategoryName</span></td>
+                                <td class="text-end">₹@row.CostOfGoodsSold.ToString("N2")</td>
+                                <td class="text-end">₹@row.AverageInventoryValue.ToString("N2")</td>
+                                <td class="text-end fw-bold text-primary">@row.TurnoverRatio.ToString("N2")x</td>
+                                <td class="text-center">
+                                    <span class="badge bg-@(row.DaysSalesOfInventory > 120 ? "danger" : row.DaysSalesOfInventory > 60 ? "warning text-dark" : "success")">
+                                        @row.DaysSalesOfInventory Days
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "ReorderSuggestions")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th class="text-end">Current Stock</th>
+                            <th class="text-end">Min Safety Stock</th>
+                            <th class="text-end">Reorder Point</th>
+                            <th class="text-end">Suggested Order Qty</th>
+                            <th class="text-end">Est. Procurement Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.ReorderSuggestionDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.ProductCode</td>
+                                <td class="fw-semibold">@row.ProductName</td>
+                                <td><span class="badge bg-light text-dark border">@row.CategoryName</span></td>
+                                <td class="text-end fw-bold text-danger">@row.CurrentStock.ToString("N2")</td>
+                                <td class="text-end">@row.MinimumStock.ToString("N2")</td>
+                                <td class="text-end">@row.ReorderLevel.ToString("N2")</td>
+                                <td class="text-end fw-bold text-success">@row.SuggestedOrderQty.ToString("N2")</td>
+                                <td class="text-end fw-bold text-primary">₹@row.EstimatedOrderCost.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "PurchaseVsSales")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Period</th>
+                            <th class="text-end">Sales Turnover</th>
+                            <th class="text-end">Purchase Outflow</th>
+                            <th class="text-end">Net Trading Spread</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.PurchaseVsSalesDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.Period</td>
+                                <td class="text-end fw-bold text-primary">₹@row.SalesAmount.ToString("N2")</td>
+                                <td class="text-end fw-bold text-danger">₹@row.PurchaseAmount.ToString("N2")</td>
+                                <td class="text-end fw-bold @(row.NetDifference >= 0 ? "text-success" : "text-danger")">
+                                    ₹@row.NetDifference.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            if ($('.datatable').length) {
+                $('.datatable').DataTable({
+                    responsive: true,
+                    pageLength: 25,
+                    order: [],
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: "Search records..."
+                    }
+                });
+            }
+
+            // BI Chart Rendering
+            const ctx = document.getElementById('biChart');
+            if (ctx) {
+                const reportType = '@currentType';
+                let labels = [];
+                let datasets = [];
+
+                @if (currentType == "SalesGrowth")
+                {
+                    var growthData = (Model.Data.Cast<ERP.ViewModels.Reporting.GrowthAnalysisDto>()).Take(12).ToList();
+                    <text>
+                    labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(growthData.Select(x => x.PeriodLabel)));
+                    datasets = [
+                        {
+                            label: 'Current Period Sales (₹)',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(growthData.Select(x => x.SalesAmount))),
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Previous Period Sales (₹)',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(growthData.Select(x => x.PreviousPeriodSales))),
+                            backgroundColor: 'rgba(156, 163, 175, 0.4)',
+                            borderColor: '#9ca3af',
+                            borderWidth: 1
+                        }
+                    ];
+                    </text>
+                }
+                else if (currentType == "Top10Products" || currentType == "Bottom10Products")
+                {
+                    var pData = (Model.Data.Cast<ERP.ViewModels.Reporting.ProductPerformanceRankDto>()).Take(10).ToList();
+                    <text>
+                    labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(pData.Select(x => x.ProductName)));
+                    datasets = [
+                        {
+                            label: 'Revenue (₹)',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(pData.Select(x => x.Revenue))),
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            borderColor: '#10b981',
+                            borderWidth: 1
+                        }
+                    ];
+                    </text>
+                }
+                else if (currentType == "PurchaseVsSales")
+                {
+                    var pvsData = (Model.Data.Cast<ERP.ViewModels.Reporting.PurchaseVsSalesDto>()).Take(12).ToList();
+                    <text>
+                    labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(pvsData.Select(x => x.Period)));
+                    datasets = [
+                        {
+                            label: 'Sales (₹)',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(pvsData.Select(x => x.SalesAmount))),
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Purchase (₹)',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(pvsData.Select(x => x.PurchaseAmount))),
+                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                            borderColor: '#ef4444',
+                            borderWidth: 1
+                        }
+                    ];
+                    </text>
+                }
+                else if (currentType == "CategoryPerformance")
+                {
+                    var catData = (Model.Data.Cast<ERP.ViewModels.Reporting.CategoryWiseSalesDto>()).Take(8).ToList();
+                    <text>
+                    labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(catData.Select(x => x.CategoryName)));
+                    datasets = [
+                        {
+                            label: 'Sales Revenue (₹)',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(catData.Select(x => x.TotalSalesAmount))),
+                            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b']
+                        }
+                    ];
+                    </text>
+                }
+                else
+                {
+                    <text>
+                    labels = ['Sample'];
+                    datasets = [{ label: 'Data', data: [0] }];
+                    </text>
+                }
+
+                new Chart(ctx, {
+                    type: (reportType === 'CategoryPerformance' ? 'doughnut' : 'bar'),
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}

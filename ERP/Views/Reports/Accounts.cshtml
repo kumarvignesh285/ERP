@@ -1,0 +1,457 @@
+@model ERP.ViewModels.Reporting.ReportResultViewModel<object>
+@{
+    ViewData["Title"] = Model.ReportTitle;
+    var currentType = Model.ReportType;
+    var filter = Model.Filter;
+}
+
+<!-- Print-Only Header -->
+<div class="report-print-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="company-title">@Model.ActiveCompanyName</h1>
+            <h2 class="report-title">@Model.ReportTitle</h2>
+            <div class="report-meta">
+                Period: @(filter.FromDate?.ToString("dd-MMM-yyyy") ?? "Start") to @(filter.ToDate?.ToString("dd-MMM-yyyy") ?? "Today") | 
+                Generated: @DateTime.Now.ToString("dd-MMM-yyyy HH:mm")
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 no-print">
+    <div>
+        <h4 class="m-0 fw-bold text-dark"><i class="fa-solid fa-scale-balanced text-primary me-2"></i> @Model.ReportTitle</h4>
+        <p class="text-muted small m-0 mt-0.5">@Model.ReportDescription</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Index", "Reports")" class="btn btn-sm btn-outline-secondary">
+            <i class="fa-solid fa-gauge me-1"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- 12 Accounts Sub-Report Navigation Tabs -->
+<div class="card border-0 shadow-sm mb-3 no-print report-subnav">
+    <div class="card-body p-2">
+        <div class="nav nav-pills nav-fill flex-nowrap overflow-auto gap-1">
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "CustomerOutstanding", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "CustomerOutstanding" ? "active" : "")">
+                <i class="fa-solid fa-hand-holding-dollar me-1"></i> Cust. Outstanding
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "SupplierOutstanding", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "SupplierOutstanding" ? "active" : "")">
+                <i class="fa-solid fa-money-bill-transfer me-1"></i> Supp. Outstanding
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "CustomerLedger", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "CustomerLedger" ? "active" : "")">
+                <i class="fa-solid fa-user-tag me-1"></i> Cust. Ledger
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "SupplierLedger", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "SupplierLedger" ? "active" : "")">
+                <i class="fa-solid fa-truck-ramp-box me-1"></i> Supp. Ledger
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "CashBook", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "CashBook" ? "active" : "")">
+                <i class="fa-solid fa-wallet me-1"></i> Cash Book
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "BankBook", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "BankBook" ? "active" : "")">
+                <i class="fa-solid fa-building-columns me-1"></i> Bank Book
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "ReceiptVouchers", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "ReceiptVouchers" ? "active" : "")">
+                <i class="fa-solid fa-file-invoice-dollar me-1"></i> Receipts
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "PaymentVouchers", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "PaymentVouchers" ? "active" : "")">
+                <i class="fa-solid fa-receipt me-1"></i> Payments
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "JournalVouchers", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "JournalVouchers" ? "active" : "")">
+                <i class="fa-solid fa-book-journal-whills me-1"></i> Journals
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "LedgerSummary", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "LedgerSummary" ? "active" : "")">
+                <i class="fa-solid fa-list-check me-1"></i> Ledger Summary
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "TrialBalance", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "TrialBalance" ? "active" : "")">
+                <i class="fa-solid fa-balance-scale me-1"></i> Trial Balance
+            </a>
+            <a href="@Url.Action("Accounts", "Reports", new { reportType = "ProfitAndLoss", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "ProfitAndLoss" ? "active" : "")">
+                <i class="fa-solid fa-chart-pie me-1"></i> P &amp; L
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<partial name="_ReportFilterBar" model="filter" />
+
+<!-- Summary Metric Cards -->
+@if (Model.SummaryCards.Any())
+{
+    <div class="row g-3 mb-4 report-summary-cards">
+        @foreach (var card in Model.SummaryCards)
+        {
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="card border-0 shadow-sm bg-@card.ColorClass bg-opacity-10 h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted fs-8 fw-bold text-uppercase">@card.Title</span>
+                            <i class="fa-solid @card.Icon text-@card.ColorClass fs-6"></i>
+                        </div>
+                        <h4 class="fw-bold text-@card.ColorClass m-0">@card.Value</h4>
+                        @if (!string.IsNullOrEmpty(card.Subtitle))
+                        {
+                            <span class="text-muted fs-9">@card.Subtitle</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Special View for Profit and Loss -->
+@if (currentType == "ProfitAndLoss")
+{
+    var pnl = ViewBag.PnlData as ERP.ViewModels.Reporting.ProfitAndLossReportDto;
+    if (pnl != null)
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-success bg-opacity-10 border-0 pt-3 px-3">
+                        <h6 class="fw-bold text-success m-0"><i class="fa-solid fa-arrow-trend-up me-1.5"></i> Trading Income (Sales)</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span>Gross Sales Revenue</span>
+                            <span class="fw-bold">₹@pnl.SalesRevenue.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom text-danger">
+                            <span>Less: Sales Returns &amp; Credit Notes</span>
+                            <span class="fw-bold">- ₹@pnl.SalesReturns.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom bg-light px-2 fw-bold text-primary">
+                            <span>Net Sales Turnover</span>
+                            <span>₹@pnl.NetSales.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom text-danger">
+                            <span>Less: Cost of Goods Sold (Procurement Cost)</span>
+                            <span class="fw-bold">- ₹@pnl.CostOfGoodsSold.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2.5 mt-2 bg-success bg-opacity-10 px-2 rounded fw-bold text-success fs-6">
+                            <span>Gross Trading Profit</span>
+                            <span>₹@pnl.GrossProfit.ToString("N2") (@pnl.GrossMarginPercentage.ToString("N2")%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-primary bg-opacity-10 border-0 pt-3 px-3">
+                        <h6 class="fw-bold text-primary m-0"><i class="fa-solid fa-chart-line me-1.5"></i> Operational Net Profit</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span>Gross Profit Brought Forward</span>
+                            <span class="fw-bold text-success">₹@pnl.GrossProfit.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom text-info">
+                            <span>Add: Indirect Incomes (Receipt Vouchers)</span>
+                            <span class="fw-bold">+ ₹@pnl.IndirectIncomes.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom text-danger">
+                            <span>Less: Operational Expenses (Payment Vouchers)</span>
+                            <span class="fw-bold">- ₹@pnl.OperatingExpenses.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-3 mt-4 bg-@(pnl.NetProfit >= 0 ? "success" : "danger") bg-opacity-10 px-3 rounded fw-bold fs-5 text-@(pnl.NetProfit >= 0 ? "success" : "danger")">
+                            <span>Net Profit / (Loss)</span>
+                            <span>₹@pnl.NetProfit.ToString("N2")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <!-- Standard Accounts Data Table Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold m-0 text-dark">
+                <i class="fa-solid fa-table-list text-primary me-1.5"></i> @Model.ReportTitle Data Table
+            </h6>
+            <span class="badge bg-light text-muted border fs-8">@Model.TotalRecords Records</span>
+        </div>
+        <div class="card-body p-3">
+            <div class="table-responsive">
+                @if (currentType == "CustomerOutstanding" || currentType == "SupplierOutstanding")
+                {
+                    <table class="table table-hover align-middle datatable w-100 fs-8">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Contact</th>
+                                <th>City</th>
+                                <th class="text-end">Opening Bal</th>
+                                <th class="text-end">Total Billed</th>
+                                <th class="text-end">Total Paid</th>
+                                <th class="text-end">Net Outstanding</th>
+                                <th class="text-center">Overdue Bills</th>
+                                <th class="text-center no-print">Statement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.OutstandingReportDto>())
+                            {
+                                <tr>
+                                    <td class="fw-bold">@row.EntityCode</td>
+                                    <td>@row.EntityName</td>
+                                    <td>@(row.ContactPhone ?? "-")</td>
+                                    <td>@(row.City ?? "-")</td>
+                                    <td class="text-end">₹@row.OpeningBalance.ToString("N2") @row.BalanceType</td>
+                                    <td class="text-end">₹@row.TotalInvoiced.ToString("N2")</td>
+                                    <td class="text-end text-success">₹@row.TotalPaid.ToString("N2")</td>
+                                    <td class="text-end fw-bold @(row.NetOutstanding > 0 ? "text-danger" : "text-success")">
+                                        ₹@row.NetOutstanding.ToString("N2")
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-@(row.OverdueBillsCount > 0 ? "danger" : "light text-muted")">
+                                            @row.OverdueBillsCount
+                                        </span>
+                                    </td>
+                                    <td class="text-center no-print">
+                                        @if (currentType == "CustomerOutstanding")
+                                        {
+                                            <a href="@Url.Action("Accounts", "Reports", new { reportType = "CustomerLedger", CustomerId = row.EntityId })" class="btn btn-xs btn-outline-primary">
+                                                <i class="fa-solid fa-book-open"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="@Url.Action("Accounts", "Reports", new { reportType = "SupplierLedger", SupplierId = row.EntityId })" class="btn btn-xs btn-outline-primary">
+                                                <i class="fa-solid fa-book-open"></i>
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else if (currentType == "CustomerLedger" || currentType == "SupplierLedger")
+                {
+                    <table class="table table-hover align-middle datatable w-100 fs-8">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Voucher / Ref #</th>
+                                <th>Type</th>
+                                <th>Particulars</th>
+                                <th class="text-end">Debit (Dr)</th>
+                                <th class="text-end">Credit (Cr)</th>
+                                <th class="text-end">Running Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.LedgerStatementRowDto>())
+                            {
+                                <tr>
+                                    <td>@row.Date.ToString("dd-MMM-yyyy")</td>
+                                    <td class="fw-bold">@row.ReferenceNumber</td>
+                                    <td><span class="badge bg-light text-dark border">@row.VoucherType</span></td>
+                                    <td>@row.Particulars</td>
+                                    <td class="text-end @(row.Debit > 0 ? "fw-bold text-danger" : "text-muted")">
+                                        @(row.Debit > 0 ? "₹" + row.Debit.ToString("N2") : "-")
+                                    </td>
+                                    <td class="text-end @(row.Credit > 0 ? "fw-bold text-success" : "text-muted")">
+                                        @(row.Credit > 0 ? "₹" + row.Credit.ToString("N2") : "-")
+                                    </td>
+                                    <td class="text-end fw-bold">₹@row.RunningBalance.ToString("N2") @row.BalanceType</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else if (currentType == "CashBook" || currentType == "BankBook")
+                {
+                    <table class="table table-hover align-middle datatable w-100 fs-8">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Voucher #</th>
+                                <th>Type</th>
+                                <th>Ledger Account</th>
+                                <th>Narration</th>
+                                <th class="text-end">Receipts (In)</th>
+                                <th class="text-end">Payments (Out)</th>
+                                <th class="text-end">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.CashBankBookRowDto>())
+                            {
+                                <tr>
+                                    <td>@row.Date.ToString("dd-MMM-yyyy")</td>
+                                    <td class="fw-bold">@row.VoucherNumber</td>
+                                    <td><span class="badge bg-light text-dark border">@row.VoucherType</span></td>
+                                    <td class="fw-semibold">@row.LedgerName</td>
+                                    <td class="text-muted">@(row.Narration ?? "-")</td>
+                                    <td class="text-end text-success fw-bold">@(row.Receipts > 0 ? "₹" + row.Receipts.ToString("N2") : "-")</td>
+                                    <td class="text-end text-danger fw-bold">@(row.Payments > 0 ? "₹" + row.Payments.ToString("N2") : "-")</td>
+                                    <td class="text-end fw-bold text-primary">₹@row.ClosingBalance.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else if (currentType == "ReceiptVouchers" || currentType == "PaymentVouchers" || currentType == "JournalVouchers")
+                {
+                    <table class="table table-hover align-middle datatable w-100 fs-8">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Voucher #</th>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Ref #</th>
+                                <th>Accounts Involved</th>
+                                <th>Narration</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.VoucherReportDto>())
+                            {
+                                <tr>
+                                    <td class="fw-bold text-primary">@row.VoucherNumber</td>
+                                    <td>@row.VoucherDate.ToString("dd-MMM-yyyy")</td>
+                                    <td><span class="badge bg-light text-dark border">@row.VoucherType</span></td>
+                                    <td>@(row.ReferenceNumber ?? "-")</td>
+                                    <td>@row.AccountSummary</td>
+                                    <td class="text-muted">@(row.Narration ?? "-")</td>
+                                    <td class="text-end fw-bold">₹@row.TotalAmount.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else if (currentType == "LedgerSummary")
+                {
+                    <table class="table table-hover align-middle datatable w-100 fs-8">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Ledger Account</th>
+                                <th>Group</th>
+                                <th class="text-end">Opening Balance</th>
+                                <th class="text-end">Total Debit</th>
+                                <th class="text-end">Total Credit</th>
+                                <th class="text-end">Closing Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.LedgerSummaryDto>())
+                            {
+                                <tr>
+                                    <td class="fw-bold">@row.LedgerCode</td>
+                                    <td class="fw-semibold">@row.LedgerName</td>
+                                    <td><span class="badge bg-light text-dark border">@row.GroupName</span></td>
+                                    <td class="text-end">₹@row.OpeningBalance.ToString("N2") @row.OpeningType</td>
+                                    <td class="text-end text-danger">₹@row.TotalDebit.ToString("N2")</td>
+                                    <td class="text-end text-success">₹@row.TotalCredit.ToString("N2")</td>
+                                    <td class="text-end fw-bold text-primary">₹@row.ClosingBalance.ToString("N2") @row.ClosingType</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else if (currentType == "TrialBalance")
+                {
+                    <table class="table table-hover align-middle datatable w-100 fs-8">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Ledger Account</th>
+                                <th>Account Group</th>
+                                <th class="text-end">Debit (Dr)</th>
+                                <th class="text-end">Credit (Cr)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                decimal totalDr = 0;
+                                decimal totalCr = 0;
+                            }
+                            @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.TrialBalanceRowDto>())
+                            {
+                                totalDr += row.DebitAmount;
+                                totalCr += row.CreditAmount;
+                                <tr>
+                                    <td class="fw-semibold">@row.LedgerName</td>
+                                    <td><span class="badge bg-light text-dark border">@row.AccountGroup</span></td>
+                                    <td class="text-end @(row.DebitAmount > 0 ? "fw-bold" : "text-muted")">
+                                        @(row.DebitAmount > 0 ? "₹" + row.DebitAmount.ToString("N2") : "-")
+                                    </td>
+                                    <td class="text-end @(row.CreditAmount > 0 ? "fw-bold" : "text-muted")">
+                                        @(row.CreditAmount > 0 ? "₹" + row.CreditAmount.ToString("N2") : "-")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-dark">
+                            <tr>
+                                <th colspan="2" class="text-uppercase">Total Trial Balance</th>
+                                <th class="text-end">₹@totalDr.ToString("N2")</th>
+                                <th class="text-end">₹@totalCr.ToString("N2")</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    @if (Math.Abs(totalDr - totalCr) > 0.01m)
+                    {
+                        <div class="alert alert-danger mt-3 mb-0 d-flex align-items-center">
+                            <i class="fa-solid fa-triangle-exclamation fs-5 me-2"></i>
+                            <div>
+                                <strong>Trial Balance Variance Detected:</strong> Difference of ₹@Math.Abs(totalDr - totalCr).ToString("N2"). Verify single-sided or unposted vouchers.
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success mt-3 mb-0 d-flex align-items-center">
+                            <i class="fa-solid fa-circle-check fs-5 me-2"></i>
+                            <div>
+                                <strong>Trial Balance Reconciled:</strong> Total Debits perfectly match Total Credits (₹@totalDr.ToString("N2")).
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            if ($('.datatable').length) {
+                $('.datatable').DataTable({
+                    responsive: true,
+                    pageLength: 25,
+                    order: [],
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: "Search records..."
+                    }
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,217 @@
+@model ERP.ViewModels.Reporting.ReportFilterViewModel
+@{
+    var category = Model.Category ?? "Sales";
+    var reportType = Model.ReportType ?? "";
+    var currentPreset = Model.DatePreset ?? "this_month";
+}
+
+<div class="card border-0 shadow-sm mb-4 no-print report-filter-panel">
+    <div class="card-body p-3">
+        <!-- Date Presets Quick Bar -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3 mb-3 border-bottom">
+            <div class="d-flex flex-wrap align-items-center gap-1.5">
+                <span class="fs-8 fw-bold text-uppercase text-muted me-1"><i class="fa-regular fa-calendar-days me-1"></i> Period:</span>
+                <button type="button" class="btn btn-xs @(currentPreset == "today" ? "btn-primary" : "btn-light border") date-preset-btn" data-preset="today">Today</button>
+                <button type="button" class="btn btn-xs @(currentPreset == "yesterday" ? "btn-primary" : "btn-light border") date-preset-btn" data-preset="yesterday">Yesterday</button>
+                <button type="button" class="btn btn-xs @(currentPreset == "this_week" ? "btn-primary" : "btn-light border") date-preset-btn" data-preset="this_week">This Week</button>
+                <button type="button" class="btn btn-xs @(currentPreset == "this_month" ? "btn-primary" : "btn-light border") date-preset-btn" data-preset="this_month">This Month</button>
+                <button type="button" class="btn btn-xs @(currentPreset == "last_month" ? "btn-primary" : "btn-light border") date-preset-btn" data-preset="last_month">Last Month</button>
+                <button type="button" class="btn btn-xs @(currentPreset == "this_year" ? "btn-primary" : "btn-light border") date-preset-btn" data-preset="this_year">This Financial Year</button>
+                <button type="button" class="btn btn-xs @(currentPreset == "custom" ? "btn-primary" : "btn-light border") date-preset-btn" data-preset="custom">Custom Range</button>
+            </div>
+
+            <!-- Export Buttons -->
+            <div class="d-flex gap-2">
+                <a href="@Url.Action("ExportExcel", "Reports", new { category = category, reportType = reportType, fromDate = Model.FromDate, toDate = Model.ToDate, datePreset = Model.DatePreset, customerId = Model.CustomerId, supplierId = Model.SupplierId, productId = Model.ProductId, categoryId = Model.CategoryId, status = Model.Status })" 
+                   class="btn btn-sm btn-outline-success d-flex align-items-center gap-1 shadow-xs" title="Export to Excel Spreadsheet">
+                    <i class="fa-solid fa-file-excel text-success"></i>
+                    <span class="d-none d-md-inline">Excel</span>
+                </a>
+                <a href="@Url.Action("ExportPdf", "Reports", new { category = category, reportType = reportType, fromDate = Model.FromDate, toDate = Model.ToDate, datePreset = Model.DatePreset, customerId = Model.CustomerId, supplierId = Model.SupplierId, productId = Model.ProductId, categoryId = Model.CategoryId, status = Model.Status })" 
+                   class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 shadow-xs" title="Export to PDF Document">
+                    <i class="fa-solid fa-file-pdf text-danger"></i>
+                    <span class="d-none d-md-inline">PDF</span>
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 shadow-xs" onclick="window.print()" title="Print this Report">
+                    <i class="fa-solid fa-print"></i>
+                    <span class="d-none d-md-inline">Print</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Form -->
+        <form method="get" id="reportFilterForm">
+            <input type="hidden" name="category" value="@category" />
+            <input type="hidden" name="reportType" value="@reportType" />
+            <input type="hidden" name="DatePreset" id="datePresetInput" value="@Model.DatePreset" />
+            <input type="hidden" name="Mode" value="@Model.Mode" />
+
+            <div class="row g-2 align-items-end">
+                <div class="col-6 col-md-2" id="fromDateCol">
+                    <label class="form-label fs-8 fw-semibold text-muted mb-1">From Date</label>
+                    <input type="date" name="FromDate" id="fromDateInput" class="form-control form-control-sm" 
+                           value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-6 col-md-2" id="toDateCol">
+                    <label class="form-label fs-8 fw-semibold text-muted mb-1">To Date</label>
+                    <input type="date" name="ToDate" id="toDateInput" class="form-control form-control-sm" 
+                           value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+
+                @if (category is "Sales" or "GST" or "Customers")
+                {
+                    <div class="col-12 col-md-3">
+                        <label class="form-label fs-8 fw-semibold text-muted mb-1">Customer</label>
+                        <select name="CustomerId" class="form-select form-select-sm select2">
+                            <option value="">All Customers</option>
+                            @if (ViewBag.Customers != null)
+                            {
+                                foreach (var c in (IEnumerable<ERP.Models.Customer>)ViewBag.Customers)
+                                {
+                                    <option value="@c.Id" selected="@(Model.CustomerId == c.Id)">@c.CustomerName (@c.CustomerCode)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+
+                @if (category is "Purchase" or "Suppliers")
+                {
+                    <div class="col-12 col-md-3">
+                        <label class="form-label fs-8 fw-semibold text-muted mb-1">Supplier</label>
+                        <select name="SupplierId" class="form-select form-select-sm select2">
+                            <option value="">All Suppliers</option>
+                            @if (ViewBag.Suppliers != null)
+                            {
+                                foreach (var s in (IEnumerable<ERP.Models.Supplier>)ViewBag.Suppliers)
+                                {
+                                    <option value="@s.Id" selected="@(Model.SupplierId == s.Id)">@s.SupplierName (@s.SupplierCode)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+
+                @if (category is "Sales" or "Purchase" or "Inventory" or "BI")
+                {
+                    <div class="col-6 col-md-2">
+                        <label class="form-label fs-8 fw-semibold text-muted mb-1">Category</label>
+                        <select name="CategoryId" class="form-select form-select-sm">
+                            <option value="">All Categories</option>
+                            @if (ViewBag.Categories != null)
+                            {
+                                foreach (var cat in (IEnumerable<ERP.Models.Category>)ViewBag.Categories)
+                                {
+                                    <option value="@cat.Id" selected="@(Model.CategoryId == cat.Id)">@cat.CategoryName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+
+                @if (category is "Inventory")
+                {
+                    <div class="col-6 col-md-2">
+                        <label class="form-label fs-8 fw-semibold text-muted mb-1">Warehouse</label>
+                        <select name="WarehouseId" class="form-select form-select-sm">
+                            <option value="">All Warehouses</option>
+                            @if (ViewBag.Warehouses != null)
+                            {
+                                foreach (var w in (IEnumerable<ERP.Models.Warehouse>)ViewBag.Warehouses)
+                                {
+                                    <option value="@w.Id" selected="@(Model.WarehouseId == w.Id)">@w.WarehouseName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+
+                @if (category is "Sales" or "Purchase")
+                {
+                    <div class="col-6 col-md-2">
+                        <label class="form-label fs-8 fw-semibold text-muted mb-1">Status</label>
+                        <select name="Status" class="form-select form-select-sm">
+                            <option value="">All Statuses</option>
+                            <option value="Completed" selected="@(Model.Status == "Completed")">Completed</option>
+                            <option value="Paid" selected="@(Model.Status == "Paid")">Paid</option>
+                            <option value="Draft" selected="@(Model.Status == "Draft")">Draft</option>
+                            <option value="Cancelled" selected="@(Model.Status == "Cancelled")">Cancelled</option>
+                        </select>
+                    </div>
+                }
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label fs-8 fw-semibold text-muted mb-1">Search</label>
+                    <input type="text" name="SearchTerm" class="form-control form-control-sm" placeholder="Invoice, name, code..." value="@Model.SearchTerm" />
+                </div>
+
+                <div class="col-12 col-md-auto ms-auto d-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-primary shadow-xs px-3">
+                        <i class="fa-solid fa-filter me-1"></i> Apply Filter
+                    </button>
+                    <a href="@Url.Action(category, "Reports", new { reportType = reportType, Mode = Model.Mode })" class="btn btn-sm btn-light border px-2.5" title="Reset Filters">
+                        <i class="fa-solid fa-rotate"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Preset clicks
+        document.querySelectorAll(".date-preset-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                var preset = this.getAttribute("data-preset");
+                document.getElementById("datePresetInput").value = preset;
+                
+                var today = new Date();
+                var fromInput = document.getElementById("fromDateInput");
+                var toInput = document.getElementById("toDateInput");
+                
+                function fmt(d) {
+                    var month = '' + (d.getMonth() + 1);
+                    var day = '' + d.getDate();
+                    var year = d.getFullYear();
+                    if (month.length < 2) month = '0' + month;
+                    if (day.length < 2) day = '0' + day;
+                    return [year, month, day].join('-');
+                }
+
+                if (preset === "today") {
+                    fromInput.value = fmt(today);
+                    toInput.value = fmt(today);
+                } else if (preset === "yesterday") {
+                    var yest = new Date(today);
+                    yest.setDate(yest.getDate() - 1);
+                    fromInput.value = fmt(yest);
+                    toInput.value = fmt(yest);
+                } else if (preset === "this_week") {
+                    var diff = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1);
+                    var mon = new Date(today.setDate(diff));
+                    fromInput.value = fmt(mon);
+                    toInput.value = fmt(new Date());
+                } else if (preset === "this_month") {
+                    var firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                    var lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    fromInput.value = fmt(firstDay);
+                    toInput.value = fmt(lastDay);
+                } else if (preset === "last_month") {
+                    var firstLast = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    var lastLast = new Date(today.getFullYear(), today.getMonth(), 0);
+                    fromInput.value = fmt(firstLast);
+                    toInput.value = fmt(lastLast);
+                } else if (preset === "this_year") {
+                    var fyYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
+                    var fyStart = new Date(fyYear, 3, 1);
+                    var fyEnd = new Date(fyYear + 1, 2, 31);
+                    fromInput.value = fmt(fyStart);
+                    toInput.value = fmt(fyEnd);
+                }
+
+                document.getElementById("reportFilterForm").submit();
+            });
+        });
+    });
+</script>

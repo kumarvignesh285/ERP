@@ -74,13 +74,19 @@
 
     var adminSections = new[]
     {
-        new MenuSection("Reports", "fa-chart-line", "/Reports", new[] { "Super Admin", "Admin", "Manager", "Accountant" }, new[]
+        new MenuSection("Reports & Analytics", "fa-chart-line", "/Reports", new[] { "Super Admin", "Admin", "Manager", "Accountant" }, new[]
         {
-            new MenuLink("AI BI Assistant", "/AIChat", "AI"),
-            new MenuLink("Sales Reports", "/Reports/SalesReports"),
-            new MenuLink("Purchase Reports", "/Reports/PurchaseReports"),
-            new MenuLink("Inventory Reports", "/Reports/InventoryReports"),
-            new MenuLink("Accounting Reports", "/Reports/AccountingReports")
+            new MenuLink("Reports Dashboard", "/Reports/Dashboard"),
+            new MenuLink("Sales Reports", "/Reports/Sales"),
+            new MenuLink("Purchase Reports", "/Reports/Purchase"),
+            new MenuLink("Inventory Reports", "/Reports/Inventory"),
+            new MenuLink("Accounts Reports", "/Reports/Accounts"),
+            new MenuLink("GST Reports", "/Reports/GST"),
+            new MenuLink("Customer Reports", "/Reports/Customers"),
+            new MenuLink("Supplier Reports", "/Reports/Suppliers"),
+            new MenuLink("Employee & Audit Reports", "/Reports/Audit"),
+            new MenuLink("Business Intelligence", "/Reports/BI"),
+            new MenuLink("AI BI Assistant", "/AIChat", "AI")
         }),
         new MenuSection("Settings", "fa-gears", "/Settings", new[] { "Super Admin", "Admin" }, new[]
         {
@@ -108,8 +114,8 @@
                 </svg>
             </div>
             <div class="brand-text-container">
-                <span class="brand-title">SMART ERP</span>
-                <span class="brand-version-badge">v2.4</span>
+                <span class="brand-title">VMR QUBRIX</span>
+                <span class="brand-version-badge">ERP</span>
             </div>
         </a>
         <button class="btn icon-btn sidebar-collapse-toggle d-none d-lg-flex" type="button" id="sidebarCollapseBtn" title="Toggle Sidebar Width">
@@ -238,3 +244,4 @@
     </div>
 </aside>
 <div class="sidebar-backdrop" data-sidebar-close></div>
+

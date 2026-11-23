@@ -1,0 +1,334 @@
+@model ERP.ViewModels.Reporting.ReportResultViewModel<object>
+@{
+    ViewData["Title"] = Model.ReportTitle;
+    var currentType = Model.ReportType;
+    var filter = Model.Filter;
+}
+
+<!-- Print-Only Header -->
+<div class="report-print-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="company-title">@Model.ActiveCompanyName</h1>
+            <h2 class="report-title">@Model.ReportTitle</h2>
+            <div class="report-meta">
+                Period: @(filter.FromDate?.ToString("dd-MMM-yyyy") ?? "Start") to @(filter.ToDate?.ToString("dd-MMM-yyyy") ?? "Today") | 
+                Generated: @DateTime.Now.ToString("dd-MMM-yyyy HH:mm")
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 no-print">
+    <div>
+        <h4 class="m-0 fw-bold text-dark"><i class="fa-solid fa-users text-primary me-2"></i> @Model.ReportTitle</h4>
+        <p class="text-muted small m-0 mt-0.5">@Model.ReportDescription</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Index", "Reports")" class="btn btn-sm btn-outline-secondary">
+            <i class="fa-solid fa-gauge me-1"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- 6 Customer Sub-Report Navigation Tabs -->
+<div class="card border-0 shadow-sm mb-3 no-print report-subnav">
+    <div class="card-body p-2">
+        <div class="nav nav-pills nav-fill flex-nowrap overflow-auto gap-1">
+            <a href="@Url.Action("Customers", "Reports", new { reportType = "CustomerList", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "CustomerList" ? "active" : "")">
+                <i class="fa-solid fa-address-book me-1"></i> Directory
+            </a>
+            <a href="@Url.Action("Customers", "Reports", new { reportType = "NewCustomers", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "NewCustomers" ? "active" : "")">
+                <i class="fa-solid fa-user-plus me-1"></i> New Customers
+            </a>
+            <a href="@Url.Action("Customers", "Reports", new { reportType = "TopCustomers", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "TopCustomers" ? "active" : "")">
+                <i class="fa-solid fa-crown me-1 text-warning"></i> Top Customers
+            </a>
+            <a href="@Url.Action("Customers", "Reports", new { reportType = "PurchaseHistory", CustomerId = filter.CustomerId, DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "PurchaseHistory" ? "active" : "")">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> Invoices History
+            </a>
+            <a href="@Url.Action("Customers", "Reports", new { reportType = "Outstanding", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "Outstanding" ? "active" : "")">
+                <i class="fa-solid fa-money-bill-wave me-1"></i> Outstanding
+            </a>
+            <a href="@Url.Action("Customers", "Reports", new { reportType = "InactiveCustomers", DatePreset = filter.DatePreset, FromDate = filter.FromDate, ToDate = filter.ToDate })" 
+               class="nav-link fs-8 py-1.5 px-2.5 text-nowrap @(currentType == "InactiveCustomers" ? "active" : "")">
+                <i class="fa-solid fa-user-slash me-1 text-danger"></i> Inactive (&gt;60 Days)
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<partial name="_ReportFilterBar" model="filter" />
+
+<!-- Summary Metric Cards -->
+@if (Model.SummaryCards.Any())
+{
+    <div class="row g-3 mb-4 report-summary-cards">
+        @foreach (var card in Model.SummaryCards)
+        {
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="card border-0 shadow-sm bg-@card.ColorClass bg-opacity-10 h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted fs-8 fw-bold text-uppercase">@card.Title</span>
+                            <i class="fa-solid @card.Icon text-@card.ColorClass fs-6"></i>
+                        </div>
+                        <h4 class="fw-bold text-@card.ColorClass m-0">@card.Value</h4>
+                        @if (!string.IsNullOrEmpty(card.Subtitle))
+                        {
+                            <span class="text-muted fs-9">@card.Subtitle</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Data Table Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold m-0 text-dark">
+            <i class="fa-solid fa-table-list text-primary me-1.5"></i> @Model.ReportTitle Data Table
+        </h6>
+        <span class="badge bg-light text-muted border fs-8">@Model.TotalRecords Records</span>
+    </div>
+    <div class="card-body p-3">
+        <div class="table-responsive">
+            @if (currentType == "CustomerList" || currentType == "NewCustomers")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Customer Name</th>
+                            <th>Mobile</th>
+                            <th>Email</th>
+                            <th>GSTIN</th>
+                            <th>City / State</th>
+                            <th class="text-end">Credit Limit</th>
+                            <th class="text-end">Current Balance</th>
+                            <th class="text-center">Joined</th>
+                            <th class="text-center no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.CustomerMasterReportDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.CustomerCode</td>
+                                <td class="fw-semibold">@row.CustomerName</td>
+                                <td>@(row.MobileNumber ?? "-")</td>
+                                <td>@(row.Email ?? "-")</td>
+                                <td><span class="font-monospace">@(row.GSTNumber ?? "-")</span></td>
+                                <td>@(row.City ?? "-") @(string.IsNullOrEmpty(row.State) ? "" : $", {row.State}")</td>
+                                <td class="text-end">₹@row.CreditLimit.ToString("N2")</td>
+                                <td class="text-end fw-bold @(row.CurrentBalance > 0 ? "text-danger" : "text-success")">
+                                    ₹@row.CurrentBalance.ToString("N2")
+                                </td>
+                                <td class="text-center text-muted">@row.CreatedAt.ToString("dd-MMM-yyyy")</td>
+                                <td class="text-center no-print">
+                                    <a href="@Url.Action("Customers", "Reports", new { reportType = "PurchaseHistory", CustomerId = row.CustomerId })" class="btn btn-xs btn-outline-primary" title="Invoices">
+                                        <i class="fa-solid fa-receipt"></i>
+                                    </a>
+                                    <a href="@Url.Action("Accounts", "Reports", new { reportType = "CustomerLedger", CustomerId = row.CustomerId })" class="btn btn-xs btn-outline-secondary" title="Ledger">
+                                        <i class="fa-solid fa-book-open"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "TopCustomers")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Customer Code</th>
+                            <th>Customer Name</th>
+                            <th>Mobile</th>
+                            <th>City</th>
+                            <th class="text-center">Total Invoices</th>
+                            <th class="text-end">Total Billed</th>
+                            <th class="text-end">Total Paid</th>
+                            <th class="text-end">Balance Receivable</th>
+                            <th class="text-center no-print">History</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.CustomerWiseSalesDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.CustomerCode</td>
+                                <td class="fw-semibold">@row.CustomerName</td>
+                                <td>@(row.MobileNumber ?? "-")</td>
+                                <td>@(row.City ?? "-")</td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">@row.InvoiceCount</span></td>
+                                <td class="text-end fw-bold text-primary">₹@row.TotalSalesAmount.ToString("N2")</td>
+                                <td class="text-end text-success">₹@row.PaidAmount.ToString("N2")</td>
+                                <td class="text-end fw-bold @(row.BalanceAmount > 0 ? "text-danger" : "text-muted")">
+                                    ₹@row.BalanceAmount.ToString("N2")
+                                </td>
+                                <td class="text-center no-print">
+                                    <a href="@Url.Action("Customers", "Reports", new { reportType = "PurchaseHistory", CustomerId = row.CustomerId })" class="btn btn-xs btn-outline-primary">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "PurchaseHistory")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>GSTIN</th>
+                            <th class="text-end">Taxable</th>
+                            <th class="text-end">Discount</th>
+                            <th class="text-end">Tax Amount</th>
+                            <th class="text-end">Total Amount</th>
+                            <th class="text-end">Paid Amount</th>
+                            <th class="text-end">Balance</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center no-print">View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.SalesRegisterDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.InvoiceNumber</td>
+                                <td>@row.InvoiceDate.ToString("dd-MMM-yyyy")</td>
+                                <td>@row.CustomerName</td>
+                                <td><span class="font-monospace">@(row.GSTNumber ?? "-")</span></td>
+                                <td class="text-end">₹@row.SubTotal.ToString("N2")</td>
+                                <td class="text-end text-danger">₹@row.DiscountAmount.ToString("N2")</td>
+                                <td class="text-end">₹@row.TaxAmount.ToString("N2")</td>
+                                <td class="text-end fw-bold text-primary">₹@row.GrandTotal.ToString("N2")</td>
+                                <td class="text-end text-success">₹@row.PaidAmount.ToString("N2")</td>
+                                <td class="text-end fw-bold @(row.BalanceAmount > 0 ? "text-danger" : "text-muted")">₹@row.BalanceAmount.ToString("N2")</td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">@row.Status</span></td>
+                                <td class="text-center no-print">
+                                    <a href="/Sales/Details/@row.InvoiceId" class="btn btn-xs btn-outline-primary" target="_blank">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "Outstanding")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Customer Code</th>
+                            <th>Customer Name</th>
+                            <th>Phone</th>
+                            <th>City</th>
+                            <th class="text-end">Credit Limit</th>
+                            <th class="text-end">Total Billed</th>
+                            <th class="text-end">Total Received</th>
+                            <th class="text-end">Balance Due</th>
+                            <th class="text-center">Overdue Invoices</th>
+                            <th class="text-center no-print">Ledger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.OutstandingReportDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.EntityCode</td>
+                                <td class="fw-semibold">@row.EntityName</td>
+                                <td>@(row.ContactPhone ?? "-")</td>
+                                <td>@(row.City ?? "-")</td>
+                                <td class="text-end">₹@row.CreditLimit.ToString("N2")</td>
+                                <td class="text-end">₹@row.TotalInvoiced.ToString("N2")</td>
+                                <td class="text-end text-success">₹@row.TotalPaid.ToString("N2")</td>
+                                <td class="text-end fw-bold text-danger">₹@row.NetOutstanding.ToString("N2")</td>
+                                <td class="text-center">
+                                    <span class="badge bg-@(row.OverdueBillsCount > 0 ? "danger" : "light text-muted")">
+                                        @row.OverdueBillsCount
+                                    </span>
+                                </td>
+                                <td class="text-center no-print">
+                                    <a href="@Url.Action("Accounts", "Reports", new { reportType = "CustomerLedger", CustomerId = row.EntityId })" class="btn btn-xs btn-outline-primary">
+                                        <i class="fa-solid fa-book-open"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (currentType == "InactiveCustomers")
+            {
+                <table class="table table-hover align-middle datatable w-100 fs-8">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Customer Code</th>
+                            <th>Customer Name</th>
+                            <th>Mobile</th>
+                            <th>Email</th>
+                            <th>Last Purchase Date</th>
+                            <th class="text-center">Days Inactive</th>
+                            <th class="text-end">Lifetime Spend</th>
+                            <th class="text-end">Current Outstanding</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Data.Cast<ERP.ViewModels.Reporting.InactiveEntityDto>())
+                        {
+                            <tr>
+                                <td class="fw-bold">@row.EntityCode</td>
+                                <td class="fw-semibold">@row.EntityName</td>
+                                <td>@(row.Mobile ?? "-")</td>
+                                <td>@(row.Email ?? "-")</td>
+                                <td>@(row.LastTransactionDate?.ToString("dd-MMM-yyyy") ?? "Never")</td>
+                                <td class="text-center">
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fa-solid fa-clock me-1"></i> @row.DaysSinceLastTransaction days
+                                    </span>
+                                </td>
+                                <td class="text-end fw-bold text-primary">₹@row.LifetimeSalesAmount.ToString("N2")</td>
+                                <td class="text-end fw-bold @(row.OutstandingAmount > 0 ? "text-danger" : "text-muted")">₹@row.OutstandingAmount.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            if ($('.datatable').length) {
+                $('.datatable').DataTable({
+                    responsive: true,
+                    pageLength: 25,
+                    order: [],
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: "Search records..."
+                    }
+                });
+            }
+        });
+    </script>
+}

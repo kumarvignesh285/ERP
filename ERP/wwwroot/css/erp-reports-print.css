@@ -1,0 +1,181 @@
+/* ==========================================================================
+   VMR Qubrix ERP - Reports & Analytics Dedicated Print Stylesheet
+   ========================================================================== */
+
+@media print {
+    /* Hide layout chrome, navigation, toolbars, and action buttons */
+    .erp-sidebar,
+    .erp-header,
+    .sidebar-backdrop,
+    .erp-footer,
+    .no-print,
+    .btn,
+    .dt-top-bar,
+    .dt-bottom-bar,
+    .dataTables_filter,
+    .dataTables_paginate,
+    .dataTables_info,
+    .report-filter-panel,
+    .report-subnav,
+    .mode-switch-container,
+    .card-actions,
+    #sidebarCollapseBtn,
+    .ai-chat-widget {
+        display: none !important;
+    }
+
+    /* Page Setup */
+    @page {
+        size: A4 portrait;
+        margin: 12mm 10mm 15mm 10mm;
+    }
+
+    @page landscape-report {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #111827 !important;
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+        font-size: 9pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .erp-wrapper, .erp-content, main {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Print Header (Visible only when printing) */
+    .report-print-header {
+        display: block !important;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #0d6efd;
+    }
+
+    .report-print-header .company-title {
+        font-size: 16pt;
+        font-weight: 700;
+        color: #0d6efd !important;
+        margin: 0;
+    }
+
+    .report-print-header .report-title {
+        font-size: 13pt;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 3px 0 0 0;
+    }
+
+    .report-print-header .report-meta {
+        font-size: 8.5pt;
+        color: #6b7280;
+    }
+
+    /* Summary Cards in Print */
+    .report-summary-cards {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        margin-bottom: 15px !important;
+    }
+
+    .report-summary-cards .card {
+        border: 1px solid #d1d5db !important;
+        box-shadow: none !important;
+        background: #f9fafb !important;
+        padding: 6px 10px !important;
+        flex: 1 1 auto !important;
+        min-width: 120px !important;
+        border-radius: 4px !important;
+    }
+
+    .report-summary-cards .card-body {
+        padding: 0 !important;
+    }
+
+    .report-summary-cards h3 {
+        font-size: 11pt !important;
+        font-weight: 700 !important;
+        margin: 2px 0 0 0 !important;
+    }
+
+    /* Tables */
+    table, .table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 10px !important;
+        font-size: 8.5pt !important;
+        page-break-inside: auto !important;
+    }
+
+    thead {
+        display: table-header-group !important; /* Repeat header on every page */
+    }
+
+    tr {
+        page-break-inside: avoid !important;
+        page-break-after: auto !important;
+    }
+
+    th {
+        background-color: #f3f4f6 !important;
+        color: #111827 !important;
+        font-weight: 600 !important;
+        border: 1px solid #d1d5db !important;
+        padding: 5px 6px !important;
+        text-align: left !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    td {
+        border: 1px solid #e5e7eb !important;
+        padding: 4px 6px !important;
+        color: #374151 !important;
+    }
+
+    tfoot {
+        display: table-footer-group !important;
+        font-weight: 700 !important;
+        background-color: #f9fafb !important;
+    }
+
+    tfoot th, tfoot td {
+        border-top: 2px solid #9ca3af !important;
+        border-bottom: 2px solid #4b5563 !important;
+    }
+
+    /* Page Breaks */
+    .page-break {
+        page-break-before: always !important;
+    }
+
+    /* Print Footer */
+    .report-print-footer {
+        display: block !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        font-size: 7.5pt;
+        color: #9ca3af;
+        text-align: center;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 4px;
+    }
+}
+
+/* Screen only: Hide print headers and footers */
+@media screen {
+    .report-print-header,
+    .report-print-footer {
+        display: none !important;
+    }
+}

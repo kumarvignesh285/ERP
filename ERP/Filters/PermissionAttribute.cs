@@ -146,7 +146,14 @@ public class PermissionFilter : IAsyncActionFilter
             if (action.Contains("sales")) return "Sales Reports";
             if (action.Contains("purchase")) return "Purchase Reports";
             if (action.Contains("inventory")) return "Inventory Reports";
-            if (action.Contains("accounting")) return "Accounting Reports";
+            if (action.Contains("accounting") || action.Contains("account")) return "Accounts Reports";
+            if (action.Contains("gst")) return "GST Reports";
+            if (action.Contains("customer")) return "Customer Reports";
+            if (action.Contains("supplier")) return "Supplier Reports";
+            if (action.Contains("audit") || action.Contains("employee")) return "Employee & Audit Reports";
+            if (action.Contains("bi") || action.Contains("intelligence") || action.Contains("analytics")) return "Business Intelligence";
+            if (action.Contains("dashboard") || action.Contains("index") || action == "") return "Reports Dashboard";
+            if (action.Contains("export")) return "Reports";
         }
         else if (controller == "settings")
         {

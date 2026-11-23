@@ -1,0 +1,258 @@
+@model ERP.ViewModels.Reporting.SimpleModeDashboardDto
+@{
+    ViewData["Title"] = "Retail Summary (Simple Mode)";
+}
+
+<!-- Print-Only Header -->
+<div class="report-print-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="company-title">VMR Qubrix ERP</h1>
+            <h2 class="report-title">Today's Retail Sales & Inventory Summary</h2>
+            <div class="report-meta">Date: @DateTime.Today.ToString("dd-MMM-yyyy")</div>
+        </div>
+    </div>
+</div>
+
+<!-- Header with Mode Switcher -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 no-print">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <h4 class="m-0 fw-bold text-dark"><i class="fa-solid fa-shop text-success me-2"></i> Retail Daily Summary</h4>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fs-8">Simple Mode</span>
+        </div>
+        <p class="text-muted small m-0 mt-1">Quick daily check for store owners: Today's business, money collected, and inventory alerts.</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+        <div class="btn-group shadow-xs" role="group">
+            <button type="button" class="btn btn-sm btn-success active">
+                <i class="fa-solid fa-store me-1"></i> Simple Mode
+            </button>
+            <a href="@Url.Action("Index", "Reports", new { Mode = "Advanced" })" class="btn btn-sm btn-outline-secondary">
+                <i class="fa-solid fa-building me-1"></i> Advanced Mode
+            </a>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary shadow-xs" onclick="window.print()">
+            <i class="fa-solid fa-print me-1"></i> Print Summary
+        </button>
+    </div>
+</div>
+
+<!-- 4 Key Daily Cards -->
+<div class="row g-3 mb-4 report-summary-cards">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm bg-primary text-white h-100 rounded-3">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center opacity-75 mb-1 fs-8 text-uppercase fw-semibold">
+                    <span>Today's Total Sales</span>
+                    <i class="fa-solid fa-cart-shopping fs-6"></i>
+                </div>
+                <h2 class="fw-bold m-0 my-1">₹@Model.TodaysSales.ToString("N2")</h2>
+                <span class="fs-8 opacity-75">Bills Generated: @Model.TodaysBills</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm bg-success text-white h-100 rounded-3">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center opacity-75 mb-1 fs-8 text-uppercase fw-semibold">
+                    <span>Today's Cash Collected</span>
+                    <i class="fa-solid fa-hand-holding-dollar fs-6"></i>
+                </div>
+                <h2 class="fw-bold m-0 my-1">₹@Model.TodaysCollection.ToString("N2")</h2>
+                <span class="fs-8 opacity-75">Cash in register / bank</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm bg-info text-white h-100 rounded-3">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center opacity-75 mb-1 fs-8 text-uppercase fw-semibold">
+                    <span>Customer Udhaar (Outstanding)</span>
+                    <i class="fa-solid fa-clock fs-6"></i>
+                </div>
+                <h2 class="fw-bold m-0 my-1">₹@Model.CustomerOutstanding.ToString("N2")</h2>
+                <span class="fs-8 opacity-75">Money yet to be received</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm bg-dark text-white h-100 rounded-3">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center opacity-75 mb-1 fs-8 text-uppercase fw-semibold">
+                    <span>Supplier Pending Payment</span>
+                    <i class="fa-solid fa-truck fs-6"></i>
+                </div>
+                <h2 class="fw-bold m-0 my-1">₹@Model.SupplierOutstanding.ToString("N2")</h2>
+                <span class="fs-8 opacity-75">To be paid to suppliers</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estimated Profit Banner (when reliable) -->
+@if (Model.IsGrossProfitReliable)
+{
+    <div class="alert alert-light border shadow-xs d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <div class="avatar bg-success text-white rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <i class="fa-solid fa-coins"></i>
+            </div>
+            <div>
+                <strong class="text-dark">Today's Estimated Trade Margin:</strong>
+                <span class="text-success fw-bold fs-6 ms-1">₹@Model.EstimatedGrossProfit.ToString("N2")</span>
+                <span class="text-muted fs-8 ms-2">(Today's Sales minus Purchases)</span>
+            </div>
+        </div>
+        <span class="badge bg-light text-muted border fs-9">Based on registered bills</span>
+    </div>
+}
+
+<div class="row g-4 mb-4">
+    <!-- Top Selling Products Today -->
+    <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold m-0 text-dark"><i class="fa-solid fa-fire text-danger me-1.5"></i> Top Selling Items</h6>
+                <span class="badge bg-light text-muted border fs-8">Most in Demand</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 fs-8">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th class="text-end">Qty Sold</th>
+                                <th class="text-end">Sales Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.TopSellingProducts.Any())
+                            {
+                                foreach (var item in Model.TopSellingProducts)
+                                {
+                                    <tr>
+                                        <td class="fw-bold text-dark">@item.ProductName</td>
+                                        <td><span class="badge bg-light text-secondary border">@item.CategoryName</span></td>
+                                        <td class="text-end fw-semibold">@item.QuantitySold.ToString("N0") @item.UnitName</td>
+                                        <td class="text-end fw-bold text-success">₹@item.TotalSalesAmount.ToString("N2")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No sales items recorded today yet.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Alerts: Low & Out of Stock -->
+    <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold m-0 text-dark"><i class="fa-solid fa-triangle-exclamation text-warning me-1.5"></i> Items to Reorder (Low Stock)</h6>
+                <span class="badge bg-danger text-white rounded-pill fs-9">@Model.OutOfStockCount Out of Stock</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 fs-8">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Item</th>
+                                <th class="text-end">Available Stock</th>
+                                <th class="text-center">Alert</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.StockAlertItems.Any())
+                            {
+                                foreach (var alert in Model.StockAlertItems)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="fw-bold text-dark d-block">@alert.ProductName</span>
+                                            <span class="text-muted fs-9">@alert.CategoryName</span>
+                                        </td>
+                                        <td class="text-end fw-bold @(alert.CurrentStock <= 0 ? "text-danger" : "text-warning")">
+                                            @alert.CurrentStock.ToString("N2") @alert.UnitName
+                                        </td>
+                                        <td class="text-center">
+                                            @if (alert.CurrentStock <= 0)
+                                            {
+                                                <span class="badge bg-danger text-white">Out of Stock</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark">Low (@alert.CurrentStock.ToString("N0"))</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-success"><i class="fa-solid fa-check me-1"></i> Sufficient stock for all products!</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent 7-Day Sales Summary Table -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold m-0 text-dark"><i class="fa-solid fa-calendar-week text-primary me-1.5"></i> Daily Sales History (Past 7 Days)</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 fs-8">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Date</th>
+                        <th class="text-center">Bills</th>
+                        <th class="text-end">Total Sales</th>
+                        <th class="text-end">Cash Collected</th>
+                        <th class="text-end">Pending Udhaar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DailySalesSummary.Any())
+                    {
+                        foreach (var day in Model.DailySalesSummary)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@day.DateDisplay</td>
+                                <td class="text-center">@day.InvoiceCount</td>
+                                <td class="text-end fw-bold text-primary">₹@day.NetSales.ToString("N2")</td>
+                                <td class="text-end fw-bold text-success">₹@day.PaidAmount.ToString("N2")</td>
+                                <td class="text-end fw-bold @(day.BalanceAmount > 0 ? "text-danger" : "text-muted")">₹@day.BalanceAmount.ToString("N2")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No sales history recorded for the week.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
